@@ -108,16 +108,16 @@ export default function Sidebar () {
                 <Link
                   className={
                     "text-xs uppercase py-3 font-bold block " +
-                    (window.location.href.indexOf("/admin/settings") !== -1
-                      ? "text-lightBlue-500 hover:text-pink-400"
+                    (window.location.href.indexOf("/admin/team") !== -1
+                      ? "text-pink-400 hover:text-pink-400"
                       : "text-blueGray-700 hover:text-blueGray-500")
                   }
-                  to="/admin"
+                  to="/admin/team"
                 >
                   <i
                     className={
                       "fas fa-users mr-2 text-sm " +
-                      (window.location.href.indexOf("/admin/settings") !== -1
+                      (window.location.href.indexOf("/admin/team") !== -1
                         ? "opacity-75"
                         : "text-blueGray-300")
                     }
@@ -129,16 +129,16 @@ export default function Sidebar () {
                 <Link
                   className={
                     "text-xs uppercase py-3 font-bold block " +
-                    (window.location.href.indexOf("/admin/settings") !== -1
-                      ? "text-lightBlue-500 hover:text-pink-400"
+                    (window.location.href.indexOf("/admin/enquiries") !== -1
+                      ? "text-pink-400 hover:text-pink-400"
                       : "text-blueGray-700 hover:text-blueGray-500")
                   }
-                  to="/admin"
+                  to="/enquiries"
                 >
                   <i
                     className={
                       "fas fa-question mr-2 text-sm " +
-                      (window.location.href.indexOf("/admin/settings") !== -1
+                      (window.location.href.indexOf("/admin/enquiries") !== -1
                         ? "opacity-75"
                         : "text-blueGray-300")
                     }
@@ -150,16 +150,16 @@ export default function Sidebar () {
                 <Link
                   className={
                     "text-xs uppercase py-3 font-bold block " +
-                    (window.location.href.indexOf("/admin/settings") !== -1
-                      ? "text-lightBlue-500 hover:text-pink-400"
+                    (window.location.href.indexOf("/admin/testimonials") !== -1
+                      ? "text-pink-400 hover:text-pink-400"
                       : "text-blueGray-700 hover:text-blueGray-500")
                   }
-                  to="/admin"
+                  to="/testimonials"
                 >
                   <i
                     className={
                       "fas fa-table mr-2 text-sm " +
-                      (window.location.href.indexOf("/admin/settings") !== -1
+                      (window.location.href.indexOf("/admin/testimonials") !== -1
                         ? "opacity-75"
                         : "text-blueGray-300")
                     }
@@ -171,16 +171,16 @@ export default function Sidebar () {
                 <Link
                   className={
                     "text-xs uppercase py-3 font-bold block " +
-                    (window.location.href.indexOf("/admin/settings") !== -1
-                      ? "text-lightBlue-500 hover:text-pink-400"
+                    (window.location.href.indexOf("/admin/events") !== -1
+                      ? "text-pink-400 hover:text-pink-400"
                       : "text-blueGray-700 hover:text-blueGray-500")
                   }
-                  to="/admin"
+                  to="/events"
                 >
                   <i
                     className={
                       "fas fa-calendar mr-2 text-sm " +
-                      (window.location.href.indexOf("/admin/settings") !== -1
+                      (window.location.href.indexOf("/admin/events") !== -1
                         ? "opacity-75"
                         : "text-blueGray-300")
                     }
@@ -192,16 +192,16 @@ export default function Sidebar () {
                 <Link
                   className={
                     "text-xs uppercase py-3 font-bold block " +
-                    (window.location.href.indexOf("/admin/settings") !== -1
-                      ? "text-lightBlue-500 hover:text-pink-400"
+                    (window.location.href.indexOf("/admin/programs") !== -1
+                      ? "text-pink-400 hover:text-pink-400"
                       : "text-blueGray-700 hover:text-blueGray-500")
                   }
-                  to="/admin"
+                  to="/programs"
                 >
                   <i
                     className={
                       "fas fa-calendar-week mr-2 text-sm " +
-                      (window.location.href.indexOf("/admin/settings") !== -1
+                      (window.location.href.indexOf("/admin/programs") !== -1
                         ? "opacity-75"
                         : "text-blueGray-300")
                     }
@@ -213,16 +213,16 @@ export default function Sidebar () {
                 <Link
                   className={
                     "text-xs uppercase py-3 font-bold block " +
-                    (window.location.href.indexOf("/admin/settings") !== -1
-                      ? "text-lightBlue-500 hover:text-pink-400"
+                    (window.location.href.indexOf("/admin/chapters") !== -1
+                      ? "text-pink-400 hover:text-pink-400"
                       : "text-blueGray-700 hover:text-blueGray-500")
                   }
-                  to="/admin"
+                  to="/chapters"
                 >
                   <i
                     className={
                       "fas fa-layer-group mr-2 text-sm " +
-                      (window.location.href.indexOf("/admin/settings") !== -1
+                      (window.location.href.indexOf("/admin/chapters") !== -1
                         ? "opacity-75"
                         : "text-blueGray-300")
                     }
@@ -234,16 +234,16 @@ export default function Sidebar () {
                 <Link
                   className={
                     "text-xs uppercase py-3 font-bold block " +
-                    (window.location.href.indexOf("/admin/settings") !== -1
-                      ? "text-lightBlue-500 hover:text-pink-400"
+                    (window.location.href.indexOf("/admin/sponsors") !== -1
+                      ? "text-pink-400 hover:text-pink-400"
                       : "text-blueGray-700 hover:text-blueGray-500")
                   }
-                  to="/admin"
+                  to="/sponsors"
                 >
                   <i
                     className={
                       "fas fa-heart mr-2 text-sm " +
-                      (window.location.href.indexOf("/admin/settings") !== -1
+                      (window.location.href.indexOf("/admin/sponsors") !== -1
                         ? "opacity-75"
                         : "text-blueGray-300")
                     }
@@ -255,16 +255,16 @@ export default function Sidebar () {
                 <Link
                   className={
                     "text-xs uppercase py-3 font-bold block " +
-                    (window.location.href.indexOf("/admin/settings") !== -1
-                      ? "text-lightBlue-500 hover:text-pink-400"
+                    (window.location.href.indexOf("/admin/jobs") !== -1
+                      ? "text-pink-400 hover:text-pink-400"
                       : "text-blueGray-700 hover:text-blueGray-500")
                   }
-                  to="/admin"
+                  to="/jobs"
                 >
                   <i
                     className={
                       "fas fa-building mr-2 text-sm " +
-                      (window.location.href.indexOf("/admin/settings") !== -1
+                      (window.location.href.indexOf("/admin/jobs") !== -1
                         ? "opacity-75"
                         : "text-blueGray-300")
                     }
@@ -277,7 +277,7 @@ export default function Sidebar () {
                   className={
                     "text-xs uppercase py-3 font-bold block " +
                     (window.location.href.indexOf("/admin/settings") !== -1
-                      ? "text-lightBlue-500 hover:text-pink-400"
+                      ? "text-pink-400 hover:text-pink-400"
                       : "text-blueGray-700 hover:text-blueGray-500")
                   }
                   to="/admin/settings"
@@ -299,7 +299,7 @@ export default function Sidebar () {
                   className={
                     "text-xs uppercase py-3 font-bold block " +
                     (window.location.href.indexOf("/admin/tables") !== -1
-                      ? "text-lightBlue-500 hover:text-pink-400"
+                      ? "text-pink-400 hover:text-pink-400"
                       : "text-blueGray-700 hover:text-blueGray-500")
                   }
                   to="/admin/tables"
