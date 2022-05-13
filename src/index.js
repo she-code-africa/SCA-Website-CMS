@@ -1,9 +1,9 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import { BrowserRouter, Route, Switch, Redirect } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 
 import "@fortawesome/fontawesome-free/css/all.min.css";
-import "assets/styles/tailwind.css";
+import "assets/styles/tailwind.css"
 import "assets/styles/index.css"
 
 // layouts
@@ -19,17 +19,18 @@ import Profile from "views/Profile.js";
 
 ReactDOM.render(
   <BrowserRouter>
-    <Switch>
+    <Routes>
       {/* add routes with layouts */}
-      <Route path="/admin" component={Admin} />
-      <Route path="/" component={Auth} />
+      <Route path="/admin" element={Admin} />
+      <Route path="/" element={Auth} />
       {/* add routes without layouts */}
-      <Route path="/landing" exact component={Landing} />
-      <Route path="/profile" exact component={Profile} />
-      {/* <Route path="/" exact component={Admin} /> */}
+      <Route path="/landing" element={Landing} />
+      <Route path="/profile" element={Profile} />
+      <Route path="*" element={Profile} />
+      {/* <Route path="/" element={Admin} /> */}
       {/* add redirect for first page */}
-      <Redirect from="*" to="/" />
-    </Switch>
+      <Route from="*" element={<Navigate replace to="/" />} />
+    </Routes>
   </BrowserRouter>,
   document.getElementById("root")
 );

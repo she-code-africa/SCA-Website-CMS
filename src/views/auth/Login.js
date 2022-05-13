@@ -1,9 +1,9 @@
 import React from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 const logo = require("../../assets/img/she-code-africa-logo.png").default;
 
 export default function Login () {
-  const history = useHistory();
+  const navigate = useNavigate();
   return (
     <>
       <div className="container mx-auto px-4 h-full">
@@ -60,7 +60,7 @@ export default function Login () {
                   <div className="text-center mt-6">
                     <button
                       className="bg-blueGray-800 text-white active:bg-blueGray-600 text-sm font-bold uppercase px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 w-full ease-linear transition-all duration-150"
-                      type="button" onClick={() => history.push("/admin")}
+                      type="button" onClick={() => navigate("/admin")}
                     >
                       Sign In
                     </button>

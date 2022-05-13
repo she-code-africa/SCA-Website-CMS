@@ -1,6 +1,8 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 // components
+import { paths } from 'utils'
 
 const TeamList = () => {
   return (
@@ -10,10 +12,11 @@ const TeamList = () => {
           <div className={"relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded bg-white"}>
             <div className="rounded-t mb-0 px-4 py-3 border-0">
               <div className="flex flex-wrap items-center">
-                <div className="relative w-full px-4 max-w-full flex-grow flex-1">
+                <div className="relative w-full px-4 max-w-full flex justify-between flex-grow flex-1">
                   <h3 className={ "font-semibold text-lg  text-blueGray-700"}>
                     SCA Core Team
                   </h3>
+                  <Link to={paths.addMember} className="bg-pink-500 py-2 px-4 rounded text-white text-sm">Add Member</Link>
                 </div>
               </div>
             </div>

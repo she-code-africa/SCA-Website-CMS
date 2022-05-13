@@ -1,5 +1,5 @@
 import React from "react";
-import { Switch, Route, Redirect } from "react-router-dom";
+import { Routes as Switch, Route, Navigate } from "react-router-dom";
 
 import AdminNavbar from "components/Navbars/AdminNavbar.js";
 import Sidebar from "components/Sidebar/Sidebar.js";
@@ -26,16 +26,16 @@ export default function Admin () {
         <HeaderStats />
         <div className="px-4 md:px-10 mx-auto w-full -m-24">
           <Switch>
-            <Route path={paths.dashboard} exact component={Dashboard} />
-            <Route path={paths.settings} exact component={Settings} />
-            <Route path={paths.allTeam} exact component={TeamList} />
-            <Route path={paths.addMember} exact component={AddTeamMember} />
-            <Route path={paths.editMember} exact component={EditTeamMember} />
+            <Route path={paths.dashboard} element={Dashboard} />
+            <Route path={paths.settings} element={Settings} />
+            <Route path={paths.allTeam} element={TeamList} />
+            <Route path={paths.addMember} element={AddTeamMember} />
+            <Route path={paths.editMember} element={EditTeamMember} />
 
-            <Route path={paths.listTeamCategory} exact component={CategoryList} />
-            <Route path={paths.addTeamCategory} exact component={AddTeamCategory} />
-            <Route path={paths.editTeamCategory} exact component={EditTeamCategory} />
-            <Redirect from="/admin" to="/admin/dashboard" />
+            <Route path={paths.listTeamCategory} element={CategoryList} />
+            <Route path={paths.addTeamCategory} element={AddTeamCategory} />
+            <Route path={paths.editTeamCategory} element={EditTeamCategory} />
+            <Route path="/admin" element={<Navigate replace to="/admin/dashboard" />} />
           </Switch>
           <FooterAdmin />
         </div>
