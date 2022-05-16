@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 const logo = require("../../assets/img/she-code-africa-logo.png").default;
 
 export default function Login () {
