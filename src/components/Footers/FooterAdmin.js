@@ -5,12 +5,12 @@ export default function FooterAdmin () {
     <>
       <footer className="block py-4">
         <div className="container mx-auto px-4">
-          <hr className="mb-4 border-b-1 border-blueGray-200" />
-          <div className="text-sm text-blueGray-500 font-semibold py-1 text-center ">
+          <hr className="mb-4 border-b-1 border-slate-200" />
+          <div className="text-sm text-slate-500 font-semibold py-1 text-center ">
             Copyright © {new Date().getFullYear()}{" "}
             <a
               href="https://www.creative-tim.com?ref=nr-footer-admin"
-              className="text-blueGray-500 hover:text-blueGray-700 text-sm font-semibold py-1"
+              className="text-slate-500 hover:text-slate-700 text-sm font-semibold py-1"
             >
               SheCodeAfrica
             </a>

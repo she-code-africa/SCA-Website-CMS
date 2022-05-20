@@ -4,7 +4,6 @@ import React from "react";
 
 
 import CardPageActivity from "components/Cards/CardPageActivity.js";
-import CardSocialTraffic from "components/Cards/CardSocialTraffic.js";
 
 export default function Dashboard () {
   return (

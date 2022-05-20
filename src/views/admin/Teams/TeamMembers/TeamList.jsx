@@ -1,6 +1,12 @@
 import React from "react";
+import { Link } from "react-router-dom"
+
 
 // components
+
+
+// utils
+import { paths } from "utils"
 
 const TeamList = () => {
   return (
@@ -10,10 +16,11 @@ const TeamList = () => {
           <div className={"relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded bg-white"}>
             <div className="rounded-t mb-0 px-4 py-3 border-0">
               <div className="flex flex-wrap items-center">
-                <div className="relative w-full px-4 max-w-full flex-grow flex-1">
-                  <h3 className={ "font-semibold text-lg  text-blueGray-700"}>
+                <div className="relative w-full px-4 max-w-full flex justify-between flex-grow flex-1">
+                  <h3 className={"font-semibold text-lg  text-slate-700"}>
                     SCA Core Team
                   </h3>
+                  <Link to={paths.addMember} className="bg-pink-500 py-2 px-4 rounded text-white text-sm">Add Member</Link>
                 </div>
               </div>
             </div>
@@ -24,14 +31,14 @@ const TeamList = () => {
                   <tr>
                     <th
                       className={
-                        "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left  bg-blueGray-50 text-blueGray-500 border-blueGray-100"
+                        "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left  bg-slate-50 text-slate-500 border-slate-100"
                       }
                     >
                       Name
                     </th>
                     <th
                       className={
-                        "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left  bg-blueGray-50 text-blueGray-500 border-blueGray-100"
+                        "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left  bg-slate-50 text-slate-500 border-slate-100"
 
                       }
                     >
@@ -39,7 +46,7 @@ const TeamList = () => {
                     </th>
                     <th
                       className={
-                        "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left   bg-blueGray-50 text-blueGray-500 border-blueGray-100"
+                        "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left   bg-slate-50 text-slate-500 border-slate-100"
 
                       }
                     >
@@ -49,7 +56,7 @@ const TeamList = () => {
 
                     <th
                       className={
-                        "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left  bg-blueGray-50 text-blueGray-500 border-blueGray-100"
+                        "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left  bg-slate-50 text-slate-500 border-slate-100"
 
                       }
                     ></th>
@@ -65,7 +72,7 @@ const TeamList = () => {
                       ></img>{" "}
                       <span
                         className={
-                          "ml-3 font-bold  text-blueGray-600"
+                          "ml-3 font-bold  text-slate-600"
                         }
                       >
                         Adeola Adekoyejo
@@ -92,7 +99,7 @@ const TeamList = () => {
                       ></img>{" "}
                       <span
                         className={
-                          "ml-3 font-bold  text-blueGray-600"
+                          "ml-3 font-bold  text-slate-600"
                         }
                       >
                         Adeola Adekoyejo
@@ -119,7 +126,7 @@ const TeamList = () => {
                       ></img>{" "}
                       <span
                         className={
-                          "ml-3 font-bold  text-blueGray-600"
+                          "ml-3 font-bold  text-slate-600"
                         }
                       >
                         Adeola Adekoyejo
