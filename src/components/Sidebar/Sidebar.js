@@ -5,8 +5,7 @@ import NotificationDropdown from "components/Dropdowns/NotificationDropdown.js";
 import UserDropdown from "components/Dropdowns/UserDropdown.js";
 const logo = require("../../assets/img/she-code-africa-logo.png").default;
 
-
-export default function Sidebar () {
+export default function Sidebar() {
   const [collapseShow, setCollapseShow] = React.useState("hidden");
   return (
     <>
@@ -159,7 +158,8 @@ export default function Sidebar () {
                   <i
                     className={
                       "fas fa-table mr-2 text-sm " +
-                      (window.location.href.indexOf("/admin/testimonials") !== -1
+                      (window.location.href.indexOf("/admin/testimonials") !==
+                      -1
                         ? "opacity-75"
                         : "text-slate-300")
                     }
@@ -259,7 +259,7 @@ export default function Sidebar () {
                       ? "text-pink-400 hover:text-pink-400"
                       : "text-slate-700 hover:text-slate-500")
                   }
-                  to="/jobs"
+                  to="/admin/jobs"
                 >
                   <i
                     className={
@@ -325,7 +325,7 @@ export default function Sidebar () {
                 </Link>
               </li>
             </ul>
-            <li className="items-center">
+            {/* <li className="items-center">
               <Link
                 className="text-slate-700 hover:text-slate-500 text-xs uppercase py-3 font-bold block"
                 to="/auth/login"
@@ -343,9 +343,7 @@ export default function Sidebar () {
                 <i className="fas fa-clipboard-list text-slate-300 mr-2 text-sm"></i>{" "}
                 Register
               </Link>
-            </li>
-
-
+            </li> */}
 
             {/* Divider */}
             <hr className="my-4 md:min-w-full" />

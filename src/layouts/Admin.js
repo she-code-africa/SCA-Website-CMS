@@ -10,17 +10,26 @@ import FooterAdmin from "components/Footers/FooterAdmin.js";
 
 import Dashboard from "views/admin/Dashboard.js";
 import Settings from "views/admin/Settings.js";
-import { TeamList, AddTeamMember, EditTeamMember } from "views/admin/Teams/TeamMembers";
-import { CategoryList, AddTeamCategory, EditTeamCategory } from "views/admin/Teams/TeamsCategory"
+import {
+  TeamList,
+  AddTeamMember,
+  EditTeamMember,
+} from "views/admin/Teams/TeamMembers";
+import {
+  CategoryList,
+  AddTeamCategory,
+  EditTeamCategory,
+} from "views/admin/Teams/TeamsCategory";
+import Jobs from "views/admin/Jobs/Jobs";
+import AddJob from "views/admin/Jobs/AddJob";
 
-import { paths } from 'utils'
+import { paths } from "utils";
 
-
-export default function Admin () {
+export default function Admin() {
   return (
     <>
       <Sidebar />
-      <div className="relative md:ml-64 bg-slate-100">
+      <div className="relative md:ml-64 bg-slate-100 min-h-screen flex flex-col">
         <AdminNavbar />
         {/* Header */}
         <HeaderStats />
@@ -32,9 +41,25 @@ export default function Admin () {
             <Route path={paths.addMember} exact component={AddTeamMember} />
             <Route path={paths.editMember} exact component={EditTeamMember} />
 
-            <Route path={paths.listTeamCategory} exact component={CategoryList} />
-            <Route path={paths.addTeamCategory} exact component={AddTeamCategory} />
-            <Route path={paths.editTeamCategory} exact component={EditTeamCategory} />
+            <Route
+              path={paths.listTeamCategory}
+              exact
+              component={CategoryList}
+            />
+            <Route
+              path={paths.addTeamCategory}
+              exact
+              component={AddTeamCategory}
+            />
+            <Route
+              path={paths.editTeamCategory}
+              exact
+              component={EditTeamCategory}
+            />
+
+            <Route path={paths.jobs} exact component={Jobs} />
+            <Route path={paths.addNewJob} ex component={AddJob} />
+
             <Redirect from="/admin" to="/admin/dashboard" />
           </Switch>
           <FooterAdmin />
