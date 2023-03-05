@@ -22,6 +22,7 @@ import {
 } from "views/admin/Teams/TeamsCategory";
 import Jobs from "views/admin/Jobs/Jobs";
 import AddJob from "views/admin/Jobs/AddJob";
+import JobTypeCategories from "views/admin/Jobs/JobTypeCategories";
 
 import { paths } from "utils";
 
@@ -58,11 +59,16 @@ export default function Admin() {
             />
 
             <Route path={paths.jobs} exact component={Jobs} />
-            <Route path={paths.addNewJob} ex component={AddJob} />
+            <Route path={paths.addNewJob} exact component={AddJob} />
+            <Route
+              path={paths.jobTypeCategories}
+              exact
+              component={JobTypeCategories}
+            />
 
             <Redirect from="/admin" to="/admin/dashboard" />
           </Switch>
-          <FooterAdmin />
+          {/* <FooterAdmin /> */}
         </div>
       </div>
     </>
