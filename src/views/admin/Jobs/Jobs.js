@@ -8,12 +8,14 @@ const tableData = [
     name: "John Doe",
     email: "john.doe@example.com",
     phone: "123-456-7890",
+    action: "delete",
   },
   {
     id: 2,
     name: "Jane Smith",
     email: "jane.smith@example.com",
     phone: "555-555-5555",
+    action: "edit",
   },
   // Add more objects for more rows
 ];
