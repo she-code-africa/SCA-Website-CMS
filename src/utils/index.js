@@ -9,4 +9,5 @@ export const paths = {
   editTeamCategory: "/admin/team/category/edit/:id",
   jobs: "/admin/jobs",
   addNewJob: "/admin/jobs/add",
+  editJob: "/admin/jobs/edit",
 };
