@@ -20,6 +20,16 @@ import {
   AddTeamCategory,
   EditTeamCategory,
 } from "views/admin/Teams/TeamsCategory";
+import {
+  VolunteerList,
+  AddVolunteer,
+  EditVolunteer,
+} from "views/admin/Volunteers/VolunteerMembers";
+import {
+  VolunteerCategoryList,
+  AddVolunteerCategory,
+  EditVolunteerCategory,
+} from "views/admin/Volunteers/VolunteerCategory";
 import Jobs from "views/admin/Jobs/Jobs";
 import AddJob from "views/admin/Jobs/AddJob";
 import EditJob from "views/admin/Jobs/EditJob";
@@ -56,6 +66,27 @@ export default function Admin() {
               path={paths.editTeamCategory}
               exact
               component={EditTeamCategory}
+            />
+
+
+            <Route path={paths.allVolunteers} exact component={VolunteerList} />
+            <Route path={paths.addVolunteer} exact component={AddVolunteer} />
+            <Route path={paths.editVolunteer} exact component={EditVolunteer} />
+
+            <Route
+              path={paths.listVolunteerCategory}
+              exact
+              component={VolunteerCategoryList}
+            />
+            <Route
+              path={paths.addVolunteerCategory}
+              exact
+              component={AddVolunteerCategory}
+            />
+            <Route
+              path={paths.editVolunteerCategory}
+              exact
+              component={EditVolunteerCategory}
             />
 
             <Route path={paths.jobs} exact component={Jobs} />

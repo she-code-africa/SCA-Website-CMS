@@ -128,6 +128,27 @@ export default function Sidebar() {
                 <Link
                   className={
                     "text-xs uppercase py-3 font-bold block " +
+                    (window.location.href.indexOf("/admin/volunteer") !== -1
+                      ? "text-pink-400 hover:text-pink-400"
+                      : "text-slate-700 hover:text-slate-500")
+                  }
+                  to="/admin/volunteer"
+                >
+                  <i
+                    className={
+                      "fas fa-handshake mr-2 text-sm " +
+                      (window.location.href.indexOf("/admin/volunteer") !== -1
+                        ? "opacity-75"
+                        : "text-slate-300")
+                    }
+                  ></i>{" "}
+                  Volunteers
+                </Link>
+              </li>
+              <li className="items-center">
+                <Link
+                  className={
+                    "text-xs uppercase py-3 font-bold block " +
                     (window.location.href.indexOf("/admin/enquiries") !== -1
                       ? "text-pink-400 hover:text-pink-400"
                       : "text-slate-700 hover:text-slate-500")
