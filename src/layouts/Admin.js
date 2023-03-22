@@ -11,24 +11,24 @@ import FooterAdmin from "components/Footers/FooterAdmin.js";
 import Dashboard from "views/admin/Dashboard.js";
 import Settings from "views/admin/Settings.js";
 import {
-  TeamList,
-  AddTeamMember,
-  EditTeamMember,
+    TeamList,
+    AddTeamMember,
+    EditTeamMember,
 } from "views/admin/Teams/TeamMembers";
 import {
-  CategoryList,
-  AddTeamCategory,
-  EditTeamCategory,
+    CategoryList,
+    AddTeamCategory,
+    EditTeamCategory,
 } from "views/admin/Teams/TeamsCategory";
 import {
-  VolunteerList,
-  AddVolunteer,
-  EditVolunteer,
+    VolunteerList,
+    AddVolunteer,
+    EditVolunteer,
 } from "views/admin/Volunteers/VolunteerMembers";
 import {
-  VolunteerCategoryList,
-  AddVolunteerCategory,
-  EditVolunteerCategory,
+    VolunteerCategoryList,
+    AddVolunteerCategory,
+    EditVolunteerCategory,
 } from "views/admin/Volunteers/VolunteerCategory";
 import Jobs from "views/admin/Jobs/Jobs";
 import AddJob from "views/admin/Jobs/AddJob";
@@ -37,67 +37,73 @@ import EditJob from "views/admin/Jobs/EditJob";
 import { paths } from "utils";
 
 export default function Admin() {
-  return (
-    <>
-      <Sidebar />
-      <div className="relative md:ml-64 bg-slate-100 min-h-screen flex flex-col">
-        <AdminNavbar />
-        {/* Header */}
-        <HeaderStats />
-        <div className="px-4 md:px-10 mx-auto w-full -m-24">
-          <Switch>
-            <Route path={paths.dashboard} exact component={Dashboard} />
-            <Route path={paths.settings} exact component={Settings} />
-            <Route path={paths.allTeam} exact component={TeamList} />
-            <Route path={paths.addMember} exact component={AddTeamMember} />
-            <Route path={paths.editMember} exact component={EditTeamMember} />
+    return ( <>
+     <Sidebar />
+     <div className = "relative md:ml-64 bg-slate-100 min-h-screen flex flex-col">
+     <AdminNavbar /> { /* Header */ }<
+        HeaderStats />
+     <div className = "px-4 md:px-10 mx-auto w-full -m-24">
+     <Switch>
+     <Route path = { paths.dashboard }
+        exact component = { Dashboard } />
+      <Route path = { paths.settings }
+        exact component = { Settings } />
+      <Route path = { paths.allTeam }
+        exact component = { TeamList }
+        />
+      <Route path = { paths.addMember }
+        exact component = { AddTeamMember }
+        />
+      <Route path = { paths.editMember }
+        exact component = { EditTeamMember }
+        />
 
-            <Route
-              path={paths.listTeamCategory}
-              exact
-              component={CategoryList}
-            />
-            <Route
-              path={paths.addTeamCategory}
-              exact
-              component={AddTeamCategory}
-            />
-            <Route
-              path={paths.editTeamCategory}
-              exact
-              component={EditTeamCategory}
-            />
+     <Route path = { paths.listTeamCategory }
+        exact component = { CategoryList }
+        />
+      <Route path = { paths.addTeamCategory }
+        exact component = { AddTeamCategory }
+        />
+      < Route path = { paths.editTeamCategory }
+        exact component = { EditTeamCategory }
+        />
 
 
-            <Route path={paths.allVolunteers} exact component={VolunteerList} />
-            <Route path={paths.addVolunteer} exact component={AddVolunteer} />
-            <Route path={paths.editVolunteer} exact component={EditVolunteer} />
+     <Route path = { paths.allVolunteers }
+        exact component = { VolunteerList }
+        />
+      < Route path = { paths.addVolunteer }
+        exact component = { AddVolunteer }
+        />
+      <Route path = { paths.editVolunteer }
+        exact component = { EditVolunteer }
+        />
 
-            <Route
-              path={paths.listVolunteerCategory}
-              exact
-              component={VolunteerCategoryList}
-            />
-            <Route
-              path={paths.addVolunteerCategory}
-              exact
-              component={AddVolunteerCategory}
-            />
-            <Route
-              path={paths.editVolunteerCategory}
-              exact
-              component={EditVolunteerCategory}
-            />
+     <Route path = { paths.listVolunteerCategory }
+        exact component = { VolunteerCategoryList }
+        />
+      <Route path = { paths.addVolunteerCategory }
+        exact component = { AddVolunteerCategory }
+        />
+      <Route path = { paths.editVolunteerCategory }
+        exact component = { EditVolunteerCategory }
+        />
 
-            <Route path={paths.jobs} exact component={Jobs} />
-            <Route path={paths.addNewJob} exact component={AddJob} />
-            <Route path={`${paths.editJob}/:id`} exact component={EditJob} />
+     <Route path = { paths.jobs }
+        exact component = { Jobs }
+        />
+      <Route path = { paths.addNewJob }
+        exact component = { AddJob }
+        />
+      <Route path = { `${paths.editJob}/:id` }
+        exact component = { EditJob }
+        />
 
-            <Redirect from="/admin" to="/admin/dashboard" />
-          </Switch>
-          {/* <FooterAdmin /> */}
-        </div>
-      </div>
-    </>
-  );
+     <Redirect from = "/admin"
+        to = "/admin/dashboard" />
+      </Switch>
+     <FooterAdmin />
+      </div></div>
+      </>
+    );
 }
