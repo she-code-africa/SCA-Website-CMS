@@ -9,7 +9,8 @@ export default function CardPageVisits() {
         <div className = "flex flex-wrap items-center" >
         <div className = "relative w-full px-4 max-w-full flex-grow flex-1" >
         <h3 className = "font-semibold text-base text-slate-700" >
-        Recent Activity Log </h3> </ div > </div> </ div > <div className = "block w-full overflow-x-auto" > {/* Projects table */ } <table className = "items-center w-full bg-transparent border-collapse" >
+        Recent Activity Log </h3> </ div > </div> </ div > <div className = "block w-full overflow-x-auto" > {/* Projects table */ }
+         <table className = "items-center w-full bg-transparent text-sm border-collapse" >
         <thead >
         <tr >
         <th className = "px-6 bg-slate-50 text-slate-500 align-middle border border-solid border-slate-100 py-3   uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left" >

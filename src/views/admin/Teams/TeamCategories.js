@@ -40,11 +40,11 @@ const TeamCategory = () => {
                 </div>
               </div>
               <ul
-                className="bg-slate-50 p-4 overflow-y-scroll block"
+                className="bg-slate-50 p-4 overflow-y-scroll block "
                 style={{ maxHeight: "180px" }}
               >
                 {showCategoryInput && (
-                  <li className="flex flex-col">
+                  <li className="flex flex-col text-sm">
                     <input
                       type="text"
                       value={newCategory}
@@ -67,7 +67,7 @@ const TeamCategory = () => {
                   </li>
                 )}
                 {Categories.map((Category, index) => (
-                  <li key={index}>{Category}</li>
+                  <li className=" text-sm font-bold" key={index}>{Category}</li>
                 ))}
               </ul>
             </div>
