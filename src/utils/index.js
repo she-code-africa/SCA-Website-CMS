@@ -10,4 +10,5 @@ export const paths = {
   jobs: "/admin/jobs",
   addNewJob: "/admin/jobs/add",
   editJob: "/admin/jobs/edit",
+  viewJob: "/admin/jobs/view",
 };

@@ -25,6 +25,7 @@ import AddJob from "views/admin/Jobs/AddJob";
 import EditJob from "views/admin/Jobs/EditJob";
 
 import { paths } from "utils";
+import JobDetails from "views/admin/Jobs/JobDetails";
 
 export default function Admin() {
   return (
@@ -61,6 +62,7 @@ export default function Admin() {
             <Route path={paths.jobs} exact component={Jobs} />
             <Route path={paths.addNewJob} exact component={AddJob} />
             <Route path={`${paths.editJob}/:id`} exact component={EditJob} />
+            <Route path={`${paths.viewJob}/:id`} exact component={JobDetails} />
 
             <Redirect from="/admin" to="/admin/dashboard" />
           </Switch>

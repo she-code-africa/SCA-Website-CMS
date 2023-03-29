@@ -6,7 +6,7 @@ import { MdOutlineEdit } from "react-icons/md";
 // utils
 import { paths } from "utils";
 
-const Table = ({ tableData, tableHead, addNew, showActions, edit }) => {
+const Table = ({ tableData, tableHead, addNew, showActions, edit, view }) => {
   const getTableHeaders = () => {
     if (tableData.length === 0) return null;
 
@@ -43,46 +43,51 @@ const Table = ({ tableData, tableHead, addNew, showActions, edit }) => {
   const getTableRows = () => {
     if (tableData.length === 0) return null;
 
-    return tableData.map((data) => {
-      return (
-        <tr key={data.id}>
-          {Object.values(data).map((value) => {
-            return (
+    return tableData
+      .map((data) => {
+        return (
+          <tr key={data.id}>
+            {Object.values(data).map((value) => {
+              return (
+                <td
+                  className={
+                    "border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4"
+                  }
+                  key={value}
+                >
+                  {value}
+                </td>
+              );
+            })}
+
+            {/* Add the new column for actions */}
+            {showActions && (
               <td
                 className={
-                  "border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4"
+                  "border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 flex items-center"
                 }
-                key={value}
               >
-                {value}
+                <Link
+                  to={`${paths[edit]}/${data.id}`}
+                  className="text-black rounded px-2 py-1 mr-2 hover:cursor-pointer"
+                >
+                  <MdOutlineEdit size="1rem" />
+                </Link>
+                <button
+                  className="bg-transparent text-red-500 rounded px-2 py-1"
+                  // onClick={() => handleDelete(data.id)}
+                >
+                  <AiOutlineDelete size="1rem" />
+                </button>
               </td>
-            );
-          })}
-
-          {/* Add the new column for actions */}
-          {showActions && (
-            <td
-              className={
-                "border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 flex items-center"
-              }
-            >
-              <Link
-                to={`${paths[edit]}/${data.id}`}
-                className="text-black rounded px-2 py-1 mr-2 hover:cursor-pointer"
-              >
-                <MdOutlineEdit size="1rem" />
-              </Link>
-              <button
-                className="bg-transparent text-red-500 rounded px-2 py-1"
-                // onClick={() => handleDelete(data.id)}
-              >
-                <AiOutlineDelete size="1rem" />
-              </button>
-            </td>
-          )}
-        </tr>
-      );
-    });
+            )}
+          </tr>
+        );
+      })
+      .map((row, index) => {
+        // Wrap each row in a Link component
+        return <Link to={`${paths[view]}/${tableData[index].id}`}>{row}</Link>;
+      });
   };
   return (
     <>
