@@ -28,6 +28,13 @@ import EditJob from "views/admin/Jobs/EditJob";
 import { PartnersList, AddPartner, EditPartner } from "views/admin/Partners";
 import { paths } from "utils";
 import JobDetails from "views/admin/Jobs/JobDetails";
+import Companies from "views/admin/Companies";
+import EditCompany from "views/admin/Companies/EditCompany";
+import CompanyDetails from "views/admin/Companies/CompanyDetails";
+import Events from "views/admin/Events";
+import EditEvent from "views/admin/Events/EditEvent";
+import EventDetails from "views/admin/Events/EventDetails";
+import AddEvent from "views/admin/Events/AddEvent";
 
 export default function Admin() {
 	return (
@@ -72,6 +79,32 @@ export default function Admin() {
 						<Route path={paths.addNewJob} exact component={AddJob} />
 						<Route path={`${paths.editJob}/:id`} exact component={EditJob} />
 						<Route path={`${paths.viewJob}/:id`} exact component={JobDetails} />
+
+						<Route path={paths.companies} exact component={Companies} />
+						<Route
+							path={`${paths.editCompany}/:id`}
+							exact
+							component={EditCompany}
+						/>
+						<Route
+							path={`${paths.viewCompany}/:id`}
+							exact
+							component={CompanyDetails}
+						/>
+
+						<Route path={paths.events} exact component={Events} />
+						<Route path={paths.addNewEvent} exact component={AddEvent} />
+						<Route
+							path={`${paths.editEvent}/:id`}
+							exact
+							component={EditEvent}
+						/>
+						<Route
+							path={`${paths.viewEvent}/:id`}
+							exact
+							component={EventDetails}
+						/>
+
 						<Route path={paths.partners} exact component={PartnersList} />
 						<Route path={paths.addPartner} exact component={AddPartner} />
 						<Route
