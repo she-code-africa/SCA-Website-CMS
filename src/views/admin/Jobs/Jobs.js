@@ -60,6 +60,7 @@ const Jobs = () => {
             addNew="addNewJob"
             showActions="true"
             edit="editJob"
+            view="viewJob"
           />
         </div>
         <div className="w-full lg:w-3/12 px-4">
