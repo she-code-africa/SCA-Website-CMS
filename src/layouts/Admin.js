@@ -10,6 +10,7 @@ import FooterAdmin from "components/Footers/FooterAdmin.js";
 
 import Dashboard from "views/admin/Dashboard.js";
 import Settings from "views/admin/Settings.js";
+
 import {
     TeamList,
     AddTeamMember,
@@ -32,8 +33,9 @@ import {
 } from "views/admin/Volunteers/VolunteerCategory";
 import Jobs from "views/admin/Jobs/Jobs";
 import AddJob from "views/admin/Jobs/AddJob";
-import EditJob from "views/admin/Jobs/EditJob";
-
+import EditJob from "views/admin/Jobs/EditJob"; 
+import {PartnersList, AddPartner,
+  EditPartner} from "views/admin/Partners";
 import { paths } from "utils";
 
 export default function Admin() {
@@ -98,9 +100,18 @@ export default function Admin() {
       <Route path = { `${paths.editJob}/:id` }
         exact component = { EditJob }
         />
+        <Route path = { paths.partners }
+        exact component = { PartnersList }
+        />
+      < Route path = { paths.addPartner }
+        exact component = { AddPartner }
+        />
+      <Route path = { `${paths.editPartner}/:id` }
+        exact component = { EditPartner }
+        />
 
-     <Redirect from = "/admin"
-        to = "/admin/dashboard" />
+     {/* <Redirect from = "/admin"
+        to = "/admin/dashboard" /> */}
       </Switch>
      <FooterAdmin />
       </div></div>

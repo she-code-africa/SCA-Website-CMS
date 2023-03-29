@@ -28,7 +28,7 @@ export default function HeaderStats() {
        >
       </div><div className = "w-full lg:w-6/12 xl:w-3/12 px-4">
       <
-        CardStats statSubtitle = "TOTAL ACTIVE PROGRAMS"
+        CardStats statSubtitle = "ACTIVE PROGRAMS"
         statTitle = "924" 
         statIconName = "fas fa-users"  /
        >

@@ -1,5 +1,8 @@
 export const paths = {
   dashboard: "/admin/dashboard",
+  partners:"/admin/partners",
+  addPartner:"/admin/partners/add",
+  editPartner:"/admin/partners/edit",
   settings: "/admin/settings",
   allTeam: "/admin/team",
   addMember: "/admin/team/add",
