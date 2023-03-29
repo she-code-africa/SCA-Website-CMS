@@ -4,7 +4,7 @@ const EditTeamMember = () => {
   return (
     <>
       <div className="flex flex-wrap mt-4">
-        Edit Team Member
+        Edit Volunteer
       </div>
     </>
   );

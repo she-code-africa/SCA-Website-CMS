@@ -9,7 +9,7 @@ import { Link } from "react-router-dom"
 // utils
 import { paths } from "utils"
 
-const AddTeamMember = () => {
+const AddVolunteer = () => {
   return (
     <>
       <div className="flex flex-wrap mt-4">
@@ -17,9 +17,9 @@ const AddTeamMember = () => {
           <div className={"relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded bg-white"}>
             
             <div className="rounded-t mb-0 px-4 py-3 flex justify-between">
-              <p>Add Team Member</p>
+              <p>Add Volunteer</p>
 
-              <Link to={paths.allTeam}>
+              <Link to={paths.allVolunteers}>
                 Back
               </Link>
              
@@ -54,7 +54,7 @@ const AddTeamMember = () => {
               </div>
 
               <div className="text-center my-4 w-6/12 mx-auto">
-                <input type="submit" className="text-center bg-pink-500 py-2 px-4 rounded cursor-pointer text-white text-sm font-semibold block w-full uppercase" value="Add User" />
+                <input type="submit" className="text-center bg-pink-500 py-2 px-4 rounded cursor-pointer text-white text-sm font-semibold block w-full uppercase" value="Add Volunteer" />
               </div>
             </form>
           </div>
@@ -64,4 +64,4 @@ const AddTeamMember = () => {
   );
 }
 
-export default AddTeamMember
+export default AddVolunteer

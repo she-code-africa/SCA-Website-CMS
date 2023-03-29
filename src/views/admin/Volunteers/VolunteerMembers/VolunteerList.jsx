@@ -8,7 +8,7 @@ import { Link } from "react-router-dom"
 // utils
 import { paths } from "utils"
 
-const TeamList = () => {
+const VolunteerList = () => {
   return (
     <>
       <div className="flex flex-wrap mt-4">
@@ -18,9 +18,9 @@ const TeamList = () => {
               <div className="flex flex-wrap items-center">
                 <div className="relative w-full px-4 max-w-full flex justify-between flex-grow flex-1">
                   <h3 className={"font-semibold text-lg  text-slate-700"}>
-                    SCA Core Team
+                    SCA Volunteers
                   </h3>
-                  <Link to={paths.addMember} className="bg-pink-500 py-2 px-4 rounded text-white text-sm">Add Member</Link>
+                  <Link to={paths.addVolunteer} className="bg-pink-500 py-2 px-4 rounded text-white text-sm">Add Volunteer</Link>
                 </div>
               </div>
             </div>
@@ -155,4 +155,4 @@ const TeamList = () => {
   );
 } 
 
-export default TeamList
+export default VolunteerList
