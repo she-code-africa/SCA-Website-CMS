@@ -24,4 +24,13 @@ export const paths = {
 	addNewEvent: "/admin/events/add",
 	editEvent: "/admin/events/edit",
 	viewEvent: "/admin/events/view",
+	academy: "/admin/academy",
+	initiatives: "/admin/initiatives",
+	addNewScholarship: "/admin/initiatives/add",
+	editScholarship: "/admin/initiatives/edit",
+	viewScholarship: "/admin/initiatives/view",
+	testimonials: "/admin/testimonials",
+	addNewTestimonial: "/admin/testimonials/add",
+	editTestimonial: "/admin/testimonials/edit",
+	viewTestimonial: "/admin/testimonials/view",
 };

@@ -166,7 +166,7 @@ export default function Sidebar() {
 											? "text-pink-400 hover:text-pink-400"
 											: "text-slate-700 hover:text-slate-500")
 									}
-									to="/testimonials">
+									to="/admin/testimonials">
 									<i
 										className={
 											"fas fa-table mr-2 text-sm " +
@@ -205,15 +205,15 @@ export default function Sidebar() {
 								<Link
 									className={
 										"  uppercase py-3 font-bold block text-sm " +
-										(window.location.href.indexOf("/admin/programs") !== -1
+										(window.location.href.indexOf("/admin/academy") !== -1
 											? "text-pink-400 hover:text-pink-400"
 											: "text-slate-700 hover:text-slate-500")
 									}
-									to="/programs">
+									to="/admin/academy">
 									<i
 										className={
 											"fas fa-calendar-week mr-2 text-sm " +
-											(window.location.href.indexOf("/admin/programs") !== -1
+											(window.location.href.indexOf("/admin/academy") !== -1
 												? "opacity-75"
 												: "text-slate-300")
 										}>
@@ -247,15 +247,15 @@ export default function Sidebar() {
 								<Link
 									className={
 										"  uppercase py-3 font-bold block text-sm " +
-										(window.location.href.indexOf("/admin/chapters") !== -1
+										(window.location.href.indexOf("/admin/initiatives") !== -1
 											? "text-pink-400 hover:text-pink-400"
 											: "text-slate-700 hover:text-slate-500")
 									}
-									to="/chapters">
+									to="/admin/initiatives">
 									<i
 										className={
 											"fas fa-layer-group mr-2 text-sm " +
-											(window.location.href.indexOf("/admin/chapters") !== -1
+											(window.location.href.indexOf("/admin/initiatives") !== -1
 												? "opacity-75"
 												: "text-slate-300")
 										}>
