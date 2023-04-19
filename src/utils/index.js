@@ -33,4 +33,5 @@ export const paths = {
 	addNewTestimonial: "/admin/testimonials/add",
 	editTestimonial: "/admin/testimonials/edit",
 	viewTestimonial: "/admin/testimonials/view",
+	enquiries: "/admin/enquiries",
 };

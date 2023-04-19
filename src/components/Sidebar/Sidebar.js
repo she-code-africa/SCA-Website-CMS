@@ -10,7 +10,7 @@ export default function Sidebar() {
 	return (
 		<>
 			<nav className="md:left-0 md:block md:fixed md:top-0 md:bottom-0 md:overflow-y-auto md:flex-row md:flex-nowrap md:overflow-hidden shadow-xl bg-white flex flex-wrap items-center justify-between relative md:w-64 z-10 py-4 px-6">
-				<div className="md:flex-col md:items-stretch md:min-h-full md:flex-nowrap px-0 flex flex-wrap items-center justify-between w-full mx-auto">
+				<div className="md:flex-col md:items-stretch md:min-h-full md:flex-nowrap px-0 flex flex-wrap items-center justify-between w-full mx-auto ">
 					{" "}
 					{/* Toggler */}{" "}
 					<button
@@ -73,7 +73,7 @@ export default function Sidebar() {
 						</form>{" "}
 						{/* Divider */} <hr className="my-4 md:min-w-full" />{" "}
 						{/* Heading */} {/* Navigation */}{" "}
-						<ul className="md:flex-col md:min-w-full flex flex-col list-none">
+						<ul className="md:flex-col md:min-w-full flex flex-col list-none mb-4">
 							<li className="items-center">
 								<Link
 									className={
@@ -145,7 +145,7 @@ export default function Sidebar() {
 											? "text-pink-400 hover:text-pink-400"
 											: "text-slate-700 hover:text-slate-500")
 									}
-									to="/enquiries">
+									to="/admin/enquiries">
 									<i
 										className={
 											"fas fa-question mr-2 text-sm " +
@@ -350,27 +350,6 @@ export default function Sidebar() {
 							</li>{" "}
 							<li className="items-center">
 								<Link
-									className={
-										"  uppercase py-3 font-bold block text-sm " +
-										(window.location.href.indexOf("/admin/tables") !== -1
-											? "text-pink-400 hover:text-pink-400"
-											: "text-slate-700 hover:text-slate-500")
-									}
-									to="/admin/tables">
-									<i
-										className={
-											"fas fa-table mr-2 text-sm " +
-											(window.location.href.indexOf("/admin/tables") !== -1
-												? "opacity-75"
-												: "text-slate-300")
-										}>
-										{" "}
-									</i>{" "}
-									Tables{" "}
-								</Link>{" "}
-							</li>{" "}
-							<li className="items-center">
-								<Link
 									className="text-slate-700 hover:text-slate-500   uppercase py-3 font-bold block text-sm"
 									to="/profile">
 									<i className="fas fa-user-circle text-slate-400 mr-2 text-sm">
@@ -399,47 +378,6 @@ export default function Sidebar() {
                                                                 Register
                                                               </Link>
                                                             </li> */}{" "}
-						{/* Divider */} <hr className="my-4 md:min-w-full" />{" "}
-						{/* Heading */}{" "}
-						<h6 className="md:min-w-full text-slate-500   uppercase font-bold block text-sm pt-1 pb-4 no-underline">
-							Documentation{" "}
-						</h6>{" "}
-						{/* Navigation */}{" "}
-						<ul className="md:flex-col md:min-w-full flex flex-col list-none md:mb-4">
-							<li className="inline-flex">
-								<a
-									href="https://www.creative-tim.com/learning-lab/tailwind/react/colors/notus"
-									target="_blank"
-									className="text-slate-700 hover:text-slate-500 text-sm block mb-4 no-underline font-semibold">
-									<i className="fas fa-paint-brush mr-2 text-slate-300 text-base">
-										{" "}
-									</i>
-									Styles{" "}
-								</a>{" "}
-							</li>{" "}
-							<li className="inline-flex">
-								<a
-									href="https://www.creative-tim.com/learning-lab/tailwind/react/alerts/notus"
-									target="_blank"
-									className="text-slate-700 hover:text-slate-500 text-sm block mb-4 no-underline font-semibold">
-									<i className="fab fa-css3-alt mr-2 text-slate-300 text-base">
-										{" "}
-									</i>
-									CSS Components{" "}
-								</a>{" "}
-							</li>{" "}
-							<li className="inline-flex">
-								<a
-									href="https://www.creative-tim.com/learning-lab/tailwind/react/overview/notus"
-									target="_blank"
-									className="text-slate-700 hover:text-slate-500 text-sm block mb-4 no-underline font-semibold">
-									<i className="fab fa-react mr-2 text-slate-300 text-base">
-										{" "}
-									</i>
-									React{" "}
-								</a>{" "}
-							</li>{" "}
-						</ul>{" "}
 					</div>{" "}
 				</div>{" "}
 			</nav>{" "}

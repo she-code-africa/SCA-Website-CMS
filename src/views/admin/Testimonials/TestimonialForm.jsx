@@ -31,7 +31,7 @@ const TestimonialForm = ({ newTestimonial }) => {
 			<div className="flex-auto px-4 lg:px-10 py-10 pt-0">
 				<form>
 					<h6 className="text-slate-400 text-sm mt-3 mb-6 font-bold uppercase">
-						Testimonial Details
+						Testimonial
 					</h6>
 					<div className="flex flex-wrap">
 						<div className="w-full lg:w-6/12 px-4">
@@ -88,7 +88,7 @@ const TestimonialForm = ({ newTestimonial }) => {
 								<label
 									className="block uppercase text-slate-600 text-xs font-bold mb-2"
 									htmlFor="description">
-									Description
+									Testimony
 								</label>
 								<textarea
 									className="border-0 px-3 py-3 placeholder-slate-300 text-slate-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"

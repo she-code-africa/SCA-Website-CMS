@@ -44,6 +44,7 @@ import Testimonial from "views/admin/Testimonials";
 import ViewTestimonial from "views/admin/Testimonials/TestimonialDetails";
 import EditTestimonial from "views/admin/Testimonials/EditTestimonial";
 import AddTestimonial from "views/admin/Testimonials/AddTestimonial";
+import Enquiries from "views/admin/Enquiries";
 
 export default function Admin() {
 	return (
@@ -121,6 +122,8 @@ export default function Admin() {
 							exact
 							component={EditPartner}
 						/>
+
+						<Route path={paths.enquiries} exact component={Enquiries} />
 
 						<Route path={paths.academy} exact component={Academy} />
 						<Route path={paths.initiatives} exact component={Initiatives} />

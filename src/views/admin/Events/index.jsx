@@ -27,9 +27,7 @@ const tableData = [
 		link: "http://new.com",
 		createdAt: "2022-09-15T08:31:50.213Z",
 		updatedAt: "2022-09-15T08:31:50.213Z",
-		__v: 0,
 	},
-	// Add more objects for more rows
 ];
 
 const Events = () => {
