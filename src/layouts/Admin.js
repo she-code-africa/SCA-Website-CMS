@@ -35,6 +35,16 @@ import Events from "views/admin/Events";
 import EditEvent from "views/admin/Events/EditEvent";
 import EventDetails from "views/admin/Events/EventDetails";
 import AddEvent from "views/admin/Events/AddEvent";
+import Academy from "views/admin/Academy";
+import Initiatives from "views/admin/Initiatives";
+import ViewScholarship from "views/admin/Initiatives/ViewScholarship";
+import EditScholarship from "views/admin/Initiatives/EditScholarship";
+import AddScholarship from "views/admin/Initiatives/AddScholarship";
+import Testimonial from "views/admin/Testimonials";
+import ViewTestimonial from "views/admin/Testimonials/TestimonialDetails";
+import EditTestimonial from "views/admin/Testimonials/EditTestimonial";
+import AddTestimonial from "views/admin/Testimonials/AddTestimonial";
+import Enquiries from "views/admin/Enquiries";
 
 export default function Admin() {
 	return (
@@ -111,6 +121,43 @@ export default function Admin() {
 							path={`${paths.editPartner}/:id`}
 							exact
 							component={EditPartner}
+						/>
+
+						<Route path={paths.enquiries} exact component={Enquiries} />
+
+						<Route path={paths.academy} exact component={Academy} />
+						<Route path={paths.initiatives} exact component={Initiatives} />
+						<Route
+							path={paths.addNewScholarship}
+							exact
+							component={AddScholarship}
+						/>
+						<Route
+							path={`${paths.editScholarship}/:id`}
+							exact
+							component={EditScholarship}
+						/>
+						<Route
+							path={`${paths.viewScholarship}/:id`}
+							exact
+							component={ViewScholarship}
+						/>
+
+						<Route path={paths.testimonial} exact component={Testimonial} />
+						<Route
+							path={paths.addNewTestimonial}
+							exact
+							component={AddTestimonial}
+						/>
+						<Route
+							path={`${paths.editTestimonial}/:id`}
+							exact
+							component={EditTestimonial}
+						/>
+						<Route
+							path={`${paths.viewTestimonial}/:id`}
+							exact
+							component={ViewTestimonial}
 						/>
 
 						{/* <Redirect from = "/admin"
