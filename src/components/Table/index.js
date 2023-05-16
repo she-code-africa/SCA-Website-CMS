@@ -6,6 +6,7 @@ import { paths } from "utils";
 
 const Table = ({ tableData, tableHead, addNew, showActions, edit, view }) => {
 	const history = useHistory();
+	console.log(tableData);
 	const viewDetails = (id) => {
 		history.push(`${paths[view]}/${id}`);
 	};
@@ -49,14 +50,18 @@ const Table = ({ tableData, tableHead, addNew, showActions, edit, view }) => {
 					key={index}
 					className="hover:cursor-pointer hover:bg-gray-600"
 					onClick={() => viewDetails(data.id)}>
-					{Object.values(data).map((value) => {
+					{Object.values(data).map((value, index) => {
 						return (
 							<td
 								className={
 									"border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 hover:cursor-pointer"
 								}
-								key={value}>
-								{value}
+								key={index}>
+								{typeof value === "object"
+									? null
+									: value.length > 30
+									? value.slice(0, 29) + "..."
+									: value || "N/A"}
 							</td>
 						);
 					})}
