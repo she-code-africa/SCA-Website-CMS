@@ -46,6 +46,11 @@ export async function mutateEnquires(enquiryData) {
 	return enquiresResponse;
 }
 
+export async function login(data) {
+	const auth = await api.post(`${baseUrl}/auth/login`, data);
+	return auth;
+}
+
 export async function getEnquiries() {
 	const enquiresResponse = await api.get(`${baseUrl}/enquiry`);
 	return enquiresResponse;
