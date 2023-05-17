@@ -31,6 +31,11 @@ export async function getTeams() {
 	return teams;
 }
 
+export async function getTeamCategories() {
+	const teamCategories = await api.get(`${baseUrl}/teams/categories`);
+	return teamCategories;
+}
+
 export async function getPrograms() {
 	const programs = await api.get(`${baseUrl}/programs/member-programs`);
 	return programs;
