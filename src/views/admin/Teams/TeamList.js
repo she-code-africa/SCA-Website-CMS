@@ -43,19 +43,14 @@ const Team = () => {
 		<>
 			<div className="flex flex-w">
 				<div className="w-full lg:w-9/12">
-					<div>
-						<h1>Team</h1>
-						<button>Add New Member</button>
-					</div>
+					<div className="mb-8"></div>
 					{team && (
 						<Table
 							tableData={team}
 							tableHead="SCA Team"
-							addNew
-							showActions
-							edit
-							view
 							headers={headers}
+							addNew
+							view
 						/>
 					)}
 				</div>

@@ -7,7 +7,7 @@ export const paths = {
 	team: "/admin/team",
 	addMember: "/admin/team/add",
 	editMember: "/admin/team/edit/:id",
-	viewMember: "/admin/team/view/:id",
+	viewMember: "/admin/team/view/:cat/:id",
 	allVolunteers: "/admin/volunteer",
 	addVolunteer: "/admin/volunteer/add",
 	editVolunteer: "/admin/volunteer/edit/:id",

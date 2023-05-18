@@ -7,15 +7,19 @@ const Table = ({
 	tableData,
 	tableHead,
 	addNew,
-	showActions,
 	edit,
 	view,
 	headers: columns,
+	deleteBtn,
 }) => {
 	const history = useHistory();
 	const { pathname } = history.location;
-	const viewDetails = (id) => {
-		history.push(`${pathname}/view/${id}`);
+	const viewDetails = (catId, id) => {
+		if (pathname === "/admin/team") {
+			history.push(`${pathname}/view/${catId}/${id}`);
+		} else {
+			history.push(`${pathname}/view/${id}`);
+		}
 	};
 	const getTableHeaders = () => {
 		if (tableData.length === 0) return null;
@@ -32,7 +36,7 @@ const Table = ({
 		});
 
 		// Add the new column header for actions
-		if (showActions) {
+		if (edit || view || deleteBtn) {
 			headers.push(
 				<th
 					className={
@@ -70,7 +74,7 @@ const Table = ({
 					})}
 
 					{/* Add the new column for actions */}
-					{showActions && (
+					{(edit || view || deleteBtn) && (
 						<td
 							className={
 								"border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 flex items-center hover:cursor-pointer"
@@ -84,18 +88,23 @@ const Table = ({
 									<MdOutlineEdit size="1rem" />
 								</div>
 							)}
-							<div
-								onClick={() => {
-									view && viewDetails(data._id);
-								}}>
-								<AiOutlineEye size="1rem" />
-							</div>
-							<button
-								className="bg-transparent text-red-500 rounded px-2 py-1"
-								// onClick={() => handleDelete(data.id)}
-							>
-								<AiOutlineDelete size="1rem" />
-							</button>
+							{view && (
+								<div
+									className="hover:cursor-pointer"
+									onClick={() => {
+										viewDetails(data.team._id, data._id);
+									}}>
+									<AiOutlineEye size="1rem" />
+								</div>
+							)}
+							{deleteBtn && (
+								<button
+									className="bg-transparent text-red-500 rounded px-2 py-1"
+									// onClick={() => handleDelete(data.id)}
+								>
+									<AiOutlineDelete size="1rem" />
+								</button>
+							)}
 						</td>
 					)}
 				</tr>

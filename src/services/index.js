@@ -94,3 +94,10 @@ export async function addTeamCategory(data) {
 	const category = await api.post(`${baseUrl}/teams/categories`, data);
 	return category;
 }
+
+export async function getTeamMember(catId, id) {
+	const member = await api.get(
+		`${baseUrl}/teams/categories/${catId}/members/${id}`
+	);
+	return member;
+}
