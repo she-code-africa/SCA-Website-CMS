@@ -9,7 +9,7 @@ const EventForm = ({ newEvent }) => {
 		link: "",
 	};
 	const [event, setEvent] = useState(intialEventValue);
-	const { title, description, eventDate, image, link } = event;
+	const { title, description, eventDate, link } = event;
 
 	const handleInputChange = useCallback(
 		(e) => {

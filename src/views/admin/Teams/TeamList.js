@@ -41,10 +41,8 @@ const Team = () => {
 	];
 	return (
 		<>
-			<div
-				className="flex flex-w
-    ">
-				<div className="w-full lg:w-9/12 px-4">
+			<div className="flex flex-w">
+				<div className="w-full lg:w-9/12">
 					<div>
 						<h1>Team</h1>
 						<button>Add New Member</button>
@@ -61,7 +59,7 @@ const Team = () => {
 						/>
 					)}
 				</div>
-				<div className="w-full lg:w-3/12 px-4">
+				<div className="w-full lg:w-3/12">
 					<TeamCategory />
 				</div>
 			</div>

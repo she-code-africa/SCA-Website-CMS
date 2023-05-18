@@ -1,11 +1,12 @@
 import React, { useCallback, useState, useEffect } from "react";
 import { BsPlus } from "react-icons/bs";
-import { getTeamCategories } from "services";
-import { useQuery } from "react-query";
+import { getTeamCategories, addTeamCategory } from "services";
+import { useQuery, useMutation } from "react-query";
 
 const TeamCategory = () => {
 	const [showCategoryInput, setShowCategoryInput] = useState(false);
 	const [newCategory, setNewCategory] = useState("");
+	const mutation = useMutation(addTeamCategory);
 
 	const [Categories, setCategories] = useState([]);
 
@@ -18,14 +19,18 @@ const TeamCategory = () => {
 	}, [response]);
 
 	const handleAddCategory = useCallback(() => {
-		if (newCategory.trim()) {
-			setCategories((prevCategories) => [
-				...prevCategories,
-				newCategory.trim(),
-			]);
-			setNewCategory("");
+		console.log(newCategory);
+		if (newCategory) {
+			setCategories((prevCategories) => [...prevCategories, newCategory]);
+			mutation.mutate({ name: newCategory });
+			if (mutation.isSuccess) {
+				setNewCategory("");
+			} else {
+				console.log("error");
+			}
 		}
 		setShowCategoryInput(false);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [newCategory]);
 
 	return (

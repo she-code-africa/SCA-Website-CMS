@@ -1,8 +1,7 @@
 import React from "react";
-import { Link, useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { AiOutlineDelete, AiOutlineEye } from "react-icons/ai";
 import { MdOutlineEdit } from "react-icons/md";
-import { paths } from "utils";
 
 const Table = ({
 	tableData,
@@ -20,9 +19,7 @@ const Table = ({
 	};
 	const getTableHeaders = () => {
 		if (tableData.length === 0) return null;
-
 		const headers = columns.map((key, index) => {
-			console.log(key);
 			return (
 				<th
 					className={

@@ -4,46 +4,6 @@ import JobTypeCategory from "./JobTypeCategories";
 import { useQuery } from "react-query";
 import { getJobs } from "services";
 
-const tableData = [
-	{
-		id: 1,
-		title: "Product Owner",
-		deadline: "",
-		minimumExperience: "2 years",
-		applicationLink: "http://go.com",
-		salaryCurrency: "USD",
-		salaryRange: "2000",
-		location: "Remote",
-		guestPost: true,
-		// guestPostMetaData: {
-		//   companyName: "Heirs & Co",
-		//   companyEmail: "heirs@gmail.com",
-		//   companyUrl: "www.hiers.com",
-		// },
-		jobType: "638263051e02b1c8b72a18bf",
-		jobCategory: "63820789f65ee6407b1a6793",
-	},
-	{
-		id: 2,
-		title: "Product Owner",
-		deadline: "",
-		minimumExperience: "2 years",
-		applicationLink: "http://go.com",
-		salaryCurrency: "USD",
-		salaryRange: "2000",
-		location: "Remote",
-		guestPost: true,
-		// guestPostMetaData: {
-		//   companyName: "Heirs & Co",
-		//   companyEmail: "heirs@gmail.com",
-		//   companyUrl: "www.hiers.com",
-		// },
-		jobType: "638263051e02b1c8b72a18bf",
-		jobCategory: "63820789f65ee6407b1a6793",
-	},
-	// Add more objects for more rows
-];
-
 const Jobs = () => {
 	const [jobs, setJobs] = useState();
 	const response = useQuery("jobs", getJobs);

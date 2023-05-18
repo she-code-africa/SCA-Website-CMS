@@ -1,5 +1,5 @@
 import Table from "components/Table";
-import React, { useState, useCallback } from "react";
+import React from "react";
 
 const tableData = [
 	{

@@ -12,7 +12,7 @@ const tableData = [
 const ScholarshipCategories = ["Full", "Part"];
 
 const Initiatives = () => {
-	const [categories, setCategories] = useState(ScholarshipCategories);
+	const [categories] = useState(ScholarshipCategories);
 	const addCategory = useCallback(() => {
 		console.log("add Category");
 	}, []);

@@ -89,3 +89,8 @@ export async function editTeamMember(data) {
 	const member = await api.put(`${baseUrl}/teams/member`, data);
 	return member;
 }
+
+export async function addTeamCategory(data) {
+	const category = await api.post(`${baseUrl}/teams/categories`, data);
+	return category;
+}

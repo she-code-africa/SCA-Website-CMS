@@ -1,109 +1,134 @@
-import React , { useState, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 
-import { Link } from "react-router-dom"
-
+import { Link } from "react-router-dom";
 
 // components
 
-
 // utils
-import { paths } from "utils"
+import { paths } from "utils";
 
 const AddPartner = ({ newPartner }) => {
-  const intial = {
-    name: "",
-    type: "",
-    featured: false,
-    logo: "", 
-  };
-  const [partner, setPartner] = useState(intial);
-  const {
-   name,
-   type,
-    featured,
-    logo, 
-  } = partner;
+	const intial = {
+		name: "",
+		type: "",
+		featured: false,
+		logo: "",
+	};
+	const [partner, setPartner] = useState(intial);
+	const { name, type, featured } = partner;
 
-  const handleInputChange = useCallback(
-    (e) => {
-      const { name, value } = e.target;
-      setPartner((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-    },
-    [setPartner]
-  );
+	const handleInputChange = useCallback(
+		(e) => {
+			const { name, value } = e.target;
+			setPartner((prev) => ({
+				...prev,
+				[name]: value,
+			}));
+		},
+		[setPartner]
+	);
 
-  return (
-    <>
-     <div className="  relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded-lg bg-slate-100 border-0">
-        <div className="rounded-t bg-white mb-0 px-6 py-6">
-          <div className="text-center flex justify-between">
-            <h6 className="text-slate-700 text-xl font-bold">Partner/Sponsor</h6>
-            
-            <Link to={paths.partners}>
-            <i class="fas fa-arrow-left"></i> Back
-            </Link>
-          </div>
-        </div>
-        <div className="flex-auto px-4 lg:px-10 py-10 pt-0">
-          <form>
-          <h6 className="text-slate-400 text-sm mt-3 mb-6 font-bold uppercase">
-           Partner/Sponsor Details
-          </h6>
-                  <div className="flex flex-wrap py-10">
-                 
-                    <div className="w-full lg:w-6/12 px-4">
-                      <div className="relative w-full mb-3">
-                      <label className="block uppercase text-slate-600  font-bold my-2" htmlFor="name">Company Name</label>
-                      <input
-                    type="text"
-                    className="border-1 border-slate-200 p-3 placeholder-slate-300 text-slate-600 bg-white rounded text-sm shadow focus:outline-none focus:ring focus:ring-blue-400 w-full ease-linear transition-all duration-150"
-                    placeholder="" name="name" value={name}  onChange={handleInputChange}
-                    id="name"
-                  />
-                      </div>
-                    </div>
-                    <div className="w-full lg:w-6/12 px-4">
-                      <div className="relative w-full mb-3">
-                      <label className="block uppercase text-slate-600  font-bold my-2" htmlFor=" ">Type</label>
-                       
-                  <select name="type" id="type"  className="border-1 border-slate-200 p-3 placeholder-slate-300 text-slate-600 bg-white rounded text-sm shadow focus:outline-none focus:ring focus:ring-blue-400 w-full ease-linear transition-all duration-150" value={type}  onChange={handleInputChange}>
-                    <option value=""selected hidden>Please select</option>
-                    <option  >Partner</option>
-                    <option  >Sponsor</option> 
-                    </select>
-                      </div>
-                    </div>
-                    <div className="w-full lg:w-6/12 px-4"> 
-                      <div className="relative w-full mb-3">
-                      <label className="block uppercase text-slate-600  font-bold my-2" htmlFor=" ">Upload Logo(200 x 200px)</label>
-                        <input type="file" className="border-1 border-slate-200 p-3 placeholder-slate-300 text-slate-600 bg-white rounded text-sm shadow focus:outline-none focus:ring focus:ring-blue-400 w-full ease-linear transition-all duration-150" />
-                      </div>
-                    </div>
-                    <div className="w-full lg:w-6/12 px-4"> 
-                      <div className="relative w-full mb-3">
-                      <label className="block uppercase text-slate-600  font-bold my-2" htmlFor="featured">Featured?</label>
-                        <input type="checkbox" checked={featured} name="featured" value={featured}  onChange={handleInputChange} />
-                      </div>
-                    </div>
+	return (
+		<>
+			<div className="  relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded-lg bg-slate-100 border-0">
+				<div className="rounded-t bg-white mb-0 px-6 py-6">
+					<div className="text-center flex justify-between">
+						<h6 className="text-slate-700 text-xl font-bold">
+							Partner/Sponsor
+						</h6>
 
-                  </div>
-    
-                  
-               
-                  <div className="my-4">
-            <button className="bg-pink-500 text-white active:bg-pink-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 ease-linear transition-all duration-150">
-              SUBMIT
-            </button>
-          </div>
-          </form>
-        </div>
-      </div>
-     
-    </>
-  );
-}
+						<Link to={paths.partners}>
+							<i class="fas fa-arrow-left"></i> Back
+						</Link>
+					</div>
+				</div>
+				<div className="flex-auto px-4 lg:px-10 py-10 pt-0">
+					<form>
+						<h6 className="text-slate-400 text-sm mt-3 mb-6 font-bold uppercase">
+							Partner/Sponsor Details
+						</h6>
+						<div className="flex flex-wrap py-10">
+							<div className="w-full lg:w-6/12 px-4">
+								<div className="relative w-full mb-3">
+									<label
+										className="block uppercase text-slate-600  font-bold my-2"
+										htmlFor="name">
+										Company Name
+									</label>
+									<input
+										type="text"
+										className="border-1 border-slate-200 p-3 placeholder-slate-300 text-slate-600 bg-white rounded text-sm shadow focus:outline-none focus:ring focus:ring-blue-400 w-full ease-linear transition-all duration-150"
+										placeholder=""
+										name="name"
+										value={name}
+										onChange={handleInputChange}
+										id="name"
+									/>
+								</div>
+							</div>
+							<div className="w-full lg:w-6/12 px-4">
+								<div className="relative w-full mb-3">
+									<label
+										className="block uppercase text-slate-600  font-bold my-2"
+										htmlFor=" ">
+										Type
+									</label>
 
-export default AddPartner
+									<select
+										name="type"
+										id="type"
+										className="border-1 border-slate-200 p-3 placeholder-slate-300 text-slate-600 bg-white rounded text-sm shadow focus:outline-none focus:ring focus:ring-blue-400 w-full ease-linear transition-all duration-150"
+										value={type}
+										onChange={handleInputChange}>
+										<option value="" selected hidden>
+											Please select
+										</option>
+										<option>Partner</option>
+										<option>Sponsor</option>
+									</select>
+								</div>
+							</div>
+							<div className="w-full lg:w-6/12 px-4">
+								<div className="relative w-full mb-3">
+									<label
+										className="block uppercase text-slate-600  font-bold my-2"
+										htmlFor=" ">
+										Upload Logo(200 x 200px)
+									</label>
+									<input
+										type="file"
+										className="border-1 border-slate-200 p-3 placeholder-slate-300 text-slate-600 bg-white rounded text-sm shadow focus:outline-none focus:ring focus:ring-blue-400 w-full ease-linear transition-all duration-150"
+									/>
+								</div>
+							</div>
+							<div className="w-full lg:w-6/12 px-4">
+								<div className="relative w-full mb-3">
+									<label
+										className="block uppercase text-slate-600  font-bold my-2"
+										htmlFor="featured">
+										Featured?
+									</label>
+									<input
+										type="checkbox"
+										checked={featured}
+										name="featured"
+										value={featured}
+										onChange={handleInputChange}
+									/>
+								</div>
+							</div>
+						</div>
+
+						<div className="my-4">
+							<button className="bg-pink-500 text-white active:bg-pink-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 ease-linear transition-all duration-150">
+								SUBMIT
+							</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</>
+	);
+};
+
+export default AddPartner;

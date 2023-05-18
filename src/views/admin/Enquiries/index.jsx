@@ -1,6 +1,6 @@
 import Table from "components/Table";
-import React, { useState, useEffect } from "react";
-import { useQuery } from "react-query";
+import React from "react";
+// import { useQuery } from "react-query";
 
 const tableData = [
 	{
