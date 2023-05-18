@@ -13,6 +13,32 @@ const Team = () => {
 		}
 		console.log(response);
 	}, [response]);
+	const headers = [
+		{
+			value: "_id",
+			label: "ID",
+		},
+		{
+			value: "name",
+			label: "Name",
+		},
+		{
+			value: "isLeader",
+			label: "Team Lead",
+		},
+		{
+			value: "team",
+			label: "Team",
+		},
+		{
+			value: "createdAt",
+			label: "Created",
+		},
+		{
+			value: "state",
+			label: "State",
+		},
+	];
 	return (
 		<>
 			<div
@@ -27,9 +53,11 @@ const Team = () => {
 						<Table
 							tableData={team}
 							tableHead="SCA Team"
-							addNew="addMember"
-							showActions="true"
-							edit="editMember"
+							addNew
+							showActions
+							edit
+							view
+							headers={headers}
 						/>
 					)}
 				</div>

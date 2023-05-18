@@ -80,3 +80,12 @@ export async function getCompanies() {
 	const companies = await api.get(`${baseUrl}/company`);
 	return companies;
 }
+
+export async function addTeamMember(data) {
+	const member = await api.post(`${baseUrl}/teams/members`, data);
+	return member;
+}
+export async function editTeamMember(data) {
+	const member = await api.put(`${baseUrl}/teams/member`, data);
+	return member;
+}

@@ -11,7 +11,7 @@ import FooterAdmin from "components/Footers/FooterAdmin.js";
 import Dashboard from "views/admin/Dashboard.js";
 import Settings from "views/admin/Settings.js";
 
-import { TeamList, AddMember, EditMember } from "views/admin/Teams";
+import { TeamList, AddMember, EditMember, ViewMember } from "views/admin/Teams";
 import {
 	VolunteerList,
 	AddVolunteer,
@@ -58,12 +58,9 @@ export default function Admin() {
 						<Route path={paths.dashboard} exact component={Dashboard} />
 						<Route path={paths.settings} exact component={Settings} />
 						<Route path={paths.team} exact component={TeamList} />
+						<Route path={paths.viewMember} exact component={ViewMember} />
 						<Route path={paths.addMember} exact component={AddMember} />
-						<Route
-							path={`${paths.editMember}/:id`}
-							exact
-							component={EditMember}
-						/>
+						<Route path="/admin/team/edit/:id" exact component={EditMember} />
 
 						<Route path={paths.allVolunteers} exact component={VolunteerList} />
 						<Route path={paths.addVolunteer} exact component={AddVolunteer} />
