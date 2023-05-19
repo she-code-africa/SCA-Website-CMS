@@ -9,20 +9,27 @@ const tableData = [
 ];
 
 const Testimonials = () => {
+	const headers = [
+		{
+			value: "id",
+			label: "ID",
+		},
+		{
+			value: "name",
+			label: "Name",
+		},
+	];
 	return (
 		<>
-			<div className="flex flex-w">
+			<div className="flex flex-w w-full">
 				<div className="w-full px-4">
-					<div>
-						<h1>Testimonials</h1>
-					</div>
 					<Table
 						tableData={tableData}
 						tableHead="Testimonials"
-						addNew="addNewTestimonial"
-						showActions
-						edit="editTestimonial"
-						view="viewTestimonial"
+						headers={headers}
+						addNew
+						edit
+						view
 					/>
 				</div>
 			</div>
