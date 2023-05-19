@@ -101,3 +101,8 @@ export async function getTeamMember(catId, id) {
 	);
 	return member;
 }
+
+export async function createEvent() {
+	const event = await api.post(`${baseUrl}/events`);
+	return event;
+}

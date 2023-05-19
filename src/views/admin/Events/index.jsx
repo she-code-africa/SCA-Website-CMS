@@ -2,36 +2,43 @@ import Table from "components/Table";
 import React, { useEffect, useState } from "react";
 import { getEvents } from "services";
 import { useQuery } from "react-query";
+import Loader from "components/Loader";
 
 const Events = () => {
 	const [events, setEvents] = useState();
-	const response = useQuery("events", getEvents);
+	const { isSuccess, isLoading, data } = useQuery("events", getEvents);
+	const headers = [
+		{ value: "title", label: "Title" },
+		{ value: "description", label: "Description" },
+		{ value: "eventDate", label: "Date" },
+		{ value: "link", label: "Link" },
+	];
 	useEffect(() => {
-		if (response.isSuccess) {
-			setEvents(response.data);
+		if (isSuccess) {
+			setEvents(data);
 		}
-	}, [response]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [isSuccess]);
 	return (
 		<>
-			<div
-				className="flex flex-w
-    ">
-				<div className="w-full px-4">
-					<div>
-						<h1>Events</h1>
-						<button>Add New Event</button>
+			<div className="flex flex-w w-full">
+				{isLoading ? (
+					<Loader />
+				) : (
+					<div className="w-full px-4">
+						{events && (
+							<Table
+								tableData={events}
+								tableHead="Events"
+								headers={headers}
+								addNew
+								edit
+								view
+								deleteBtn
+							/>
+						)}
 					</div>
-					{events && (
-						<Table
-							tableData={events}
-							tableHead="Events"
-							addNew="addNewEvent"
-							showActions="true"
-							edit="editEvent"
-							view="viewEvent"
-						/>
-					)}
-				</div>
+				)}
 			</div>
 		</>
 	);

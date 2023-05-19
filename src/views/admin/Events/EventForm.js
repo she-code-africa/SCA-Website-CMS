@@ -1,4 +1,6 @@
 import React, { useState, useCallback } from "react";
+import { useMutation } from "react-query";
+import {createEvent} from "services"
 
 const EventForm = ({ newEvent }) => {
 	const intialEventValue = {
@@ -10,6 +12,7 @@ const EventForm = ({ newEvent }) => {
 	};
 	const [event, setEvent] = useState(intialEventValue);
 	const { title, description, eventDate, link } = event;
+	const mutation = useMutation(createEvent);
 
 	const handleInputChange = useCallback(
 		(e) => {
@@ -20,6 +23,20 @@ const EventForm = ({ newEvent }) => {
 			}));
 		},
 		[setEvent]
+	);
+
+	const createNewEvent = useCallback(
+		(e) => {
+			e.preventDefault();
+			mutation.mutate(event);
+			if (mutation.isSuccess) {
+				setEvent(intialEventValue);
+			} else {
+				console.log("error");
+			}
+		},
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+		[event]
 	);
 
 	return (

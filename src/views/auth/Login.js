@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 
 import { useMutation } from "react-query";
@@ -11,16 +11,18 @@ export default function Login() {
 	const [error, setError] = useState(false);
 	const history = useHistory();
 
-	const mutation = useMutation(login);
+	const mutation = useMutation(login, {
+		onSuccess: (data) => {
+			localStorage.setItem("token", data);
+			history.push("/admin");
+		},
+		onError: () => {
+			setError(true);
+		},
+	});
 
 	const signin = () => {
 		mutation.mutate({ email, password });
-		console.log(mutation);
-		if (mutation.isSuccess) {
-			history.push("/admin");
-		} else {
-			setError(true);
-		}
 	};
 
 	return (

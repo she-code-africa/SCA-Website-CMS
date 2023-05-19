@@ -8,6 +8,10 @@ const api = Axios.create({
 api.interceptors.request.use(
 	function (config) {
 		// show loader here
+		const token = localStorage.getItem("token");
+		if (token) {
+			config.headers.Authorization = `Bearer ${token}`;
+		}
 		return config;
 	},
 	function (error) {
@@ -23,21 +27,20 @@ api.interceptors.response.use(
 		return response.data?.data ?? response.data;
 	},
 	function (err) {
-		//  hide loader
+		// hide loader
 		if (!err.response) {
 			return Promise.reject(
 				new CustomHttpError(
-					"Error occured while sending the request, please check your internet settings",
+					"Error occurred while sending the request, please check your internet settings",
 					{
 						statusCode: 0,
 						responseText:
-							"Error occured while sending the request, please check your internet settings",
+							"Error occurred while sending the request, please check your internet settings",
 					}
 				)
 			);
 		}
 		if (err.response.status === 401) {
-			//
 			// log user out
 			return Promise.reject(
 				new CustomHttpError("User session has expired!", {
@@ -56,12 +59,11 @@ api.interceptors.response.use(
 				})
 			);
 		}
-		// Any status codes that falls outside the range of 2xx cause this function to trigger
 		// Do something with response error
 		return Promise.reject(
-			new CustomHttpError("Error occured while sending the request", {
+			new CustomHttpError("Error occurred while sending the request", {
 				statusCode: err.response.status,
-				responseText: "Error occured while sending the request",
+				responseText: "Error occurred while sending the request",
 			})
 		);
 	}
