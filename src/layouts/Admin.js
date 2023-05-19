@@ -53,7 +53,7 @@ export default function Admin() {
 			<div className="relative md:ml-64 bg-slate-100 min-h-screen flex flex-col">
 				<AdminNavbar /> {/* Header */}
 				<HeaderStats />
-				<div className="px-4 md:px-10 mx-auto w-full -m-24">
+				<div className="px-4 flex items-center flex-1 md:px-10 mx-auto w-full -mt-20 mb-12">
 					<Switch>
 						<Route path={paths.dashboard} exact component={Dashboard} />
 						<Route path={paths.settings} exact component={Settings} />
@@ -160,8 +160,8 @@ export default function Admin() {
 						{/* <Redirect from = "/admin"
         to = "/admin/dashboard" /> */}
 					</Switch>
-					<FooterAdmin />
 				</div>
+				<FooterAdmin />
 			</div>
 		</>
 	);
