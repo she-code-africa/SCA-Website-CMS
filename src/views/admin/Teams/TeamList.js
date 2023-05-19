@@ -11,8 +11,8 @@ const Team = () => {
 		if (response.isSuccess) {
 			setTeam(response.data);
 		}
-		console.log(response);
-	}, [response]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [response.isSuccess]);
 	const headers = [
 		{
 			value: "_id",
@@ -51,6 +51,7 @@ const Team = () => {
 							headers={headers}
 							addNew
 							view
+							deleteBtn
 						/>
 					)}
 				</div>

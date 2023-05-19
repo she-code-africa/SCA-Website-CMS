@@ -15,11 +15,10 @@ const TeamCategory = () => {
 		if (response.isSuccess) {
 			setCategories(response.data);
 		}
-		console.log(response);
-	}, [response]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [response.isSuccess]);
 
 	const handleAddCategory = useCallback(() => {
-		console.log(newCategory);
 		if (newCategory) {
 			setCategories((prevCategories) => [...prevCategories, newCategory]);
 			mutation.mutate({ name: newCategory });
