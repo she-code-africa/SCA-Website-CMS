@@ -68,7 +68,7 @@ const TeamForm = () => {
 					<div className="text-center flex justify-between">
 						<h6 className="text-slate-700 text-xl font-bold">SCA Team Form</h6>
 						<Link to={paths.team}>
-							<i className="fas fa-arrow-left" onClick={() => nav(-1)}></i> Back
+							<i className="fas fa-arrow-left"></i> Back
 						</Link>
 					</div>
 				</div>

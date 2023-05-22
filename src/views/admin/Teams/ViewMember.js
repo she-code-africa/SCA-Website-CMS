@@ -1,9 +1,11 @@
 import Loader from "components/Loader";
 import React, { useState, useEffect } from "react";
 import { useQuery } from "react-query";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { getTeamMember } from "services";
 import { AiOutlineTeam } from "react-icons/ai";
+import { BsArrowLeft } from "react-icons/bs";
+import { paths } from "utils";
 
 const ViewMember = () => {
 	const [member, setMember] = useState();
@@ -21,12 +23,17 @@ const ViewMember = () => {
 			) : (
 				<div className="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-xl rounded-lg">
 					<div className="px-6">
-						<div className="flex w-full justify-end mt-3 items-center">
-							<div className="text-white bg-pink-500 px-4 py-1 mr-2 rounded">
-								Publish
-							</div>
-							<div className="bg-slate-600 text-white px-4 py-1 rounded">
-								Archive
+						<div className="flex w-full mt-3 items-center justify-between">
+							<Link to={paths.team}>
+								<BsArrowLeft size="1rem" />
+							</Link>
+							<div className="flex">
+								<div className="text-white bg-pink-500 px-4 py-1 mr-2 rounded">
+									Publish
+								</div>
+								<div className="bg-slate-600 text-white px-4 py-1 rounded">
+									Archive
+								</div>
 							</div>
 						</div>
 						<div className="text-center mt-6">
