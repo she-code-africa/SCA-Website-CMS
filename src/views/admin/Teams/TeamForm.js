@@ -1,12 +1,11 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { paths } from "utils";
 import { useQuery, useMutation } from "react-query";
 import { getTeamCategories, addTeamMember } from "services";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 const TeamForm = () => {
-	const nav = useHistory();
 	const intial = {
 		name: "",
 		role: "",

@@ -106,3 +106,17 @@ export async function createEvent() {
 	const event = await api.post(`${baseUrl}/events`);
 	return event;
 }
+
+export async function publishTeamMember(catId, id) {
+	const member = await api.post(
+		`${baseUrl}/teams/categories/${catId}/members/${id}/publish`
+	);
+	return member;
+}
+
+export async function archiveTeamMember(catId, id) {
+	const member = await api.post(
+		`${baseUrl}/teams/categories/${catId}/members/${id}/archive`
+	);
+	return member;
+}
