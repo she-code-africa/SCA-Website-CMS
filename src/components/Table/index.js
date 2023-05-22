@@ -11,8 +11,8 @@ const Table = ({
 	view,
 	headers: columns,
 	deleteBtn,
+	actions,
 }) => {
-	console.log(columns);
 	const history = useHistory();
 	const { pathname } = history.location;
 	const viewDetails = (catId, id) => {
@@ -37,7 +37,7 @@ const Table = ({
 		});
 
 		// Add the new column header for actions
-		if (edit || view || deleteBtn) {
+		if (actions) {
 			headers.push(
 				<th
 					className={
@@ -75,37 +75,45 @@ const Table = ({
 					})}
 
 					{/* Add the new column for actions */}
-					{(edit || view || deleteBtn) && (
+					{actions && (
 						<td
 							className={
 								"border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 flex items-center hover:cursor-pointer"
 							}>
-							{edit && (
-								<div
-									onClick={() => {
-										history.push(`${pathname}/edit/${data._id}`);
-									}}
-									className="text-black rounded px-2 py-1 mr-2 hover:cursor-pointer">
-									<MdOutlineEdit size="1rem" />
-								</div>
-							)}
-							{view && (
-								<div
-									className="hover:cursor-pointer"
-									onClick={() => {
-										viewDetails(data.team._id, data._id);
-									}}>
-									<AiOutlineEye size="1rem" />
-								</div>
-							)}
-							{deleteBtn && (
-								<button
-									className="bg-transparent text-red-500 rounded px-2 py-1"
-									// onClick={() => handleDelete(data.id)}
-								>
-									<AiOutlineDelete size="1rem" />
-								</button>
-							)}
+							{actions.map((action) => {
+								if (action === "view") {
+									return (
+										<div
+											className="hover:cursor-pointer"
+											onClick={() => {
+												viewDetails(data.team._id, data._id);
+											}}>
+											<AiOutlineEye size="1rem" />
+										</div>
+									);
+								} else if (action === "edit") {
+									return (
+										<div
+											onClick={() => {
+												history.push(`${pathname}/edit/${data._id}`);
+											}}
+											className="text-black rounded px-2 py-1 hover:cursor-pointer">
+											<MdOutlineEdit size="1rem" />
+										</div>
+									);
+								} else if (action === "delete") {
+									return (
+										<button
+											className="bg-transparent text-red-500 rounded px-2 py-1"
+											// onClick={() => handleDelete(data.id)}
+										>
+											<AiOutlineDelete size="1rem" />
+										</button>
+									);
+								} else {
+									return null;
+								}
+							})}
 						</td>
 					)}
 				</tr>

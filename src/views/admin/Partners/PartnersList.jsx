@@ -22,9 +22,8 @@ const PartnersList = () => {
 							headers={header}
 							tableData={partners}
 							tableHead="Partners"
+							actions={["edit", "delete"]}
 							addNew
-							edit
-							deleteBtn
 						/>
 					)}
 				</div>

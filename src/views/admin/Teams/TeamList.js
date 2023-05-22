@@ -24,6 +24,7 @@ const Team = () => {
 							tableData={team}
 							tableHead="SCA Team"
 							headers={teamHeader}
+							actions={["view", "delete"]}
 							addNew
 							view
 							deleteBtn

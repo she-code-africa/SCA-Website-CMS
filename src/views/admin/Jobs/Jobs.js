@@ -22,10 +22,8 @@ const Jobs = () => {
 							headers={header}
 							tableData={jobs}
 							tableHead="Jobs"
+							actions={["view", "edit", "delete"]}
 							addNew
-							edit
-							view
-							deleteBtn
 						/>
 					)}
 				</div>

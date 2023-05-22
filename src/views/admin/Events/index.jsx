@@ -26,10 +26,8 @@ const Events = () => {
 								tableData={events}
 								tableHead="Events"
 								headers={header}
+								actions={["view", "edit", "delete"]}
 								addNew
-								edit
-								view
-								deleteBtn
 							/>
 						)}
 					</div>

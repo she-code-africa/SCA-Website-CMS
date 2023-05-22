@@ -26,9 +26,8 @@ const Initiatives = () => {
 							headers={header}
 							tableData={tableData}
 							tableHead="Initiatives"
+							actions={["view", "edit"]}
 							addNew
-							edit
-							view
 						/>
 					)}
 				</div>

@@ -18,9 +18,8 @@ const Testimonials = () => {
 						tableData={tableData}
 						tableHead="Testimonials"
 						headers={header}
+						actions={["view", "edit"]}
 						addNew
-						edit
-						view
 					/>
 				</div>
 			</div>

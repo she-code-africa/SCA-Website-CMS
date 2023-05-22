@@ -22,8 +22,7 @@ const Companies = () => {
 							headers={companyHeader}
 							tableData={companies}
 							tableHead="Companies"
-							edit
-							view
+							actions={["view", "edit"]}
 						/>
 					)}
 				</div>
