@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import TeamCategory from "./TeamCategories";
 import { getTeams } from "services";
 import { useQuery } from "react-query";
+import { team as teamHeader } from "utils/headers";
 
 const Team = () => {
 	const [team, setTeam] = useState();
@@ -13,42 +14,16 @@ const Team = () => {
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [response.isSuccess]);
-	const headers = [
-		{
-			value: "_id",
-			label: "ID",
-		},
-		{
-			value: "name",
-			label: "Name",
-		},
-		{
-			value: "isLeader",
-			label: "Team Lead",
-		},
-		{
-			value: "team",
-			label: "Team",
-		},
-		{
-			value: "createdAt",
-			label: "Created",
-		},
-		{
-			value: "state",
-			label: "State",
-		},
-	];
 	return (
 		<>
-			<div className="flex flex-w">
+			<div className="flex flex-w w-full">
 				<div className="w-full lg:w-9/12">
 					<div className="mb-8"></div>
-					{team && (
+					{team && teamHeader && (
 						<Table
 							tableData={team}
 							tableHead="SCA Team"
-							headers={headers}
+							headers={teamHeader}
 							addNew
 							view
 							deleteBtn

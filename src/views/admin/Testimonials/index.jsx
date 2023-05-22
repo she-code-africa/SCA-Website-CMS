@@ -1,5 +1,6 @@
 import Table from "components/Table";
 import React from "react";
+import { testimonials as header } from "utils/headers";
 
 const tableData = [
 	{
@@ -9,16 +10,6 @@ const tableData = [
 ];
 
 const Testimonials = () => {
-	const headers = [
-		{
-			value: "id",
-			label: "ID",
-		},
-		{
-			value: "name",
-			label: "Name",
-		},
-	];
 	return (
 		<>
 			<div className="flex flex-w w-full">
@@ -26,7 +17,7 @@ const Testimonials = () => {
 					<Table
 						tableData={tableData}
 						tableHead="Testimonials"
-						headers={headers}
+						headers={header}
 						addNew
 						edit
 						view

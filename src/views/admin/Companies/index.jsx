@@ -2,32 +2,11 @@ import Table from "components/Table";
 import React, { useState, useEffect } from "react";
 import { useQuery } from "react-query";
 import { getCompanies } from "services";
+import { companies as companyHeader } from "utils/headers";
 
 const Companies = () => {
 	const [companies, setCompanies] = useState();
 	const response = useQuery("team", getCompanies);
-	const headers = [
-		{
-			value: "companyName",
-			label: "Company Name",
-		},
-		{
-			value: "email",
-			label: "email",
-		},
-		{
-			value: "companyLocation",
-			label: "Location",
-		},
-		{
-			value: "companyPhone",
-			label: "Phone",
-		},
-		{
-			value: "createdAt",
-			label: "Created At",
-		},
-	];
 	useEffect(() => {
 		if (response.isSuccess) {
 			setCompanies(response.data);
@@ -38,12 +17,9 @@ const Companies = () => {
 		<>
 			<div className="flex flex-w w-full">
 				<div className="w-full px-4">
-					<div>
-						<h1>Companies</h1>
-					</div>
 					{companies && (
 						<Table
-							headers={headers}
+							headers={companyHeader}
 							tableData={companies}
 							tableHead="Companies"
 							edit

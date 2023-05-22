@@ -3,16 +3,11 @@ import React, { useEffect, useState } from "react";
 import { getEvents } from "services";
 import { useQuery } from "react-query";
 import Loader from "components/Loader";
+import { events as header } from "utils/headers";
 
 const Events = () => {
 	const [events, setEvents] = useState();
 	const { isSuccess, isLoading, data } = useQuery("events", getEvents);
-	const headers = [
-		{ value: "title", label: "Title" },
-		{ value: "description", label: "Description" },
-		{ value: "eventDate", label: "Date" },
-		{ value: "link", label: "Link" },
-	];
 	useEffect(() => {
 		if (isSuccess) {
 			setEvents(data);
@@ -26,11 +21,11 @@ const Events = () => {
 					<Loader />
 				) : (
 					<div className="w-full px-4">
-						{events && (
+						{events && header && (
 							<Table
 								tableData={events}
 								tableHead="Events"
-								headers={headers}
+								headers={header}
 								addNew
 								edit
 								view

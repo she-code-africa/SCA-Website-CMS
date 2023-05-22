@@ -12,6 +12,7 @@ const Table = ({
 	headers: columns,
 	deleteBtn,
 }) => {
+	console.log(columns);
 	const history = useHistory();
 	const { pathname } = history.location;
 	const viewDetails = (catId, id) => {

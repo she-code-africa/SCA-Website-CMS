@@ -3,6 +3,7 @@ import Table from "components/Table";
 import React, { useState, useEffect } from "react";
 import { useQuery } from "react-query";
 import { getEnquiries } from "services";
+import { enquiries as header } from "utils/headers";
 
 const Enquiries = () => {
 	const [enquiries, setEnquiries] = useState([]);
@@ -14,20 +15,6 @@ const Enquiries = () => {
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [isSuccess]);
-	const headers = [
-		{
-			value: "fullName",
-			label: "Full Name",
-		},
-		{
-			value: "email",
-			label: "Email",
-		},
-		{
-			value: "description",
-			label: "Description",
-		},
-	];
 	return (
 		<>
 			<div className="flex flex-w w-full">
@@ -39,7 +26,7 @@ const Enquiries = () => {
 							<Table
 								tableData={enquiries}
 								tableHead="Enquiries"
-								headers={headers}
+								headers={header}
 							/>
 						)}
 					</div>
