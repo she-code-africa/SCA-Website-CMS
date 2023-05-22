@@ -6,6 +6,16 @@ import { getPartners } from "services";
 const PartnersList = () => {
 	const [partners, setPartners] = useState([]);
 	const response = useQuery("partners", getPartners);
+	const headers = [
+		{
+			value: "name",
+			label: "Name",
+		},
+		{
+			value: "createdAt",
+			label: "Created At",
+		},
+	];
 	useEffect(() => {
 		if (response.isSuccess) {
 			setPartners(response.data);
@@ -14,15 +24,16 @@ const PartnersList = () => {
 	}, [response]);
 	return (
 		<>
-			<div className="flex flex-wrap mt-4">
-				<div className="w-full mb-12 px-4">
+			<div className="flex flex-wrap mt-4 w-full">
+				<div className="w-full mb-12">
 					{partners && (
 						<Table
+							headers={headers}
 							tableData={partners}
 							tableHead="Partners"
-							addNew="addPartner"
-							showActions="true"
-							edit="editPartner"
+							addNew
+							edit
+							deleteBtn
 						/>
 					)}
 				</div>

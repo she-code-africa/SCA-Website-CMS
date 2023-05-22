@@ -67,12 +67,12 @@ export async function getJobs() {
 }
 
 export async function getJobCategories() {
-	const jobCategories = await api.get(`${baseUrl}job/category`);
+	const jobCategories = await api.get(`${baseUrl}/job/category`);
 	return jobCategories;
 }
 
 export async function getJobTypes() {
-	const jobTypes = await api.get(`${baseUrl}job/types`);
+	const jobTypes = await api.get(`${baseUrl}/job/types`);
 	return jobTypes;
 }
 

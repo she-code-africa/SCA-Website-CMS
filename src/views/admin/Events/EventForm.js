@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from "react";
 import { useMutation } from "react-query";
-import {createEvent} from "services"
+import { createEvent } from "services";
 
 const EventForm = ({ newEvent }) => {
 	const intialEventValue = {
@@ -135,7 +135,9 @@ const EventForm = ({ newEvent }) => {
 					</div>
 
 					<div className="my-4">
-						<button className="bg-pink-500 text-white active:bg-pink-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 ease-linear transition-all duration-150">
+						<button
+							className="bg-pink-500 text-white active:bg-pink-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 ease-linear transition-all duration-150"
+							onClick={createNewEvent}>
 							SAVE
 						</button>
 					</div>
