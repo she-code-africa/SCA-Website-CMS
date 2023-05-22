@@ -50,7 +50,6 @@ const TeamForm = () => {
 			e.preventDefault();
 			mutation.mutate(member);
 		},
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 		[member, mutation]
 	);
 
