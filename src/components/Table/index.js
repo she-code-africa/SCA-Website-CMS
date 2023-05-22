@@ -3,23 +3,14 @@ import { useHistory } from "react-router-dom";
 import { AiOutlineDelete, AiOutlineEye } from "react-icons/ai";
 import { MdOutlineEdit } from "react-icons/md";
 
-const Table = ({
-	tableData,
-	tableHead,
-	addNew,
-	edit,
-	view,
-	headers: columns,
-	deleteBtn,
-	actions,
-}) => {
+const Table = ({ tableData, tableHead, addNew, headers: columns, actions }) => {
 	const history = useHistory();
 	const { pathname } = history.location;
-	const viewDetails = (catId, id) => {
+	const viewDetails = (data) => {
 		if (pathname === "/admin/team") {
-			history.push(`${pathname}/view/${catId}/${id}`);
+			history.push(`${pathname}/view/${data.team._id}/${data._id}`);
 		} else {
-			history.push(`${pathname}/view/${id}`);
+			history.push(`${pathname}/view/${data._id}`);
 		}
 	};
 	const getTableHeaders = () => {
@@ -83,13 +74,12 @@ const Table = ({
 							{actions.map((action) => {
 								if (action === "view") {
 									return (
-										<div
-											className="hover:cursor-pointer"
+										<button
 											onClick={() => {
-												viewDetails(data.team._id, data._id);
+												viewDetails(data);
 											}}>
 											<AiOutlineEye size="1rem" />
-										</div>
+										</button>
 									);
 								} else if (action === "edit") {
 									return (
