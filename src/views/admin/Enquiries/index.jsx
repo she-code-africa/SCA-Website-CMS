@@ -1,24 +1,49 @@
+import Loader from "components/Loader";
 import Table from "components/Table";
-import React from "react";
-
-const tableData = [
-	{
-		id: 1,
-		title: "How can I join the community",
-		name: "Olalekan Abisola",
-	},
-];
+import React, { useState, useEffect } from "react";
+import { useQuery } from "react-query";
+import { getEnquiries } from "services";
 
 const Enquiries = () => {
+	const [enquiries, setEnquiries] = useState([]);
+	const { isLoading, data, isSuccess } = useQuery("enquiries", getEnquiries);
+
+	useEffect(() => {
+		if (isSuccess) {
+			setEnquiries(data);
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [isSuccess]);
+	const headers = [
+		{
+			value: "fullName",
+			label: "Full Name",
+		},
+		{
+			value: "email",
+			label: "Email",
+		},
+		{
+			value: "description",
+			label: "Description",
+		},
+	];
 	return (
 		<>
-			<div className="flex flex-w">
-				<div className="w-full px-4">
-					<div>
-						<h1>Enquiries</h1>
+			<div className="flex flex-w w-full">
+				{isLoading ? (
+					<Loader />
+				) : (
+					<div className="w-full px-4">
+						{data && (
+							<Table
+								tableData={enquiries}
+								tableHead="Enquiries"
+								headers={headers}
+							/>
+						)}
 					</div>
-					<Table tableData={tableData} tableHead="Enquiries" />
-				</div>
+				)}
 			</div>
 		</>
 	);

@@ -1,4 +1,6 @@
 import React, { useState, useCallback } from "react";
+import { useMutation } from "react-query";
+import { createEvent } from "services";
 
 const EventForm = ({ newEvent }) => {
 	const intialEventValue = {
@@ -9,7 +11,8 @@ const EventForm = ({ newEvent }) => {
 		link: "",
 	};
 	const [event, setEvent] = useState(intialEventValue);
-	const { title, description, eventDate, image, link } = event;
+	const { title, description, eventDate, link } = event;
+	const mutation = useMutation(createEvent);
 
 	const handleInputChange = useCallback(
 		(e) => {
@@ -20,6 +23,20 @@ const EventForm = ({ newEvent }) => {
 			}));
 		},
 		[setEvent]
+	);
+
+	const createNewEvent = useCallback(
+		(e) => {
+			e.preventDefault();
+			mutation.mutate(event);
+			if (mutation.isSuccess) {
+				setEvent(intialEventValue);
+			} else {
+				console.log("error");
+			}
+		},
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+		[event]
 	);
 
 	return (
@@ -118,7 +135,9 @@ const EventForm = ({ newEvent }) => {
 					</div>
 
 					<div className="my-4">
-						<button className="bg-pink-500 text-white active:bg-pink-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 ease-linear transition-all duration-150">
+						<button
+							className="bg-pink-500 text-white active:bg-pink-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 ease-linear transition-all duration-150"
+							onClick={createNewEvent}>
 							SAVE
 						</button>
 					</div>

@@ -1,56 +1,66 @@
 import Table from "components/Table";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import TeamCategory from "./TeamCategories";
-
-const tableData = [
-  {
-    id: 1,
-    firstname: "Mary",
-    lastname: "Jane",
-    role: "Program Manager",
-    category: "FTE",
-    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQHCOoT2eKWeJgxP_zOgJLwhFAO-eKD-7D70g&usqp=CAU",
-  
-  },
-  {
-    id: 2,
-    firstname: "Kelp",
-    lastname: "Hopp",
-    role: "Community Manager",
-    category: "Support",
-    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQHCOoT2eKWeJgxP_zOgJLwhFAO-eKD-7D70g&usqp=CAU",
-  
-  },
-   
-  // Add more objects for more rows
-];
+import { getTeams } from "services";
+import { useQuery } from "react-query";
 
 const Team = () => {
-  return (
-    <>
-      <div
-        className="flex flex-w
-    "
-      >
-        <div className="w-full lg:w-9/12 px-4">
-          <div>
-            <h1>Team</h1>
-            <button>Add New Member</button>
-          </div>
-          <Table
-            tableData={tableData}
-            tableHead="SCA Team"
-            addNew="addMember"
-            showActions="true"
-            edit="editMember"
-          />
-        </div>
-        <div className="w-full lg:w-3/12 px-4">
-          <TeamCategory />
-        </div>
-      </div>
-    </>
-  );
+	const [team, setTeam] = useState();
+	const response = useQuery("team", getTeams);
+	useEffect(() => {
+		if (response.isSuccess) {
+			setTeam(response.data);
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [response.isSuccess]);
+	const headers = [
+		{
+			value: "_id",
+			label: "ID",
+		},
+		{
+			value: "name",
+			label: "Name",
+		},
+		{
+			value: "isLeader",
+			label: "Team Lead",
+		},
+		{
+			value: "team",
+			label: "Team",
+		},
+		{
+			value: "createdAt",
+			label: "Created",
+		},
+		{
+			value: "state",
+			label: "State",
+		},
+	];
+	return (
+		<>
+			<div className="flex flex-w">
+				<div className="w-full lg:w-9/12">
+					<div className="mb-8"></div>
+					{team && (
+						<Table
+							tableData={team}
+							tableHead="SCA Team"
+							headers={headers}
+							addNew
+							view
+							deleteBtn
+						/>
+					)}
+				</div>
+				<div className="w-full lg:w-3/12">
+					<TeamCategory />
+				</div>
+			</div>
+		</>
+	);
 };
 
 export default Team;

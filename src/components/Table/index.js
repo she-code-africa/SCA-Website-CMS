@@ -1,31 +1,42 @@
 import React from "react";
-import { Link, useHistory } from "react-router-dom";
-import { AiOutlineDelete } from "react-icons/ai";
+import { useHistory } from "react-router-dom";
+import { AiOutlineDelete, AiOutlineEye } from "react-icons/ai";
 import { MdOutlineEdit } from "react-icons/md";
-import { paths } from "utils";
 
-const Table = ({ tableData, tableHead, addNew, showActions, edit, view }) => {
+const Table = ({
+	tableData,
+	tableHead,
+	addNew,
+	edit,
+	view,
+	headers: columns,
+	deleteBtn,
+}) => {
 	const history = useHistory();
-	const viewDetails = (id) => {
-		history.push(`${paths[view]}/${id}`);
+	const { pathname } = history.location;
+	const viewDetails = (catId, id) => {
+		if (pathname === "/admin/team") {
+			history.push(`${pathname}/view/${catId}/${id}`);
+		} else {
+			history.push(`${pathname}/view/${id}`);
+		}
 	};
 	const getTableHeaders = () => {
 		if (tableData.length === 0) return null;
-
-		const headers = Object.keys(tableData[0]).map((key, index) => {
+		const headers = columns.map((key, index) => {
 			return (
 				<th
 					className={
 						"px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left  bg-slate-50 text-slate-500 border-slate-100"
 					}
 					key={index}>
-					{key}
+					{key.label}
 				</th>
 			);
 		});
 
 		// Add the new column header for actions
-		if (showActions) {
+		if (edit || view || deleteBtn) {
 			headers.push(
 				<th
 					className={
@@ -36,48 +47,64 @@ const Table = ({ tableData, tableHead, addNew, showActions, edit, view }) => {
 				</th>
 			);
 		}
-
 		return <tr>{headers}</tr>;
 	};
 
 	const getTableRows = () => {
 		if (tableData.length === 0) return null;
-
-		return tableData.map((data, index) => {
+		return Object.values(tableData).map((data, index) => {
 			return (
-				<tr
-					key={index}
-					className="hover:cursor-pointer hover:bg-gray-600"
-					onClick={() => viewDetails(data.id)}>
-					{Object.values(data).map((value) => {
+				<tr key={index} className="hover:cursor-pointer hover:bg-gray-600">
+					{columns.map(({ value }, index) => {
 						return (
 							<td
 								className={
-									"border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 hover:cursor-pointer"
+									"border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 hover:cursor-pointer capitalize"
 								}
-								key={value}>
-								{value}
+								key={index}>
+								{value !== "team"
+									? typeof data[value] === "boolean"
+										? data[value]
+											? "Yes"
+											: "No"
+										: data[value]
+									: data[value].name}
 							</td>
 						);
 					})}
 
 					{/* Add the new column for actions */}
-					{showActions && (
+					{(edit || view || deleteBtn) && (
 						<td
 							className={
-								"border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 flex items-center"
+								"border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 flex items-center hover:cursor-pointer"
 							}>
-							<Link
-								to={`${paths[edit]}/${data.id}`}
-								className="text-black rounded px-2 py-1 mr-2 hover:cursor-pointer">
-								<MdOutlineEdit size="1rem" />
-							</Link>
-							<button
-								className="bg-transparent text-red-500 rounded px-2 py-1"
-								// onClick={() => handleDelete(data.id)}
-							>
-								<AiOutlineDelete size="1rem" />
-							</button>
+							{edit && (
+								<div
+									onClick={() => {
+										history.push(`${pathname}/edit/${data._id}`);
+									}}
+									className="text-black rounded px-2 py-1 mr-2 hover:cursor-pointer">
+									<MdOutlineEdit size="1rem" />
+								</div>
+							)}
+							{view && (
+								<div
+									className="hover:cursor-pointer"
+									onClick={() => {
+										viewDetails(data.team._id, data._id);
+									}}>
+									<AiOutlineEye size="1rem" />
+								</div>
+							)}
+							{deleteBtn && (
+								<button
+									className="bg-transparent text-red-500 rounded px-2 py-1"
+									// onClick={() => handleDelete(data.id)}
+								>
+									<AiOutlineDelete size="1rem" />
+								</button>
+							)}
 						</td>
 					)}
 				</tr>
@@ -100,11 +127,11 @@ const Table = ({ tableData, tableHead, addNew, showActions, edit, view }) => {
 										{tableHead}
 									</h3>
 									{addNew && (
-										<Link
-											to={paths[addNew]}
+										<button
+											onClick={() => history.push(`${pathname}/add`)}
 											className="bg-pink-500 py-2 px-4 rounded text-white text-sm">
 											Add
-										</Link>
+										</button>
 									)}
 								</div>
 							</div>

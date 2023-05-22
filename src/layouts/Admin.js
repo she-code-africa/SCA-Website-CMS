@@ -1,5 +1,5 @@
 import React from "react";
-import { Switch, Route, Redirect } from "react-router-dom";
+import { Switch, Route } from "react-router-dom";
 
 import AdminNavbar from "components/Navbars/AdminNavbar.js";
 import Sidebar from "components/Sidebar/Sidebar.js";
@@ -11,7 +11,7 @@ import FooterAdmin from "components/Footers/FooterAdmin.js";
 import Dashboard from "views/admin/Dashboard.js";
 import Settings from "views/admin/Settings.js";
 
-import { TeamList, AddMember, EditMember } from "views/admin/Teams";
+import { TeamList, AddMember, EditMember, ViewMember } from "views/admin/Teams";
 import {
 	VolunteerList,
 	AddVolunteer,
@@ -53,17 +53,14 @@ export default function Admin() {
 			<div className="relative md:ml-64 bg-slate-100 min-h-screen flex flex-col">
 				<AdminNavbar /> {/* Header */}
 				<HeaderStats />
-				<div className="px-4 md:px-10 mx-auto w-full -m-24">
+				<div className="px-4 flex items-center flex-1 md:px-10 mx-auto w-full -mt-20 mb-12">
 					<Switch>
 						<Route path={paths.dashboard} exact component={Dashboard} />
 						<Route path={paths.settings} exact component={Settings} />
 						<Route path={paths.team} exact component={TeamList} />
+						<Route path={paths.viewMember} exact component={ViewMember} />
 						<Route path={paths.addMember} exact component={AddMember} />
-						<Route
-							path={`${paths.editMember}/:id`}
-							exact
-							component={EditMember}
-						/>
+						<Route path="/admin/team/edit/:id" exact component={EditMember} />
 
 						<Route path={paths.allVolunteers} exact component={VolunteerList} />
 						<Route path={paths.addVolunteer} exact component={AddVolunteer} />
@@ -163,8 +160,8 @@ export default function Admin() {
 						{/* <Redirect from = "/admin"
         to = "/admin/dashboard" /> */}
 					</Switch>
-					<FooterAdmin />
 				</div>
+				<FooterAdmin />
 			</div>
 		</>
 	);
