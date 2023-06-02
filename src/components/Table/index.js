@@ -1,13 +1,21 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { AiOutlineDelete, AiOutlineEye } from "react-icons/ai";
 import { MdOutlineEdit } from "react-icons/md";
 import Modal from "components/Modal";
 
-const Table = ({ tableData, tableHead, addNew, headers: columns, actions }) => {
+const Table = ({
+	tableData,
+	tableHead,
+	addNew,
+	headers: columns,
+	actions,
+	handleDelete,
+}) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const history = useHistory();
 	const { pathname } = history.location;
+	const [currItem, setCurrItem] = useState();
 	const viewDetails = (data) => {
 		if (pathname === "/admin/team") {
 			history.push(`${pathname}/view/${data.team._id}/${data._id}`);
@@ -15,6 +23,17 @@ const Table = ({ tableData, tableHead, addNew, headers: columns, actions }) => {
 			history.push(`${pathname}/view/${data._id}`);
 		}
 	};
+	const deleteItem = useCallback(() => {
+		if (pathname === "/admin/team") {
+			console.log(currItem);
+			handleDelete(currItem.team._id, currItem._id);
+			setIsOpen(false);
+		} else {
+			handleDelete(currItem._id);
+			setIsOpen(false);
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [currItem, pathname]);
 	const getTableHeaders = () => {
 		if (tableData.length === 0) return null;
 		const headers = columns.map((key, index) => {
@@ -97,9 +116,10 @@ const Table = ({ tableData, tableHead, addNew, headers: columns, actions }) => {
 									return (
 										<button
 											className="bg-transparent text-red-500 rounded px-2 py-1"
-											onClick={() => setIsOpen(true)}
-											// onClick={() => handleDelete(data.id)}
-										>
+											onClick={() => {
+												setIsOpen(true);
+												setCurrItem(data);
+											}}>
 											<AiOutlineDelete size="1rem" />
 										</button>
 									);
@@ -154,7 +174,11 @@ const Table = ({ tableData, tableHead, addNew, headers: columns, actions }) => {
 						<p>Are you sure you want to delete this Item?</p>
 					</div>
 					<div className="flex justify-center mt-3">
-						<button className="mr-2 bg-red-600 text-white  px-4 py-1 rounded">
+						<button
+							className="mr-2 bg-red-600 text-white  px-4 py-1 rounded"
+							onClick={() => {
+								deleteItem();
+							}}>
 							Yes
 						</button>
 						<button

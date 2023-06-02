@@ -120,3 +120,10 @@ export async function archiveTeamMember(catId, id) {
 	);
 	return member;
 }
+
+export async function deleteTeamMember({ catId, id }) {
+	const member = await api.delete(
+		`${baseUrl}/teams/categories/${catId}/members/${id}`
+	);
+	return member;
+}
