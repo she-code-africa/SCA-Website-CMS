@@ -107,15 +107,15 @@ export async function createEvent() {
 	return event;
 }
 
-export async function publishTeamMember(catId, id) {
-	const member = await api.post(
+export async function publishTeamMember({ catId, id }) {
+	const member = await api.patch(
 		`${baseUrl}/teams/categories/${catId}/members/${id}/publish`
 	);
 	return member;
 }
 
-export async function archiveTeamMember(catId, id) {
-	const member = await api.post(
+export async function archiveTeamMember({ catId, id }) {
+	const member = await api.patch(
 		`${baseUrl}/teams/categories/${catId}/members/${id}/archive`
 	);
 	return member;
