@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
 import { AiOutlineDelete, AiOutlineEye } from "react-icons/ai";
 import { MdOutlineEdit } from "react-icons/md";
+import Modal from "components/Modal";
 
 const Table = ({ tableData, tableHead, addNew, headers: columns, actions }) => {
+	const [isOpen, setIsOpen] = useState(false);
 	const history = useHistory();
 	const { pathname } = history.location;
 	const viewDetails = (data) => {
@@ -95,6 +97,7 @@ const Table = ({ tableData, tableHead, addNew, headers: columns, actions }) => {
 									return (
 										<button
 											className="bg-transparent text-red-500 rounded px-2 py-1"
+											onClick={() => setIsOpen(true)}
 											// onClick={() => handleDelete(data.id)}
 										>
 											<AiOutlineDelete size="1rem" />
@@ -144,6 +147,24 @@ const Table = ({ tableData, tableHead, addNew, headers: columns, actions }) => {
 					</div>
 				</div>
 			</div>
+
+			<Modal title="Delete" isOpen={isOpen}>
+				<div>
+					<div>
+						<p>Are you sure you want to delete this Item?</p>
+					</div>
+					<div className="flex justify-center mt-3">
+						<button className="mr-2 bg-red-600 text-white  px-4 py-1 rounded">
+							Yes
+						</button>
+						<button
+							className="bg-slate-600 px-4 py-1 text-white rounded"
+							onClick={() => setIsOpen(false)}>
+							No
+						</button>
+					</div>
+				</div>
+			</Modal>
 		</>
 	);
 };
