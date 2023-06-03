@@ -34,6 +34,9 @@ const Table = ({
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [currItem, pathname]);
+	const handleModal = () => {
+		setIsOpen(!isOpen);
+	};
 	const getTableHeaders = () => {
 		if (tableData.length === 0) return null;
 		const headers = columns.map((key, index) => {
@@ -168,7 +171,7 @@ const Table = ({
 				</div>
 			</div>
 
-			<Modal title="Delete" isOpen={isOpen}>
+			<Modal title="Delete" isOpen={isOpen} onClose={handleModal}>
 				<div>
 					<div>
 						<p>Are you sure you want to delete this Item?</p>
