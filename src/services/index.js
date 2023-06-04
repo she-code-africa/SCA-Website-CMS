@@ -12,8 +12,17 @@ export async function getEvent(id) {
 }
 
 export async function editEvent({ id, data }) {
-	console.log(id, data);
 	const event = await api.put(`${baseUrl}/events/${id}`, data);
+	return event;
+}
+
+export async function publishEvent(id) {
+	const event = await api.patch(`${baseUrl}/events/${id}`);
+	return event;
+}
+
+export async function archiveEvent(id) {
+	const event = await api.patch(`${baseUrl}/events/${id}`);
 	return event;
 }
 
