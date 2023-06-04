@@ -17,11 +17,9 @@ const Table = ({
 	const { pathname } = history.location;
 	const [currItem, setCurrItem] = useState();
 	const viewDetails = (data) => {
-		if (pathname === "/admin/team") {
-			history.push(`${pathname}/view/${data.team._id}/${data._id}`);
-		} else {
-			history.push(`${pathname}/view/${data._id}`);
-		}
+		pathname === "/admin/team"
+			? history.push(`${pathname}/view/${data.team._id}/${data._id}`)
+			: history.push(`${pathname}/view/${data._id}`);
 	};
 	const deleteItem = useCallback(() => {
 		if (pathname === "/admin/team") {
@@ -83,6 +81,8 @@ const Table = ({
 										? data[value]
 											? "Yes"
 											: "No"
+										: data[value].length > 50
+										? data[value].slice(0, 50 - 1) + "..."
 										: data[value]
 									: data[value].name}
 							</td>

@@ -6,6 +6,17 @@ export async function getEvents() {
 	return events;
 }
 
+export async function getEvent(id) {
+	const event = await api.get(`${baseUrl}/events/${id}`);
+	return event;
+}
+
+export async function editEvent({ id, data }) {
+	console.log(id, data);
+	const event = await api.put(`${baseUrl}/events/${id}`, data);
+	return event;
+}
+
 export async function getChapters() {
 	const chapters = await api.get(`${baseUrl}/chapters/member-chapters`);
 	return chapters;
@@ -102,8 +113,8 @@ export async function getTeamMember(catId, id) {
 	return member;
 }
 
-export async function createEvent() {
-	const event = await api.post(`${baseUrl}/events`);
+export async function createEvent(data) {
+	const event = await api.post(`${baseUrl}/events`, data);
 	return event;
 }
 
