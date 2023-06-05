@@ -1,0 +1,24 @@
+.grid {
+	display: grid;
+}
+
+.job-grid {
+	grid-template-columns: 1fr;
+	text-align: center;
+	column-gap: 8px;
+	justify-items: center;
+}
+
+@media (min-width: 600px) {
+	.job-grid {
+		grid-template-columns: repeat(2, 1fr);
+		text-align: left;
+	}
+}
+
+@media (min-width: 992px) {
+	.job-grid {
+		grid-template-columns: repeat(4, 1fr);
+		text-align: center;
+	}
+}

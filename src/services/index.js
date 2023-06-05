@@ -86,6 +86,21 @@ export async function getJobs() {
 	return jobsResponse;
 }
 
+export async function getJob(id) {
+	const job = await api.get(`${baseUrl}/job/postings/${id}`);
+	return job;
+}
+
+export async function publishJob({ id }) {
+	const job = await api.patch(`${baseUrl}/job/postings/${id}/publish`);
+	return job;
+}
+
+export async function archiveJob({ id }) {
+	const job = await api.patch(`${baseUrl}/job/postings/${id}/archive`);
+	return job;
+}
+
 export async function getJobCategories() {
 	const jobCategories = await api.get(`${baseUrl}/job/category`);
 	return jobCategories;

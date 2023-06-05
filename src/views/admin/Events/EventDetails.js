@@ -63,7 +63,7 @@ const EventDetails = () => {
 	};
 	return (
 		<>
-			{response.isLoading ? (
+			{response.isLoading || loading ? (
 				<Loader />
 			) : (
 				<>
