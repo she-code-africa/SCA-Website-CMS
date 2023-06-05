@@ -1,25 +1,39 @@
-import React from "react";
+import React, { useCallback, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { AiOutlineDelete, AiOutlineEye } from "react-icons/ai";
 import { MdOutlineEdit } from "react-icons/md";
+import Modal from "components/Modal";
 
 const Table = ({
 	tableData,
 	tableHead,
 	addNew,
-	edit,
-	view,
 	headers: columns,
-	deleteBtn,
+	actions,
+	handleDelete,
 }) => {
+	const [isOpen, setIsOpen] = useState(false);
 	const history = useHistory();
 	const { pathname } = history.location;
-	const viewDetails = (catId, id) => {
+	const [currItem, setCurrItem] = useState();
+	const viewDetails = (data) => {
+		pathname === "/admin/team"
+			? history.push(`${pathname}/view/${data.team._id}/${data._id}`)
+			: history.push(`${pathname}/view/${data._id}`);
+	};
+	const deleteItem = useCallback(() => {
 		if (pathname === "/admin/team") {
-			history.push(`${pathname}/view/${catId}/${id}`);
+			console.log(currItem);
+			handleDelete(currItem.team._id, currItem._id);
+			setIsOpen(false);
 		} else {
-			history.push(`${pathname}/view/${id}`);
+			handleDelete(currItem._id);
+			setIsOpen(false);
 		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [currItem, pathname]);
+	const handleModal = () => {
+		setIsOpen(!isOpen);
 	};
 	const getTableHeaders = () => {
 		if (tableData.length === 0) return null;
@@ -36,7 +50,7 @@ const Table = ({
 		});
 
 		// Add the new column header for actions
-		if (edit || view || deleteBtn) {
+		if (actions) {
 			headers.push(
 				<th
 					className={
@@ -67,6 +81,8 @@ const Table = ({
 										? data[value]
 											? "Yes"
 											: "No"
+										: data[value].length > 50
+										? data[value].slice(0, 50 - 1) + "..."
 										: data[value]
 									: data[value].name}
 							</td>
@@ -74,37 +90,46 @@ const Table = ({
 					})}
 
 					{/* Add the new column for actions */}
-					{(edit || view || deleteBtn) && (
+					{actions && (
 						<td
 							className={
 								"border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 flex items-center hover:cursor-pointer"
 							}>
-							{edit && (
-								<div
-									onClick={() => {
-										history.push(`${pathname}/edit/${data._id}`);
-									}}
-									className="text-black rounded px-2 py-1 mr-2 hover:cursor-pointer">
-									<MdOutlineEdit size="1rem" />
-								</div>
-							)}
-							{view && (
-								<div
-									className="hover:cursor-pointer"
-									onClick={() => {
-										viewDetails(data.team._id, data._id);
-									}}>
-									<AiOutlineEye size="1rem" />
-								</div>
-							)}
-							{deleteBtn && (
-								<button
-									className="bg-transparent text-red-500 rounded px-2 py-1"
-									// onClick={() => handleDelete(data.id)}
-								>
-									<AiOutlineDelete size="1rem" />
-								</button>
-							)}
+							{actions.map((action) => {
+								if (action === "view") {
+									return (
+										<button
+											onClick={() => {
+												viewDetails(data);
+											}}>
+											<AiOutlineEye size="1rem" />
+										</button>
+									);
+								} else if (action === "edit") {
+									return (
+										<div
+											onClick={() => {
+												history.push(`${pathname}/edit/${data._id}`);
+											}}
+											className="text-black rounded px-2 py-1 hover:cursor-pointer">
+											<MdOutlineEdit size="1rem" />
+										</div>
+									);
+								} else if (action === "delete") {
+									return (
+										<button
+											className="bg-transparent text-red-500 rounded px-2 py-1"
+											onClick={() => {
+												setIsOpen(true);
+												setCurrItem(data);
+											}}>
+											<AiOutlineDelete size="1rem" />
+										</button>
+									);
+								} else {
+									return null;
+								}
+							})}
 						</td>
 					)}
 				</tr>
@@ -145,6 +170,28 @@ const Table = ({
 					</div>
 				</div>
 			</div>
+
+			<Modal title="Delete" isOpen={isOpen} onClose={handleModal}>
+				<div>
+					<div>
+						<p>Are you sure you want to delete this Item?</p>
+					</div>
+					<div className="flex justify-center mt-3">
+						<button
+							className="mr-2 bg-red-600 text-white  px-4 py-1 rounded"
+							onClick={() => {
+								deleteItem();
+							}}>
+							Yes
+						</button>
+						<button
+							className="bg-slate-600 px-4 py-1 text-white rounded"
+							onClick={() => setIsOpen(false)}>
+							No
+						</button>
+					</div>
+				</div>
+			</Modal>
 		</>
 	);
 };

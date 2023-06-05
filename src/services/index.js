@@ -6,6 +6,26 @@ export async function getEvents() {
 	return events;
 }
 
+export async function getEvent(id) {
+	const event = await api.get(`${baseUrl}/events/${id}`);
+	return event;
+}
+
+export async function editEvent({ id, data }) {
+	const event = await api.put(`${baseUrl}/events/${id}`, data);
+	return event;
+}
+
+export async function publishEvent(id) {
+	const event = await api.patch(`${baseUrl}/events/${id}`);
+	return event;
+}
+
+export async function archiveEvent(id) {
+	const event = await api.patch(`${baseUrl}/events/${id}`);
+	return event;
+}
+
 export async function getChapters() {
 	const chapters = await api.get(`${baseUrl}/chapters/member-chapters`);
 	return chapters;
@@ -66,6 +86,21 @@ export async function getJobs() {
 	return jobsResponse;
 }
 
+export async function getJob(id) {
+	const job = await api.get(`${baseUrl}/job/postings/${id}`);
+	return job;
+}
+
+export async function publishJob({ id }) {
+	const job = await api.patch(`${baseUrl}/job/postings/${id}/publish`);
+	return job;
+}
+
+export async function archiveJob({ id }) {
+	const job = await api.patch(`${baseUrl}/job/postings/${id}/archive`);
+	return job;
+}
+
 export async function getJobCategories() {
 	const jobCategories = await api.get(`${baseUrl}/job/category`);
 	return jobCategories;
@@ -102,7 +137,39 @@ export async function getTeamMember(catId, id) {
 	return member;
 }
 
-export async function createEvent() {
-	const event = await api.post(`${baseUrl}/events`);
+export async function createEvent(data) {
+	const event = await api.post(`${baseUrl}/events`, data);
 	return event;
+}
+
+export async function publishTeamMember({ catId, id }) {
+	const member = await api.patch(
+		`${baseUrl}/teams/categories/${catId}/members/${id}/publish`
+	);
+	return member;
+}
+
+export async function archiveTeamMember({ catId, id }) {
+	const member = await api.patch(
+		`${baseUrl}/teams/categories/${catId}/members/${id}/archive`
+	);
+	return member;
+}
+
+export async function deleteTeamMember({ catId, id }) {
+	const member = await api.delete(
+		`${baseUrl}/teams/categories/${catId}/members/${id}`
+	);
+	return member;
+}
+
+export async function editTeamCategories({ catId, name: data }) {
+	console.log("api", catId, data);
+	const categories = await api.put(`${baseUrl}/teams/${catId}`, data);
+	return categories;
+}
+
+export async function deleteTeamCategory({ catId }) {
+	const categories = await api.delete(`${baseUrl}/teams/${catId}`);
+	return categories;
 }
