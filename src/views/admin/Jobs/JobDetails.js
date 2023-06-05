@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useQuery, useMutation } from "react-query";
 import { useParams } from "react-router-dom/cjs/react-router-dom.min";
 import { getJob, publishJob, archiveJob } from "services";
