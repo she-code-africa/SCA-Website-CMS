@@ -33,7 +33,7 @@
 		"build:tailwind": "tailwind build src/assets/styles/index.css -o src/assets/styles/tailwind.css"
 	},
 	"engines": {
-		"node": "16.x"
+		"node": "18.x"
 	},
 	"eslintConfig": {
 		"extends": "react-app"
