@@ -90,7 +90,6 @@ const Table = ({
 							</td>
 						);
 					})}
-
 					{/* Add the new column for actions */}
 					{actions && (
 						<td
@@ -113,7 +112,7 @@ const Table = ({
 										<div
 											key={index}
 											onClick={() => {
-												history.push(`${pathname}/edit/${data.id}`);
+												history.push(`${pathname}/edit/${data._id}`);
 											}}
 											className="text-black rounded px-2 py-1 hover:cursor-pointer">
 											<MdOutlineEdit size="1rem" />
