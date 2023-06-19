@@ -21,7 +21,7 @@ const EventForm = ({ newEvent }) => {
 	const [loading, setLoading] = useState(false);
 	const { id } = useParams();
 	const { data } = useQuery(["event", id], () => getEvent(id));
-	const { createEvnt } = useMutation(createEvent, {
+	const { mutate: createEvnt } = useMutation(createEvent, {
 		onSuccess: () => {
 			setEvent(intialEventValue);
 			setLoading(false);

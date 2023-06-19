@@ -27,6 +27,7 @@ const Table = ({
 			handleDelete(currItem.team._id, currItem._id);
 			setIsOpen(false);
 		} else {
+			console.log("delete item");
 			handleDelete(currItem._id);
 			setIsOpen(false);
 		}
