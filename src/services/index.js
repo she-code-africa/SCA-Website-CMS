@@ -176,3 +176,7 @@ export async function deleteTeamCategory({ catId }) {
 export async function getTestimonials() {
 	return await api.get(`${baseUrl}/testimonials`);
 }
+
+export async function getUsers() {
+	return await api.get(`${baseUrl}/users`);
+}
