@@ -56,8 +56,6 @@ const AddPartner = ({ newPartner }) => {
 			...prev,
 			image: URL.createObjectURL(e.target.files[0]),
 		}));
-		console.log(URL.createObjectURL(e.target.files[0]));
-		console.log(partner);
 	};
 
 	const handleSubmit = (e) => {
