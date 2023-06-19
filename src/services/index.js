@@ -49,8 +49,12 @@ export async function createPartner(data) {
 	await api.post(`${baseUrl}/partners`, data);
 }
 
-export async function editPartner(data) {
-	await api.put(`${baseUrl}/partners`, data);
+export async function editPartner(data, id) {
+	await api.put(`${baseUrl}/partners/${id}`, data);
+}
+
+export async function deletePartner(id) {
+	await api.delete(`${baseUrl}/partners/${id}`);
 }
 
 export async function getSuccessStories() {
