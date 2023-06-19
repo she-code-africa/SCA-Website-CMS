@@ -11,6 +11,10 @@ export async function getEvent(id) {
 	return event;
 }
 
+export async function deleteEvent(id) {
+	await api.delete(`${baseUrl}/events/${id}`);
+}
+
 export async function editEvent({ id, data }) {
 	const event = await api.put(`${baseUrl}/events/${id}`, data);
 	return event;
@@ -39,6 +43,22 @@ export async function getReach() {
 export async function getPartners() {
 	const partners = await api.get(`${baseUrl}/partners`);
 	return partners;
+}
+
+export async function getPartner(id) {
+	return await api.get(`${baseUrl}/partners/${id}`);
+}
+
+export async function createPartner(data) {
+	await api.post(`${baseUrl}/partners`, data);
+}
+
+export async function editPartner({ id, data }) {
+	await api.put(`${baseUrl}/partners/${id}`, data);
+}
+
+export async function deletePartner(id) {
+	await api.delete(`${baseUrl}/partners/${id}`);
 }
 
 export async function getSuccessStories() {
@@ -164,7 +184,6 @@ export async function deleteTeamMember({ catId, id }) {
 }
 
 export async function editTeamCategories({ catId, name: data }) {
-	console.log("api", catId, data);
 	const categories = await api.put(`${baseUrl}/teams/${catId}`, data);
 	return categories;
 }
@@ -172,4 +191,12 @@ export async function editTeamCategories({ catId, name: data }) {
 export async function deleteTeamCategory({ catId }) {
 	const categories = await api.delete(`${baseUrl}/teams/${catId}`);
 	return categories;
+}
+
+export async function getTestimonials() {
+	return await api.get(`${baseUrl}/testimonials`);
+}
+
+export async function getUsers() {
+	return await api.get(`${baseUrl}/users`);
 }

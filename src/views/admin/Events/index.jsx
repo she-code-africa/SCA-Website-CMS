@@ -1,32 +1,40 @@
 import Table from "components/Table";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { getEvents } from "services";
-import { useQuery } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import Loader from "components/Loader";
 import { events as header } from "utils/headers";
+import { deleteEvent } from "services";
 
 const Events = () => {
-	const [events, setEvents] = useState();
 	const { isSuccess, isLoading, data } = useQuery("events", getEvents);
-	useEffect(() => {
-		if (isSuccess) {
-			setEvents(data);
-		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [isSuccess]);
+	const queryClient = useQueryClient();
+	const { mutate, isLoading: deleting } = useMutation(deleteEvent, {
+		onSuccess: () => {
+			queryClient.invalidateQueries(["events"]);
+		},
+		onError: (err) => {
+			console.log(err);
+			console.log("error");
+		},
+	});
+	const handleDelete = (id) => {
+		mutate(id);
+	};
 	return (
 		<>
 			<div className="flex flex-w w-full">
-				{isLoading ? (
+				{isLoading || deleting ? (
 					<Loader />
 				) : (
 					<div className="w-full px-4">
-						{events && header && (
+						{data && header && isSuccess && (
 							<Table
-								tableData={events}
+								tableData={data}
 								tableHead="Events"
 								headers={header}
 								actions={["view", "edit", "delete"]}
+								handleDelete={handleDelete}
 								addNew
 							/>
 						)}

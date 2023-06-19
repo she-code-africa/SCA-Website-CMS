@@ -33,9 +33,7 @@
 		"install:clean": "rm -rf node_modules/ && rm -rf yarn.lock && yarn install && yarn build:tailwind && yarn start",
 		"build:tailwind": "tailwind build src/assets/styles/index.css -o src/assets/styles/tailwind.css"
 	},
-	"engines": {
-		"node": "18.x"
-	},
+	
 	"eslintConfig": {
 		"extends": "react-app"
 	},

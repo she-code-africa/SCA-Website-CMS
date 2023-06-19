@@ -27,6 +27,7 @@ const Table = ({
 			handleDelete(currItem.team._id, currItem._id);
 			setIsOpen(false);
 		} else {
+			console.log("delete item");
 			handleDelete(currItem._id);
 			setIsOpen(false);
 		}
@@ -95,10 +96,11 @@ const Table = ({
 							className={
 								"border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 flex items-center hover:cursor-pointer"
 							}>
-							{actions.map((action) => {
+							{actions.map((action, index) => {
 								if (action === "view") {
 									return (
 										<button
+											key={index}
 											onClick={() => {
 												viewDetails(data);
 											}}>
@@ -108,6 +110,7 @@ const Table = ({
 								} else if (action === "edit") {
 									return (
 										<div
+											key={index}
 											onClick={() => {
 												history.push(`${pathname}/edit/${data._id}`);
 											}}
@@ -118,6 +121,7 @@ const Table = ({
 								} else if (action === "delete") {
 									return (
 										<button
+											key={index}
 											className="bg-transparent text-red-500 rounded px-2 py-1"
 											onClick={() => {
 												setIsOpen(true);

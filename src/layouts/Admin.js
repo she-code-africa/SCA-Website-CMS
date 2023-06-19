@@ -62,26 +62,6 @@ export default function Admin() {
 						<Route path={paths.addMember} exact component={AddMember} />
 						<Route path="/admin/team/edit/:id" exact component={EditMember} />
 
-						<Route path={paths.allVolunteers} exact component={VolunteerList} />
-						<Route path={paths.addVolunteer} exact component={AddVolunteer} />
-						<Route path={paths.editVolunteer} exact component={EditVolunteer} />
-
-						<Route
-							path={paths.listVolunteerCategory}
-							exact
-							component={VolunteerCategoryList}
-						/>
-						<Route
-							path={paths.addVolunteerCategory}
-							exact
-							component={AddVolunteerCategory}
-						/>
-						<Route
-							path={paths.editVolunteerCategory}
-							exact
-							component={EditVolunteerCategory}
-						/>
-
 						<Route path={paths.jobs} exact component={Jobs} />
 						<Route path={paths.addNewJob} exact component={AddJob} />
 						<Route path={`${paths.editJob}/:id`} exact component={EditJob} />
@@ -122,6 +102,39 @@ export default function Admin() {
 
 						<Route path={paths.enquiries} exact component={Enquiries} />
 
+						<Route path={paths.testimonial} component={Testimonial} />
+						<Route path={paths.addNewTestimonial} component={AddTestimonial} />
+						<Route
+							path={`${paths.editTestimonial}/:id`}
+							exact
+							component={EditTestimonial}
+						/>
+						<Route
+							path={`${paths.viewTestimonial}/:id`}
+							exact
+							component={ViewTestimonial}
+						/>
+
+						<Route path={paths.allVolunteers} exact component={VolunteerList} />
+						<Route path={paths.addVolunteer} exact component={AddVolunteer} />
+						<Route path={paths.editVolunteer} exact component={EditVolunteer} />
+
+						<Route
+							path={paths.listVolunteerCategory}
+							exact
+							component={VolunteerCategoryList}
+						/>
+						<Route
+							path={paths.addVolunteerCategory}
+							exact
+							component={AddVolunteerCategory}
+						/>
+						<Route
+							path={paths.editVolunteerCategory}
+							exact
+							component={EditVolunteerCategory}
+						/>
+
 						<Route path={paths.academy} exact component={Academy} />
 						<Route path={paths.initiatives} exact component={Initiatives} />
 						<Route
@@ -138,23 +151,6 @@ export default function Admin() {
 							path={`${paths.viewScholarship}/:id`}
 							exact
 							component={ViewScholarship}
-						/>
-
-						<Route path={paths.testimonial} exact component={Testimonial} />
-						<Route
-							path={paths.addNewTestimonial}
-							exact
-							component={AddTestimonial}
-						/>
-						<Route
-							path={`${paths.editTestimonial}/:id`}
-							exact
-							component={EditTestimonial}
-						/>
-						<Route
-							path={`${paths.viewTestimonial}/:id`}
-							exact
-							component={ViewTestimonial}
 						/>
 
 						{/* <Redirect from = "/admin"
