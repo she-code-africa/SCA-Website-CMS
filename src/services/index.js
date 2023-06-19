@@ -45,11 +45,15 @@ export async function getPartners() {
 	return partners;
 }
 
+export async function getPartner(id) {
+	return await api.get(`${baseUrl}/partners/${id}`);
+}
+
 export async function createPartner(data) {
 	await api.post(`${baseUrl}/partners`, data);
 }
 
-export async function editPartner(data, id) {
+export async function editPartner({ id, data }) {
 	await api.put(`${baseUrl}/partners/${id}`, data);
 }
 

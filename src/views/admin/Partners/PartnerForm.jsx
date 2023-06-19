@@ -1,12 +1,15 @@
 import Loader from "components/Loader";
-import React, { useState, useCallback } from "react";
-import { useMutation } from "react-query";
+import React, { useState, useCallback, useEffect } from "react";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 
 import { Link } from "react-router-dom";
+import { getPartner } from "services";
 import { createPartner, editPartner } from "services";
 import { paths } from "utils";
+import { useParams } from "react-router";
 
 const AddPartner = ({ newPartner }) => {
+	const queryClient = useQueryClient();
 	const intial = {
 		name: "",
 		// type: "",
@@ -15,7 +18,15 @@ const AddPartner = ({ newPartner }) => {
 	};
 	const [partner, setPartner] = useState(intial);
 	const { name, image } = partner;
-
+	const { id } = useParams();
+	const { data, isLoading: fetching } = useQuery(["partner", id], () =>
+		getPartner(id)
+	);
+	useEffect(() => {
+		if (data) {
+			setPartner(data);
+		}
+	}, [data]);
 	const { mutate: addPartner, isLoading: addingPartner } = useMutation(
 		createPartner,
 		{
@@ -28,17 +39,15 @@ const AddPartner = ({ newPartner }) => {
 		}
 	);
 
-	const { mutate: updatePartner, isLoading: upadtingPartner } = useMutation(
-		editPartner,
-		{
+	const { mutateAsync: updatePartner, isLoading: upadtingPartner } =
+		useMutation(editPartner, {
 			onSuccess: () => {
-				setPartner(intial);
+				queryClient.invalidateQueries(["partner"]);
 			},
 			onError: () => {
 				console.log("error");
 			},
-		}
-	);
+		});
 
 	const handleInputChange = useCallback(
 		(e) => {
@@ -58,17 +67,19 @@ const AddPartner = ({ newPartner }) => {
 		}));
 	};
 
-	const handleSubmit = (e) => {
+	const handleSubmit = async (e) => {
 		e.preventDefault();
 		const formData = new FormData();
 		formData.append("name", name);
 		// formData.append("image", image);
-		newPartner ? addPartner(formData) : updatePartner(formData);
+		newPartner
+			? addPartner(formData)
+			: await updatePartner({ id, data: formData });
 	};
 
 	return (
 		<>
-			{addingPartner || upadtingPartner ? (
+			{addingPartner || upadtingPartner || fetching ? (
 				<Loader />
 			) : (
 				<div className="  relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded-lg bg-slate-100 border-0">
