@@ -65,6 +65,7 @@ const Table = ({
 		return <tr>{headers}</tr>;
 	};
 
+
 	const getTableRows = () => {
 		if (tableData.length === 0) return null;
 		return Object.values(tableData).map((data, index) => {
@@ -83,13 +84,12 @@ const Table = ({
 											? "Yes"
 											: "No"
 										: data[value].length > 50
-										? data[value].slice(0, 50 - 1) + "..."
-										: data[value]
+											? data[value].slice(0, 50 - 1) + "..."
+											: data[value]
 									: data[value].name}
 							</td>
 						);
 					})}
-
 					{/* Add the new column for actions */}
 					{actions && (
 						<td
