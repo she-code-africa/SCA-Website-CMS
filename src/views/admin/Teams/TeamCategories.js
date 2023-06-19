@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from "react";
+import React, { useCallback, useState } from "react";
 import { BsCheck2, BsPencil, BsPlus, BsTrash, BsX } from "react-icons/bs";
 import { getTeamCategories, addTeamCategory } from "services";
 import { useQuery, useMutation } from "react-query";
