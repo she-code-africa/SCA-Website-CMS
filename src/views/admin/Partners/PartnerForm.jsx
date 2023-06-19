@@ -17,7 +17,7 @@ const AddPartner = ({ newPartner }) => {
 		image: "",
 	};
 	const [partner, setPartner] = useState(intial);
-	const { name, image } = partner;
+	const { name } = partner;
 	const { id } = useParams();
 	const { data, isLoading: fetching } = useQuery(["partner", id], () =>
 		getPartner(id)

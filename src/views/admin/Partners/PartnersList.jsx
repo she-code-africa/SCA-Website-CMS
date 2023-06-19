@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import Table from "components/Table";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { getPartners } from "services";

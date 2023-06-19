@@ -1,5 +1,5 @@
 import Table from "components/Table";
-import React, { useState } from "react";
+import React from "react";
 import { getEvents } from "services";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import Loader from "components/Loader";
