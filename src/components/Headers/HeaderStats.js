@@ -10,7 +10,6 @@ import { getEvents } from "services";
 export default function HeaderStats() {
 	const { data: totalUsers } = useQuery("users", getUsers);
 	const { data: totalEvents } = useQuery("events", getEvents);
-	console.log(totalEvents);
 	const [totalActiveEvents, setTotalActiveEvents] = useState();
 	useEffect(() => {
 		if (totalEvents) {
