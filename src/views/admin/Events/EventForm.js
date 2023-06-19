@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useEffect } from "react";
-import { useMutation, useQuery } from "react-query";
+import React, { useState, useEffect } from "react";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { createEvent, getEvent } from "services";
 import Loader from "components/Loader";
 import DatePicker from "react-datepicker";
@@ -15,51 +15,55 @@ const EventForm = ({ newEvent }) => {
 		image: "",
 		link: "",
 	};
+	const queryClient = useQueryClient();
 	const [event, setEvent] = useState(intialEventValue);
 	const { title, description, eventDate, link, image } = event;
-	const mutation = useMutation(createEvent);
 	const [loading, setLoading] = useState(false);
 	const { id } = useParams();
-	const response = useQuery(["event", id], () => getEvent(id));
-
-	const editMutation = useMutation(editEvent);
+	const { data } = useQuery(["event", id], () => getEvent(id));
+	const { createEvnt } = useMutation(createEvent, {
+		onSuccess: () => {
+			setEvent(intialEventValue);
+			setLoading(false);
+		},
+		onError: () => {
+			console.log("error");
+			setLoading(false);
+		},
+	});
+	const editMutation = useMutation(editEvent, {
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["event"] });
+			setLoading(false);
+		},
+		onError: () => {
+			console.log("error");
+			setLoading(false);
+		},
+	});
 
 	useEffect(() => {
-		if (response.isSuccess) {
-			setEvent(response.data);
+		if (data) {
+			setEvent(data);
 		}
-	}, [response]);
+	}, [data]);
 
-	const handleInputChange = useCallback(
-		(e) => {
-			const { name, value } = e.target;
-			setEvent((prevEvent) => ({
-				...prevEvent,
-				[name]: value,
-			}));
-		},
-		[setEvent]
-	);
+	const handleInputChange = (e) => {
+		const { name, value } = e.target;
+		setEvent((prevEvent) => ({
+			...prevEvent,
+			[name]: value,
+		}));
+	};
 
-	const createNewEvent = useCallback(
-		(e) => {
-			setLoading(true);
-			e.preventDefault();
-			mutation.mutate(event);
-			if (mutation.isSuccess) {
-				setEvent(intialEventValue);
-				setLoading(false);
-			} else {
-				console.log("error");
-				setLoading(false);
-			}
-		},
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-		[event]
-	);
+	const handleEdit = async (e) => {
+		await editMutation.mutateAsync({ id, data: event });
+	};
 
-	const handleEdit = () => {
-		editMutation.mutateAsync({ id, data: event });
+	const handleSubmit = (e) => {
+		e.preventDefault();
+		setLoading(true);
+		newEvent ? createEvnt(event) : handleEdit();
 	};
 
 	return (
@@ -74,7 +78,7 @@ const EventForm = ({ newEvent }) => {
 						</div>
 					</div>
 					<div className="flex-auto px-4 lg:px-10 py-10 pt-0">
-						<form>
+						<form onSubmit={handleSubmit}>
 							<h6 className="text-slate-400 text-sm mt-3 mb-6 font-bold uppercase">
 								Event Details
 							</h6>
@@ -103,7 +107,7 @@ const EventForm = ({ newEvent }) => {
 											Link
 										</label>
 										<input
-											type="email"
+											type="url"
 											className="border-0 px-3 py-3 placeholder-slate-300 text-slate-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
 											name="link"
 											value={link}
@@ -170,10 +174,8 @@ const EventForm = ({ newEvent }) => {
 
 							<div className="my-4">
 								<button
-									className="bg-pink-500 text-white active:bg-pink-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 ease-linear transition-all duration-150"
-									onClick={() => {
-										newEvent ? createNewEvent() : handleEdit();
-									}}>
+									type="submit"
+									className="bg-pink-500 text-white active:bg-pink-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 ease-linear transition-all duration-150">
 									SAVE
 								</button>
 							</div>
