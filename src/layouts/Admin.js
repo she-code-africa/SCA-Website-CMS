@@ -40,7 +40,7 @@ import Initiatives from "views/admin/Initiatives";
 import ViewScholarship from "views/admin/Initiatives/ViewScholarship";
 import EditScholarship from "views/admin/Initiatives/EditScholarship";
 import AddScholarship from "views/admin/Initiatives/AddScholarship";
-import Testimonial from "views/admin/Testimonials";
+import Testimonials from "views/admin/Testimonials";
 import ViewTestimonial from "views/admin/Testimonials/TestimonialDetails";
 import EditTestimonial from "views/admin/Testimonials/EditTestimonial";
 import AddTestimonial from "views/admin/Testimonials/AddTestimonial";
@@ -102,7 +102,7 @@ export default function Admin() {
 
 						<Route path={paths.enquiries} exact component={Enquiries} />
 
-						<Route path={paths.testimonial} component={Testimonial} />
+						{/* <Route path={paths.testimonials} component={Testimonial} /> */}
 						<Route path={paths.addNewTestimonial} component={AddTestimonial} />
 						<Route
 							path={`${paths.editTestimonial}/:id`}
@@ -137,6 +137,38 @@ export default function Admin() {
 
 						<Route path={paths.academy} exact component={Academy} />
 						<Route path={paths.initiatives} exact component={Initiatives} />
+						<Route
+							path={`${paths.editTestimonial}/:id`}
+							exact
+							component={EditTestimonial}
+						/>
+						<Route
+							path={`${paths.viewTestimonial}/:id`}
+							exact
+							component={ViewTestimonial}
+						/>
+
+						<Route path={paths.allVolunteers} exact component={VolunteerList} />
+						<Route path={paths.addVolunteer} exact component={AddVolunteer} />
+						<Route path={paths.editVolunteer} exact component={EditVolunteer} />
+
+						<Route
+							path={paths.listVolunteerCategory}
+							exact
+							component={VolunteerCategoryList}
+						/>
+						<Route
+							path={paths.addVolunteerCategory}
+							exact
+							component={AddVolunteerCategory}
+						/>
+						<Route
+							path={paths.editVolunteerCategory}
+							exact
+							component={EditVolunteerCategory}
+						/>
+
+						<Route path={paths.testimonials} exact component={Testimonials} />
 						<Route
 							path={paths.addNewScholarship}
 							exact
