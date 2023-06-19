@@ -45,6 +45,14 @@ export async function getPartners() {
 	return partners;
 }
 
+export async function createPartner(data) {
+	await api.post(`${baseUrl}/partners`, data);
+}
+
+export async function editPartner(data) {
+	await api.put(`${baseUrl}/partners`, data);
+}
+
 export async function getSuccessStories() {
 	const partners = await api.get(`${baseUrl}/program-success`);
 	return partners;

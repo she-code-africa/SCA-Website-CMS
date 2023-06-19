@@ -6,15 +6,8 @@ import { partners as header } from "utils/headers";
 import Loader from "components/Loader";
 
 const PartnersList = () => {
-	const [partners, setPartners] = useState([]);
 	const { isSuccess, isLoading, data } = useQuery("partners", getPartners);
-	useEffect(() => {
-		if (isSuccess) {
-			setPartners(data);
-		}
 
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [isSuccess]);
 	return (
 		<>
 			<div className="flex flex-wrap mt-4 w-full">
@@ -22,10 +15,10 @@ const PartnersList = () => {
 					<Loader />
 				) : (
 					<div className="w-full mb-12">
-						{partners && header && (
+						{data && header && isSuccess && (
 							<Table
 								headers={header}
-								tableData={partners}
+								tableData={data}
 								tableHead="Partners"
 								actions={["edit", "delete"]}
 								addNew
