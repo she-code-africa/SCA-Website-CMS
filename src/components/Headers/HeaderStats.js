@@ -7,7 +7,7 @@ import { useQuery } from "react-query";
 import { getUsers } from "services";
 import { getEvents } from "services";
 
-export default function HeaderStats() {
+export default function HeaderStats () {
 	const { data: totalUsers } = useQuery("users", getUsers);
 	const { data: totalEvents } = useQuery("events", getEvents);
 	const [totalActiveEvents, setTotalActiveEvents] = useState();
@@ -30,7 +30,7 @@ export default function HeaderStats() {
 							<div className="w-full lg:w-6/12 xl:w-3/12 px-4">
 								<CardStats
 									statSubtitle="TOTAL USERS"
-									statTitle={totalUsers && totalUsers.length}
+									statTitle={`${totalUsers && totalUsers.length}`}
 									statIconName="far fa-chart-bar"
 									statIconColor="bg-red-500"
 								/>
@@ -38,7 +38,7 @@ export default function HeaderStats() {
 							<div className="w-full lg:w-6/12 xl:w-3/12 px-4">
 								<CardStats
 									statSubtitle="TOTAL EVENTS"
-									statTitle={totalEvents && totalEvents.length}
+									statTitle={`${totalEvents && totalEvents.length}`}
 									statIconName="fas fa-chart-pie"
 									statIconColor="bg-orange-500"
 								/>
@@ -46,7 +46,7 @@ export default function HeaderStats() {
 							<div className="w-full lg:w-6/12 xl:w-3/12 px-4">
 								<CardStats
 									statSubtitle="ACTIVE PROGRAMS"
-									statTitle={totalActiveEvents && totalActiveEvents}
+									statTitle={`${totalActiveEvents && totalActiveEvents}`}
 									statIconName="fas fa-users"
 								/>
 							</div>

@@ -40,7 +40,7 @@ import Initiatives from "views/admin/Initiatives";
 import ViewScholarship from "views/admin/Initiatives/ViewScholarship";
 import EditScholarship from "views/admin/Initiatives/EditScholarship";
 import AddScholarship from "views/admin/Initiatives/AddScholarship";
-import Testimonial from "views/admin/Testimonials";
+import Testimonials from "views/admin/Testimonials";
 import ViewTestimonial from "views/admin/Testimonials/TestimonialDetails";
 import EditTestimonial from "views/admin/Testimonials/EditTestimonial";
 import AddTestimonial from "views/admin/Testimonials/AddTestimonial";
@@ -102,7 +102,7 @@ export default function Admin () {
 
 						<Route path={paths.enquiries} exact component={Enquiries} />
 
-						<Route path={paths.testimonial} component={Testimonial} />
+						{/* <Route path={paths.testimonials} component={Testimonial} /> */}
 						<Route path={paths.addNewTestimonial} component={AddTestimonial} />
 						<Route
 							path={`${paths.editTestimonial}/:id`}
@@ -153,7 +153,7 @@ export default function Admin () {
 							component={ViewScholarship}
 						/>
 
-						<Route path={paths.testimonials} exact component={Testimonial} />
+						<Route path={paths.testimonials} exact component={Testimonials} />
 						<Route
 							path={paths.addNewTestimonial}
 							exact
