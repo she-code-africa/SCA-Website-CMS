@@ -90,6 +90,8 @@ const TeamCategory = () => {
 								{showCategoryInput && (
 									<li className="flex flex-col text-sm">
 										<input
+											className="px-2 py-1"
+											placeholder="Enter Category Name"
 											type="text"
 											value={newCategory}
 											onChange={(event) => setNewCategory(event.target.value)}

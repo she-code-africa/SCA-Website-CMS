@@ -1,19 +1,12 @@
 import Table from "components/Table";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { getEvents } from "services";
 import { useQuery } from "react-query";
 import Loader from "components/Loader";
 import { events as header } from "utils/headers";
 
 const Events = () => {
-	const [events, setEvents] = useState();
 	const { isSuccess, isLoading, data } = useQuery("events", getEvents);
-	useEffect(() => {
-		if (isSuccess) {
-			setEvents(data);
-		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [isSuccess]);
 	return (
 		<>
 			<div className="flex flex-w w-full">
@@ -21,9 +14,9 @@ const Events = () => {
 					<Loader />
 				) : (
 					<div className="w-full px-4">
-						{events && header && (
+						{data && header && isSuccess && (
 							<Table
-								tableData={events}
+								tableData={data}
 								tableHead="Events"
 								headers={header}
 								actions={["view", "edit", "delete"]}

@@ -164,7 +164,6 @@ export async function deleteTeamMember({ catId, id }) {
 }
 
 export async function editTeamCategories({ catId, name: data }) {
-	console.log("api", catId, data);
 	const categories = await api.put(`${baseUrl}/teams/${catId}`, data);
 	return categories;
 }
@@ -172,4 +171,8 @@ export async function editTeamCategories({ catId, name: data }) {
 export async function deleteTeamCategory({ catId }) {
 	const categories = await api.delete(`${baseUrl}/teams/${catId}`);
 	return categories;
+}
+
+export async function getTestimonials() {
+	return await api.get(`${baseUrl}/testimonials`);
 }
