@@ -2,10 +2,6 @@
 
 export const team = [
 	{
-		value: "_id",
-		label: "ID",
-	},
-	{
 		value: "name",
 		label: "Name",
 	},
@@ -126,11 +122,19 @@ export const partners = [
 
 export const testimonials = [
 	{
-		value: "id",
+		value: "_id",
 		label: "ID",
 	},
 	{
-		value: "name",
-		label: "Name",
+		value: "firstName",
+		label: "First Name",
+	},
+	{
+		value: "lastName",
+		label: "Last Name",
+	},
+	{
+		value: "state",
+		label: "Status",
 	},
 ];
