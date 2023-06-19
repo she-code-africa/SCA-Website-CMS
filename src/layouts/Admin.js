@@ -46,7 +46,7 @@ import EditTestimonial from "views/admin/Testimonials/EditTestimonial";
 import AddTestimonial from "views/admin/Testimonials/AddTestimonial";
 import Enquiries from "views/admin/Enquiries";
 
-export default function Admin() {
+export default function Admin () {
 	return (
 		<>
 			<Sidebar />
@@ -140,7 +140,7 @@ export default function Admin() {
 							component={ViewScholarship}
 						/>
 
-						<Route path={paths.testimonial} exact component={Testimonial} />
+						<Route path={paths.testimonials} exact component={Testimonial} />
 						<Route
 							path={paths.addNewTestimonial}
 							exact

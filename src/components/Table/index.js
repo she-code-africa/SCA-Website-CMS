@@ -64,6 +64,7 @@ const Table = ({
 		return <tr>{headers}</tr>;
 	};
 
+
 	const getTableRows = () => {
 		if (tableData.length === 0) return null;
 		return Object.values(tableData).map((data, index) => {
@@ -82,8 +83,8 @@ const Table = ({
 											? "Yes"
 											: "No"
 										: data[value].length > 50
-										? data[value].slice(0, 50 - 1) + "..."
-										: data[value]
+											? data[value].slice(0, 50 - 1) + "..."
+											: data[value]
 									: data[value].name}
 							</td>
 						);
@@ -95,10 +96,11 @@ const Table = ({
 							className={
 								"border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 flex items-center hover:cursor-pointer"
 							}>
-							{actions.map((action) => {
+							{actions.map((action, index) => {
 								if (action === "view") {
 									return (
 										<button
+											key={index}
 											onClick={() => {
 												viewDetails(data);
 											}}>
@@ -108,8 +110,9 @@ const Table = ({
 								} else if (action === "edit") {
 									return (
 										<div
+											key={index}
 											onClick={() => {
-												history.push(`${pathname}/edit/${data._id}`);
+												history.push(`${pathname}/edit/${data.id}`);
 											}}
 											className="text-black rounded px-2 py-1 hover:cursor-pointer">
 											<MdOutlineEdit size="1rem" />
@@ -118,6 +121,7 @@ const Table = ({
 								} else if (action === "delete") {
 									return (
 										<button
+											key={index}
 											className="bg-transparent text-red-500 rounded px-2 py-1"
 											onClick={() => {
 												setIsOpen(true);
