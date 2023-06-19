@@ -11,6 +11,10 @@ export async function getEvent(id) {
 	return event;
 }
 
+export async function deleteEvent(id) {
+	await api.delete(`${baseUrl}/events/${id}`);
+}
+
 export async function editEvent({ id, data }) {
 	const event = await api.put(`${baseUrl}/events/${id}`, data);
 	return event;
