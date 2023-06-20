@@ -2,7 +2,7 @@ import React from "react";
 import TestimonialForm from "./TestimonialForm";
 
 const EditTestimonial = () => {
-	return <TestimonialForm newTestimonial="false" />;
+	return <TestimonialForm />;
 };
 
 export default EditTestimonial;

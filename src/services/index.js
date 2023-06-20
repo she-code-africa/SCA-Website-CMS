@@ -197,6 +197,18 @@ export async function getTestimonials() {
 	return await api.get(`${baseUrl}/testimonials`);
 }
 
+export async function getTestimonial(id) {
+	return await api.get(`${baseUrl}/testimonials/${id}`);
+}
+
+export async function createTestimonial(data) {
+	return await api.get(`${baseUrl}/testimonials/`, data);
+}
+
+export async function editTestimonial({ id, data }) {
+	return await api.get(`${baseUrl}/testimonials/${id}`, data);
+}
+
 export async function getUsers() {
 	return await api.get(`${baseUrl}/users`);
 }
