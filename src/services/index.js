@@ -200,3 +200,23 @@ export async function getTestimonials() {
 export async function getUsers() {
 	return await api.get(`${baseUrl}/users`);
 }
+
+export async function getInitiatives() {
+	return await api.get(`${baseUrl}/initiatives`);
+}
+
+export async function getInitiative(id) {
+	return await api.get(`${baseUrl}/initiatives/${id}`);
+}
+
+export async function createInitiative(data) {
+	return await api.post(`${baseUrl}/initiatives`, data);
+}
+
+export async function editInitiative({ id, data }) {
+	return await api.put(`${baseUrl}/initiatives/${id}`, data);
+}
+
+export async function deleteInitiative(id) {
+	return await api.delete(`${baseUrl}/initiatives/${id}`);
+}
