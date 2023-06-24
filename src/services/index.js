@@ -197,6 +197,38 @@ export async function getTestimonials() {
 	return await api.get(`${baseUrl}/testimonials`);
 }
 
+export async function getTestimonial(id) {
+	return await api.get(`${baseUrl}/testimonials/${id}`);
+}
+
+export async function createTestimonial(data) {
+	return await api.get(`${baseUrl}/testimonials/`, data);
+}
+
+export async function editTestimonial({ id, data }) {
+	return await api.get(`${baseUrl}/testimonials/${id}`, data);
+}
+
 export async function getUsers() {
 	return await api.get(`${baseUrl}/users`);
+}
+
+export async function getInitiatives() {
+	return await api.get(`${baseUrl}/initiatives`);
+}
+
+export async function getInitiative(id) {
+	return await api.get(`${baseUrl}/initiatives/${id}`);
+}
+
+export async function createInitiative(data) {
+	return await api.post(`${baseUrl}/initiatives`, data);
+}
+
+export async function editInitiative({ id, data }) {
+	return await api.put(`${baseUrl}/initiatives/${id}`, data);
+}
+
+export async function deleteInitiative(id) {
+	return await api.delete(`${baseUrl}/initiatives/${id}`);
 }

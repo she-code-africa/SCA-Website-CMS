@@ -32,8 +32,16 @@ export const academy = [
 
 export const initiatives = [
 	{
-		value: "title",
-		label: "Title",
+		value: "name",
+		label: "Name",
+	},
+	{
+		value: "description",
+		label: "Description",
+	},
+	{
+		value: "link",
+		label: "Link",
 	},
 ];
 

@@ -2,7 +2,7 @@ import React from "react";
 import ScholarshipForm from "./ScholarshipForm";
 
 const AddScholarship = () => {
-	return <ScholarshipForm newScholarship="true" />;
+	return <ScholarshipForm newScholarship />;
 };
 
 export default AddScholarship;
