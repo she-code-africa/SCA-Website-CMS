@@ -1,4 +1,3 @@
-import Loader from "components/Loader";
 import React from "react";
 import { useQuery } from "react-query";
 import { getEnquiries } from "services";
@@ -11,7 +10,6 @@ import {
 	TableData,
 	TableBody,
 } from "components/Table/DisplayTable";
-import { BarrLoader } from "components/Loader";
 import moment from "moment";
 
 const Enquiries = () => {
@@ -31,45 +29,35 @@ const Enquiries = () => {
 						<TableHeader></TableHeader>
 					</TableHeaderRow>
 					<TableBody loading={isLoading}>
-						<>
-							{isLoading ? (
-								<div className="min-h-[200px] flex items-center">
-									<BarrLoader />
-								</div>
-							) : (
-								<>
-									{data.map(
-										(
-											{
-												_id,
-												fullName,
-												email,
-												description,
+						{data.map(
+							(
+								{
+									_id,
+									fullName,
+									email,
+									description,
 
-												createdAt,
-											},
-											index
-										) => {
-											return (
-												<TableDataRow
-													key={index}
-													className="grid grid-cols-[150px_150px_1fr_100px] px-4 py-3 gap-x-4 bg-white">
-													<TableData>
-														<span>{fullName}</span>
-													</TableData>
-													<TableData>{email}</TableData>
-													<TableData noTruncate>{description}</TableData>
+									createdAt,
+								},
+								index
+							) => {
+								return (
+									<TableDataRow
+										key={index}
+										className="grid grid-cols-[150px_150px_1fr_100px] px-4 py-3 gap-x-4 bg-white">
+										<TableData>
+											<span>{fullName}</span>
+										</TableData>
+										<TableData>{email}</TableData>
+										<TableData noTruncate>{description}</TableData>
 
-													<TableData>
-														{moment(createdAt).format("DD MMM, YYYY")}
-													</TableData>
-												</TableDataRow>
-											);
-										}
-									)}
-								</>
-							)}
-						</>
+										<TableData>
+											{moment(createdAt).format("DD MMM, YYYY")}
+										</TableData>
+									</TableDataRow>
+								);
+							}
+						)}
 					</TableBody>
 				</Table>
 			</div>

@@ -92,7 +92,11 @@ const Category = ({
 										</form>
 									</li>
 								)}
-								<ReactPlaceholder type="text" ready={!isLoading} rows={4}>
+								<ReactPlaceholder
+									type="text"
+									ready={!isLoading}
+									rows={4}
+									color="#E0E0E0">
 									{categories.map(({ _id, name }, index) => (
 										<li
 											className="my-2 flex justify-between items-center text-xs"
