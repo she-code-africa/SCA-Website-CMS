@@ -1395,6 +1395,16 @@ video {
   row-gap: 0.5rem;
 }
 
+.gap-x-4 {
+  -webkit-column-gap: 1rem;
+          column-gap: 1rem;
+}
+
+.gap-x-2 {
+  -webkit-column-gap: 0.5rem;
+          column-gap: 0.5rem;
+}
+
 .self-start {
   align-self: flex-start;
 }
