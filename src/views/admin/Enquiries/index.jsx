@@ -30,17 +30,7 @@ const Enquiries = () => {
 					</TableHeaderRow>
 					<TableBody loading={isLoading}>
 						{data.map(
-							(
-								{
-									_id,
-									fullName,
-									email,
-									description,
-
-									createdAt,
-								},
-								index
-							) => {
+							({ _id, fullName, email, description, createdAt }, index) => {
 								return (
 									<TableDataRow
 										key={index}
