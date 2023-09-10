@@ -14,12 +14,12 @@ export const team = [
 		label: "Team",
 	},
 	{
-		value: "createdAt",
-		label: "Created",
-	},
-	{
 		value: "state",
 		label: "State",
+	},
+	{
+		value: "createdAt",
+		label: "Created",
 	},
 ];
 

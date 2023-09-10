@@ -7,11 +7,9 @@ import HeaderStats from "components/Headers/HeaderStats.js";
 import FooterAdmin from "components/Footers/FooterAdmin.js";
 
 // views
-
 import Dashboard from "views/admin/Dashboard.js";
 import Settings from "views/admin/Settings.js";
-
-import { TeamList, AddMember, EditMember, ViewMember } from "views/admin/Teams";
+import { TeamList, ViewMember, TeamViewer } from "views/admin/Teams";
 import {
 	VolunteerList,
 	AddVolunteer,
@@ -57,14 +55,14 @@ export default function Admin() {
 			<div className="relative md:ml-64 bg-slate-100 min-h-screen flex flex-col">
 				<AdminNavbar /> {/* Header */}
 				<HeaderStats />
-				<div className="px-4 flex items-center flex-1 md:px-10 mx-auto w-full -mt-20 mb-12">
+				<div className="px-4 flex md:px-10 mx-auto w-full -mt-20 mb-12">
 					<Switch>
 						<Route path={paths.dashboard} exact component={Dashboard} />
 						<Route path={paths.settings} exact component={Settings} />
 						<Route path={paths.team} exact component={TeamList} />
 						<Route path={paths.viewMember} exact component={ViewMember} />
-						<Route path={paths.addMember} exact component={AddMember} />
-						<Route path="/admin/team/edit/:id" exact component={EditMember} />
+						<Route path={paths.addMember} exact component={TeamViewer} />
+						<Route path={paths.editMember} exact component={TeamViewer} />
 
 						<Route path={paths.jobs} exact component={Jobs} />
 						<Route path={paths.addNewJob} exact component={AddJob} />

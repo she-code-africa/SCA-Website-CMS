@@ -1,8 +1,17 @@
 import DeleteModal from "components/Modal/DeleteModal";
 import React, { useState, useCallback } from "react";
 import { BsCheck2, BsPencil, BsPlus, BsTrash, BsX } from "react-icons/bs";
+import ReactPlaceholder from "react-placeholder";
+import "react-placeholder/lib/reactPlaceholder.css";
 
-const Category = ({ title, categories, addCategory, update, remove }) => {
+const Category = ({
+	title,
+	categories,
+	addCategory,
+	update,
+	remove,
+	isLoading,
+}) => {
 	const [showInput, setShowInput] = useState(false);
 	const [newCategory, setNewCategory] = useState("");
 	const [showActions, setShowActions] = useState(false);
@@ -38,8 +47,8 @@ const Category = ({ title, categories, addCategory, update, remove }) => {
 	};
 
 	const handleDelete = async () => {
-		await remove(selectedId);
 		handleModal();
+		await remove(selectedId);
 	};
 
 	const handleUpdate = (id) => {
@@ -83,69 +92,72 @@ const Category = ({ title, categories, addCategory, update, remove }) => {
 										</form>
 									</li>
 								)}
-								{categories.map(({ _id, name }, index) => (
-									<li
-										className="my-2 flex justify-between items-center text-xs"
-										key={index}>
-										{showEdit && editIndex === index ? (
-											<div className="flex justify-between w-full">
-												<input
-													value={editInput}
-													onChange={(e) => handleEditInput(e)}
-												/>
+								<ReactPlaceholder type="text" ready={!isLoading} rows={4}>
+									{categories.map(({ _id, name }, index) => (
+										<li
+											className="my-2 flex justify-between items-center text-xs"
+											key={index}>
+											{showEdit && editIndex === index ? (
+												<div className="flex justify-between w-full">
+													<input
+														value={editInput}
+														onChange={(e) => handleEditInput(e)}
+													/>
 
-												<div className="flex justify-between">
-													<button
-														className="ml-2"
-														onClick={() => handleUpdate(_id)}>
-														<BsCheck2 />
-													</button>
-													<button onClick={handleEditClick}>
-														<BsX />
-													</button>
-												</div>
-											</div>
-										) : (
-											<>
-												{name}
-												{showActions && deleteIndex === index ? (
 													<div className="flex justify-between">
 														<button
 															className="ml-2"
-															onClick={() => {
-																setSelectedId(_id);
-																handleModal();
-															}}>
+															onClick={() => handleUpdate(_id)}>
 															<BsCheck2 />
 														</button>
-														<button onClick={handleDeleteClick}>
+														<button onClick={handleEditClick}>
 															<BsX />
 														</button>
 													</div>
-												) : (
-													<span className="flex items-center">
-														<button
-															className="mr-2"
-															onClick={() => {
-																setEditInput(name);
-																setEditIndex(index);
-																handleEditClick();
-															}}>
-															<BsPencil size="0.625rem" />
-														</button>
-														<button
-															onClick={() => {
-																setDeleteIndex(index);
-																handleDeleteClick();
-															}}>
-															<BsTrash size="0.625rem" />
-														</button>
-													</span>
-												)}
-											</>
-										)}
-									</li>
-								))}
+												</div>
+											) : (
+												<>
+													{name}
+													{showActions && deleteIndex === index ? (
+														<div className="flex justify-between">
+															<button
+																className="ml-2"
+																onClick={() => {
+																	setSelectedId(_id);
+																	handleDeleteClick();
+																	handleModal();
+																}}>
+																<BsCheck2 />
+															</button>
+															<button onClick={handleDeleteClick}>
+																<BsX />
+															</button>
+														</div>
+													) : (
+														<span className="flex items-center">
+															<button
+																className="mr-2"
+																onClick={() => {
+																	setEditInput(name);
+																	setEditIndex(index);
+																	handleEditClick();
+																}}>
+																<BsPencil size="0.625rem" />
+															</button>
+															<button
+																onClick={() => {
+																	setDeleteIndex(index);
+																	handleDeleteClick();
+																}}>
+																<BsTrash size="0.625rem" />
+															</button>
+														</span>
+													)}
+												</>
+											)}
+										</li>
+									))}
+								</ReactPlaceholder>
 							</ul>
 						</div>
 					</div>

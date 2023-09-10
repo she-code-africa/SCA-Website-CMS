@@ -192,8 +192,11 @@ export async function addTeamMember(data) {
 	const member = await api.post(`${baseUrl}/teams/members`, data);
 	return member;
 }
-export async function editTeamMember(data) {
-	const member = await api.put(`${baseUrl}/teams/member`, data);
+export async function editTeamMember({ id, catId, data }) {
+	const member = await api.put(
+		`${baseUrl}/teams/categories/${catId}/members/${id}`,
+		data
+	);
 	return member;
 }
 
@@ -243,8 +246,8 @@ export async function editTeamCategories({ catId, name: data }) {
 	return categories;
 }
 
-export async function deleteTeamCategory({ catId }) {
-	const categories = await api.delete(`${baseUrl}/teams/categories/${catId}`);
+export async function deleteTeamCategory(id) {
+	const categories = await api.delete(`${baseUrl}/teams/categories/${id}`);
 	return categories;
 }
 

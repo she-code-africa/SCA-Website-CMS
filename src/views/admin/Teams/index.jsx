@@ -1,4 +1,3 @@
-export { default as TeamList } from "./TeamList";
-export { default as AddMember } from "./AddMember";
-export { default as EditMember } from "./EditMember";
+export { default as TeamList } from "./TeamMembers";
 export { default as ViewMember } from "./ViewMember";
+export { default as TeamViewer } from "./TeamViewer";
