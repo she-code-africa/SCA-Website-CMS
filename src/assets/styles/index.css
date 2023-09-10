@@ -3,6 +3,40 @@
 @tailwind utilities;
 
 .logo {
-    width: 50px;
-    margin: auto;
+	width: 50px;
+	margin: auto;
+}
+
+.grid {
+	display: grid;
+}
+
+.job-grid {
+	grid-template-columns: 1fr;
+	text-align: center;
+	column-gap: 8px;
+	justify-items: center;
+}
+
+.react-datepicker__input-container input {
+	padding: 0.75rem;
+	width: 100%;
+}
+
+.react-datepicker__input-container input:hover {
+	cursor: pointer;
+}
+
+@media (min-width: 600px) {
+	.job-grid {
+		grid-template-columns: repeat(2, 1fr);
+		text-align: left;
+	}
+}
+
+@media (min-width: 992px) {
+	.job-grid {
+		grid-template-columns: repeat(4, 1fr);
+		text-align: center;
+	}
 }

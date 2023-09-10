@@ -14,7 +14,7 @@ const TeamForm = () => {
 		bio: "",
 	};
 	const [member, setMember] = useState(intial);
-	const { name, role, image, bio } = member;
+	const { name, role, image, bio, team } = member;
 	const [categories, setCategories] = useState([]);
 	const mutation = useMutation(addTeamMember, {
 		onSuccess: () => {
@@ -33,6 +33,13 @@ const TeamForm = () => {
 		}
 	}, [data, isSuccess]);
 
+	const handleOnChange = (e) => {
+		setMember((prev) => ({
+			...prev,
+			image: e.target.files[0],
+		}));
+	};
+
 	const handleInputChange = useCallback(
 		(e) => {
 			const { name, value } = e.target;
@@ -47,7 +54,13 @@ const TeamForm = () => {
 	const addMember = useCallback(
 		(e) => {
 			e.preventDefault();
-			mutation.mutate(member);
+			const formData = new FormData();
+			formData.append("name", name);
+			formData.append("bio", bio);
+			formData.append("team", team);
+			formData.append("role", role);
+			formData.append("image", image);
+			mutation.mutate(formData);
 		},
 		[member, mutation]
 	);
@@ -144,12 +157,13 @@ const TeamForm = () => {
 										Image
 									</label>
 									<input
-										type="text"
 										className="border-0 px-3 py-3 placeholder-slate-300 text-slate-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
 										name="image"
-										value={image}
-										onChange={handleInputChange}
+										type="file"
+										onChange={handleOnChange}
 									/>
+
+									{image && <img src={image} alt={`${name}`} />}
 								</div>
 							</div>
 							<div className="w-full   px-4">

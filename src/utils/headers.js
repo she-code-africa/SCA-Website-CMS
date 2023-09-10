@@ -23,10 +23,13 @@ export const team = [
 	},
 ];
 
-export const academy = [
+export const courses = [
+	{ value: "name", label: "Course Name" },
+	{ value: "shortDescription", label: "Description" },
+	{ value: "school", label: "School" },
 	{
-		value: "title",
-		label: "Title",
+		value: "createdAt",
+		label: "Created",
 	},
 ];
 
@@ -43,6 +46,15 @@ export const initiatives = [
 		value: "link",
 		label: "Link",
 	},
+];
+
+export const schoolPrograms = [
+	{ value: "title", label: "Title", type: "string" },
+	{ value: "cohort", label: "Cohort", type: "string" },
+	{ value: "briefContent", label: "Info", type: "string" },
+	{ value: "school", label: "School", type: "string" },
+	{ value: "publishDate", label: "Published", type: "date" },
+	{ value: "createdAt", label: "Created", type: "string" },
 ];
 
 export const companies = [
@@ -63,6 +75,10 @@ export const companies = [
 		label: "Phone",
 	},
 	{
+		value: "state",
+		label: "State",
+	},
+	{
 		value: "createdAt",
 		label: "Created At",
 	},
@@ -81,13 +97,18 @@ export const enquiries = [
 		value: "description",
 		label: "Description",
 	},
+	{
+		value: "created",
+		label: "Created",
+	},
 ];
 
 export const events = [
 	{ value: "title", label: "Title" },
 	{ value: "description", label: "Description" },
-	{ value: "eventDate", label: "Date" },
 	{ value: "link", label: "Link" },
+	{ value: "eventDate", label: "Event Date" },
+	{ value: "createdAt", label: "Created" },
 ];
 
 export const jobs = [
@@ -103,17 +124,14 @@ export const jobs = [
 		value: "deadline",
 		label: "Deadline",
 	},
-	{
-		value: "minimumExperience",
-		label: "Minimum Experience",
-	},
+
 	{
 		value: "location",
 		label: "Location",
 	},
 	{
-		value: "salaryRange",
-		label: "Salary Range",
+		value: "createdAt",
+		label: "Created",
 	},
 ];
 

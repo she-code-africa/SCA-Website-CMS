@@ -45,10 +45,14 @@ import ViewTestimonial from "views/admin/Testimonials/TestimonialDetails";
 import EditTestimonial from "views/admin/Testimonials/EditTestimonial";
 import AddTestimonial from "views/admin/Testimonials/AddTestimonial";
 import Enquiries from "views/admin/Enquiries";
+import Protected from "components/Protected";
+import SchoolProgramViewer from "views/admin/Academy/school-programs/SchoolProgramViewer";
+import CourseViewer from "views/admin/Academy/course/CourseViewer";
+import SchoolProgramDetails from "views/admin/Academy/school-programs/SchoolProgramDetails";
 
 export default function Admin() {
 	return (
-		<>
+		<Protected>
 			<Sidebar />
 			<div className="relative md:ml-64 bg-slate-100 min-h-screen flex flex-col">
 				<AdminNavbar /> {/* Header */}
@@ -185,12 +189,37 @@ export default function Admin() {
 							component={ViewScholarship}
 						/>
 
+						<Route
+							path={paths.addSchoolProgram}
+							exact
+							component={SchoolProgramViewer}
+						/>
+
+						<Route
+							path={`${paths.editSchoolProgram}/:id`}
+							exact
+							component={SchoolProgramViewer}
+						/>
+
+						<Route
+							path={`${paths.viewSchoolProgram}/:id`}
+							exact
+							component={SchoolProgramDetails}
+						/>
+
+						<Route path={paths.addCourse} exact component={CourseViewer} />
+
+						<Route
+							path={`${paths.editCourse}/:id`}
+							exact
+							component={CourseViewer}
+						/>
 						{/* <Redirect from = "/admin"
         to = "/admin/dashboard" /> */}
 					</Switch>
 				</div>
 				<FooterAdmin />
 			</div>
-		</>
+		</Protected>
 	);
 }

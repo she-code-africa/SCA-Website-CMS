@@ -35,4 +35,10 @@ export const paths = {
 	editTestimonial: "/admin/testimonials/edit",
 	viewTestimonial: "/admin/testimonials/view",
 	enquiries: "/admin/enquiries",
+	viewSchoolProgram: "/admin/academy/school-programs/view",
+	addSchoolProgram: "/admin/academy/school-programs/new",
+	editSchoolProgram: `/admin/academy/school-programs/edit`,
+	viewCourse: "/admin/academy/courses/view/:id",
+	addCourse: "/admin/academy/courses/new",
+	editCourse: `/admin/academy/courses/edit`,
 };

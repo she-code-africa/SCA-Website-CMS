@@ -65,12 +65,11 @@ const Table = ({
 		return <tr>{headers}</tr>;
 	};
 
-
 	const getTableRows = () => {
 		if (tableData.length === 0) return null;
 		return Object.values(tableData).map((data, index) => {
 			return (
-				<tr key={index} className="hover:cursor-pointer hover:bg-gray-600">
+				<tr key={index} className="hover:cursor-pointer">
 					{columns.map(({ value }, index) => {
 						return (
 							<td
@@ -84,8 +83,8 @@ const Table = ({
 											? "Yes"
 											: "No"
 										: data[value].length > 50
-											? data[value].slice(0, 50 - 1) + "..."
-											: data[value]
+										? data[value].slice(0, 50 - 1) + "..."
+										: data[value]
 									: data[value].name}
 							</td>
 						);

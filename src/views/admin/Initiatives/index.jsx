@@ -1,6 +1,5 @@
 import Table from "components/Table";
 import React from "react";
-// import Category from "components/Categories";
 import { initiatives as header } from "utils/headers";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { getInitiatives } from "services";
@@ -13,7 +12,7 @@ const Initiatives = () => {
 		"initiatives",
 		getInitiatives
 	);
-	const { mutate, deleting } = useMutation(deleteInitiative, {
+	const { mutate, isLoading: deleting } = useMutation(deleteInitiative, {
 		onSuccess: () => {
 			queryClient.invalidateQueries("initiatives");
 		},
@@ -21,10 +20,7 @@ const Initiatives = () => {
 			console.log("error");
 		},
 	});
-	// const [categories] = useState(ScholarshipCategories);
-	// const addCategory = useCallback(() => {
-	// 	console.log("add Category");
-	// }, []);
+
 	const handleDelete = (id) => {
 		mutate(id);
 	};
@@ -47,13 +43,6 @@ const Initiatives = () => {
 							/>
 						)}
 					</div>
-					{/* <div className="w-full lg:w-3/12 px-4">
-						<Category
-							title="Scholarship Categories"
-							categories={categories}
-							addCategory={addCategory}
-						/>
-					</div> */}
 				</div>
 			)}
 		</>

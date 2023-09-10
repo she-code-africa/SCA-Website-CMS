@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
-
+import Cookies from "js-cookie";
 import { useMutation } from "react-query";
 import { login } from "services";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 const logo = require("../../assets/img/she-code-africa-logo.png").default;
 
 export default function Login() {
@@ -11,8 +12,9 @@ export default function Login() {
 	const [error, setError] = useState(false);
 	const history = useHistory();
 
-	const mutation = useMutation(login, {
+	const { mutate, isLoading: loading } = useMutation(login, {
 		onSuccess: (data) => {
+			Cookies.set("isLoggedIn", true);
 			localStorage.setItem("token", data);
 			history.push("/admin");
 		},
@@ -22,7 +24,8 @@ export default function Login() {
 	});
 
 	const signin = () => {
-		mutation.mutate({ email, password });
+		mutate({ email, password });
+		console.log(loading);
 	};
 
 	return (
@@ -87,10 +90,14 @@ export default function Login() {
 
 									<div className="text-center mt-6">
 										<button
-											className="bg-slate-800 text-white active:bg-slate-600 text-sm font-bold uppercase px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 w-full ease-linear transition-all duration-150"
+											className="bg-slate-800 text-white active:bg-slate-600 text-sm font-bold uppercase px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 w-full ease-linear transition-all duration-150 hover:opacity-60 flex justify-center items-center"
 											type="button"
 											onClick={() => signin()}>
-											Sign In
+											{loading ? (
+												<AiOutlineLoading3Quarters className="animate-spin" />
+											) : (
+												"Sign In"
+											)}
 										</button>
 									</div>
 								</form>
