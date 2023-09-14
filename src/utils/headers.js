@@ -42,9 +42,14 @@ export const initiatives = [
 		value: "description",
 		label: "Description",
 	},
+
 	{
 		value: "link",
 		label: "Link",
+	},
+	{
+		value: "createdAt",
+		label: "Created",
 	},
 ];
 
@@ -139,6 +144,10 @@ export const partners = [
 	{
 		value: "name",
 		label: "Name",
+	},
+	{
+		value: "featured",
+		label: "Featured",
 	},
 	{
 		value: "createdAt",

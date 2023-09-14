@@ -19,10 +19,11 @@ const SPForm = ({ newItem }) => {
 		cohort: "",
 		extendedContent: "",
 		school: "",
+		link: "",
 	};
 	const queryClient = useQueryClient();
 	const [schoolProgram, setSchoolProgram] = useState(initialValue);
-	const { title, image, briefContent, cohort, extendedContent, school } =
+	const { title, image, briefContent, cohort, extendedContent, school, link } =
 		schoolProgram;
 	const [schools, setSchools] = useState([]);
 
@@ -74,6 +75,7 @@ const SPForm = ({ newItem }) => {
 		formData.append("school", school);
 		formData.append("extendedContent", extendedContent);
 		formData.append("cohort", cohort);
+		formData.append("link", link);
 		newItem ? addSchoolProgram(formData) : updateSchoolProgram();
 	};
 
@@ -135,6 +137,7 @@ const SPForm = ({ newItem }) => {
 										/>
 									</div>
 								</div>
+
 								<div className="w-full lg:w-6/12 px-4">
 									<div className="relative w-full mb-3">
 										<label
@@ -173,6 +176,22 @@ const SPForm = ({ newItem }) => {
 											className="border-0 px-3 py-3 placeholder-slate-300 text-slate-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
 											name="cohort"
 											value={cohort}
+											onChange={handleInputChange}
+										/>
+									</div>
+								</div>
+								<div className="w-full lg:w-6/12 px-4">
+									<div className="relative w-full mb-3">
+										<label
+											className="block uppercase text-slate-600 text-xs font-bold mb-2"
+											htmlFor="link">
+											Link
+										</label>
+										<input
+											type="text"
+											className="border-0 px-3 py-3 placeholder-slate-300 text-slate-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
+											name="link"
+											value={link}
 											onChange={handleInputChange}
 										/>
 									</div>
@@ -226,7 +245,7 @@ const SPForm = ({ newItem }) => {
 									</div>
 								</div>
 
-								<div className="my-4">
+								<div className="my-4 w-full">
 									<button
 										type="submit"
 										className="bg-pink-500 text-white active:bg-pink-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 ease-linear transition-all duration-150">

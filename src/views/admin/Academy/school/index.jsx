@@ -30,19 +30,15 @@ const School = () => {
 	});
 
 	return (
-		<div>
-			{isLoading ? (
-				<BarrLoader />
-			) : (
-				<Category
-					title="Schools"
-					categories={schools}
-					addCategory={addSchool}
-					remove={removeSchool}
-					update={updateSchool}
-				/>
-			)}
-		</div>
+		<>
+			<Category
+				title="Schools"
+				categories={schools}
+				addCategory={addSchool}
+				remove={removeSchool}
+				update={updateSchool}
+			/>
+		</>
 	);
 };
 

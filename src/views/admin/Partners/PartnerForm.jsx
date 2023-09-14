@@ -13,11 +13,11 @@ const AddPartner = ({ newPartner }) => {
 	const intial = {
 		name: "",
 		// type: "",
-		// featured: false,
+		featured: false,
 		image: "",
 	};
 	const [partner, setPartner] = useState(intial);
-	const { name } = partner;
+	const { name, image } = partner;
 	const { id } = useParams();
 	const { data, isLoading: fetching } = useQuery(["partner", id], () =>
 		getPartner(id)
@@ -71,7 +71,7 @@ const AddPartner = ({ newPartner }) => {
 		e.preventDefault();
 		const formData = new FormData();
 		formData.append("name", name);
-		// formData.append("image", image);
+		formData.append("image", image);
 		newPartner
 			? addPartner(formData)
 			: await updatePartner({ id, data: formData });
