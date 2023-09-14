@@ -148,19 +148,46 @@ export const partners = [
 
 export const testimonials = [
 	{
-		value: "_id",
-		label: "ID",
+		value: "fullName",
+		label: "Full Name",
 	},
 	{
-		value: "firstName",
-		label: "First Name",
-	},
-	{
-		value: "lastName",
-		label: "Last Name",
+		value: "testimony",
+		label: "Testimony",
 	},
 	{
 		value: "state",
 		label: "Status",
+	},
+	{
+		value: "createdAt",
+		label: "Created At",
+	},
+];
+
+export const volunteer = [
+	{
+		value: "fullname",
+		label: "Full Name",
+	},
+	{
+		value: "email",
+		label: "Email",
+	},
+	{
+		value: "currentRole",
+		label: "Current Role",
+	},
+	{
+		value: "purpose",
+		label: "Purpose",
+	},
+	{
+		value: "volunteerRole",
+		label: "Volunteer Role",
+	},
+	{
+		value: "createdAt",
+		label: "Created At",
 	},
 ];

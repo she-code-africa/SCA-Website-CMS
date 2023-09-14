@@ -30,7 +30,7 @@ const Initiatives = () => {
 			{isLoading || deleting ? (
 				<Loader />
 			) : (
-				<div className="flex flex-w w-full flex-col lg:flex-row -mt-20">
+				<div className="flex w-full">
 					<div className="w-full px-4">
 						{header && isSuccess && (
 							<Table

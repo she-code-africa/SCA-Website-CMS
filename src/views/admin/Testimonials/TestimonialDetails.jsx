@@ -1,39 +1,71 @@
 import Loader from "components/Loader";
-import React, { useState, useEffect } from "react";
-import { useMutation, useQuery } from "react-query";
+import React, { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useParams, Link } from "react-router-dom";
-import { AiOutlineTeam } from "react-icons/ai";
 import { BsArrowLeft } from "react-icons/bs";
 import { paths } from "utils";
 import { getTestimonial } from "services";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { updateTestimonialStatus } from "services";
 
 const TestimonialDetails = () => {
 	const [testimonial, setTestimonial] = useState();
-	const [loading, setLoading] = useState(false);
-	const { id, cat: catId } = useParams();
-	const response = useQuery(["testimonial", id], () => getTestimonial(id));
-
-	useEffect(() => {
-		if (response.isSuccess) {
-			setTestimonial(response.data);
+	const queryClient = useQueryClient();
+	const { id } = useParams();
+	const { isLoading } = useQuery(
+		["testimonial", id],
+		() => getTestimonial(id),
+		{
+			onSuccess: (data) => {
+				setTestimonial(data);
+			},
+			onError: () => {
+				toast.error("Error fetching testimonial");
+			},
 		}
-	}, [response]);
+	);
+
+	const { mutateAsync: updateState } = useMutation(updateTestimonialStatus, {
+		onSuccess: () => {
+			toast.success("Testimonial state updated successfully");
+			queryClient.invalidateQueries(["testimonial"]);
+		},
+		onError: () => {
+			toast.error("Error updating testimonial state");
+		},
+	});
+
+	const handleUpdate = async () => {
+		let state = testimonial.state === "published" ? "draft" : "published";
+		await updateState({ id, data: { state: state } });
+	};
 
 	return (
 		<>
-			<div className="container mx-auto px-4">
-				{response.isLoading || loading ? (
-					<Loader />
+			<div className="px-4 w-full">
+				{isLoading ? (
+					<div className="min-h-[200px]">
+						<Loader />
+					</div>
 				) : (
 					<>
 						<div className="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-xl rounded-lg">
-							<div className="px-6">
+							<div className="px-6 w-full">
 								<div className="flex w-full mt-3 items-center justify-between">
 									<Link to={paths.testimonials}>
 										<BsArrowLeft size="1rem" />
 									</Link>
+
+									<div>
+										<button
+											onClick={handleUpdate}
+											className="px-4 py-2 bg-pink-700 text-white rounded-lg">
+											{testimonial.state !== "published"
+												? "Publish"
+												: "UnPublish"}
+										</button>
+									</div>
 								</div>
 								<div className="text-center mt-6">
 									<div className="flex w-full justify-center">

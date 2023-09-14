@@ -230,7 +230,7 @@ export default function Sidebar() {
 									Academy{" "}
 								</Link>{" "}
 							</li>{" "}
-							<li className="items-center">
+							{/* <li className="items-center">
 								<Link
 									className={
 										"  uppercase py-3 font-bold block text-sm " +
@@ -250,7 +250,7 @@ export default function Sidebar() {
 									</i>{" "}
 									Community{" "}
 								</Link>{" "}
-							</li>{" "}
+							</li>{" "} */}
 							<li className="items-center">
 								<Link
 									className={

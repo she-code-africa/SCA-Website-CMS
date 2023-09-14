@@ -38,7 +38,7 @@ const Jobs = () => {
 
 	const { mutate } = useMutation(deleteJob, {
 		onSuccess: () => {
-			queryClient.invalidateQueries("initiatives");
+			queryClient.invalidateQueries("jobs");
 		},
 		onError: () => {
 			console.log("error");
@@ -61,7 +61,15 @@ const Jobs = () => {
 					<Loader />
 				) : (
 					<>
-						<div className="w-full lg:w-9/12">
+						<div className="w-full lg:w-9/12 bg-white rounded-md">
+							<div className="flex items-center justify-between px-4 mt-3">
+								<h5 className="font-medium text-xl">Jobs</h5>
+								<Link
+									to={paths.addMember}
+									className="rounded bg-pink-500 text-white text-xs  px-4 py-2">
+									Add
+								</Link>
+							</div>
 							<Table width="full">
 								<TableHeaderRow className="grid grid-cols-[100px_1fr_100px_100px_80px_20px]">
 									{header.map(({ label }, index) => {

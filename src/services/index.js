@@ -259,12 +259,20 @@ export async function getTestimonial(id) {
 	return await api.get(`${baseUrl}/testimonials/${id}`);
 }
 
+export async function deleteTestimonial(id) {
+	return await api.delete(`${baseUrl}/testimonials/${id}`);
+}
+
 export async function createTestimonial(data) {
-	return await api.get(`${baseUrl}/testimonials/`, data);
+	return await api.post(`${baseUrl}/testimonials`, data);
 }
 
 export async function editTestimonial({ id, data }) {
-	return await api.get(`${baseUrl}/testimonials/${id}`, data);
+	return await api.put(`${baseUrl}/testimonials/${id}`, data);
+}
+
+export async function updateTestimonialStatus({ id, data }) {
+	return await api.post(`${baseUrl}/testimonials/change-state/${id}`, data);
 }
 
 export async function getUsers() {
@@ -349,4 +357,8 @@ export async function editCourse({ id, data }) {
 
 export async function deleteCourse(id) {
 	return await api.delete(`${baseUrl}/courses/${id}`);
+}
+
+export async function getVolunteerRequest() {
+	return await api.get(`${baseUrl}/volunteer-request/`);
 }

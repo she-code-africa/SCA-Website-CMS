@@ -1,11 +1,13 @@
 import Loader from "components/Loader";
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useParams, Link } from "react-router-dom";
 import { editTestimonial, createTestimonial, getTestimonial } from "services";
 import { paths } from "utils";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-const TestimonialForm = ({ newTestimonial }) => {
+const TestimonialForm = ({ newItem }) => {
 	const initialTestimonialValue = {
 		firstName: "",
 		testimony: "",
@@ -15,13 +17,12 @@ const TestimonialForm = ({ newTestimonial }) => {
 	const { id } = useParams();
 	const queryClient = useQueryClient();
 	const [testimonial, setTestimonial] = useState(initialTestimonialValue);
-	const { firstName, testimony, lastName, image, location } = testimonial;
-	const { data, isLoading: fetching } = useQuery(["testimonial", id], () =>
-		getTestimonial(id)
-	);
-	useEffect(() => {
-		data && setTestimonial(data);
-	}, [data]);
+	const { firstName, testimony, lastName, image } = testimonial;
+	useQuery(["testimonial", id], () => getTestimonial(id), {
+		onSuccess: (data) => {
+			setTestimonial(data);
+		},
+	});
 	const handleInputChange = useCallback(
 		(e) => {
 			const { name, value } = e.target;
@@ -38,9 +39,10 @@ const TestimonialForm = ({ newTestimonial }) => {
 		{
 			onSuccess: () => {
 				setTestimonial(initialTestimonialValue);
+				toast.success("Testimonial created Successfully");
 			},
 			onError: () => {
-				console.log("error");
+				toast.success("Couldn't create Testimonial");
 			},
 		}
 	);
@@ -50,9 +52,10 @@ const TestimonialForm = ({ newTestimonial }) => {
 		{
 			onSuccess: () => {
 				queryClient.invalidateQueries(["testimonial"]);
+				toast.success("Testimonial updated Successfully");
 			},
 			onError: () => {
-				console.log("error");
+				toast.success("Couldn't update Testimonial");
 			},
 		}
 	);
@@ -71,21 +74,21 @@ const TestimonialForm = ({ newTestimonial }) => {
 		formData.append("lastName", lastName);
 		formData.append("testimony", testimony);
 		formData.append("image", image);
-		newTestimonial
+		newItem
 			? addTestimonial(formData)
 			: updateTestimonial({ id, data: formData });
 	};
 
 	return (
 		<>
-			{fetching || creating || updating ? (
+			{creating || updating ? (
 				<Loader />
 			) : (
 				<div className="relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded-lg bg-slate-100 border-0">
 					<div className="rounded-t bg-white mb-0 px-6 py-6">
 						<div className="text-center flex justify-between">
 							<h6 className="text-slate-700 text-xl font-bold">Testimonial</h6>
-							<Link to={paths.testimonial}>
+							<Link to={paths.testimonials}>
 								<i className="fas fa-arrow-left"></i> Back
 							</Link>
 						</div>
@@ -178,6 +181,7 @@ const TestimonialForm = ({ newTestimonial }) => {
 					</div>
 				</div>
 			)}
+			<ToastContainer />
 		</>
 	);
 };

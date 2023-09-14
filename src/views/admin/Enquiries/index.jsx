@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useQuery } from "react-query";
 import { getEnquiries } from "services";
 import { enquiries as header } from "utils/headers";
@@ -11,9 +11,19 @@ import {
 	TableBody,
 } from "components/Table/DisplayTable";
 import moment from "moment";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Enquiries = () => {
-	const { isLoading, data } = useQuery("enquiries", getEnquiries);
+	const [enquiries, setEnquiries] = useState([]);
+	const { isLoading } = useQuery("enquiries", getEnquiries, {
+		onSuccess: (data) => {
+			setEnquiries(data);
+		},
+		onError: () => {
+			toast.error("Error Fetching Enquiries");
+		},
+	});
 
 	return (
 		<>
@@ -29,7 +39,7 @@ const Enquiries = () => {
 						<TableHeader></TableHeader>
 					</TableHeaderRow>
 					<TableBody loading={isLoading}>
-						{data.map(
+						{enquiries.map(
 							({ _id, fullName, email, description, createdAt }, index) => {
 								return (
 									<TableDataRow
@@ -51,6 +61,7 @@ const Enquiries = () => {
 					</TableBody>
 				</Table>
 			</div>
+			<ToastContainer />
 		</>
 	);
 };

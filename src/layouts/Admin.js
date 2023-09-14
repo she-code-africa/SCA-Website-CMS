@@ -40,13 +40,12 @@ import EditScholarship from "views/admin/Initiatives/EditScholarship";
 import AddScholarship from "views/admin/Initiatives/AddScholarship";
 import Testimonials from "views/admin/Testimonials";
 import ViewTestimonial from "views/admin/Testimonials/TestimonialDetails";
-import EditTestimonial from "views/admin/Testimonials/EditTestimonial";
-import AddTestimonial from "views/admin/Testimonials/AddTestimonial";
 import Enquiries from "views/admin/Enquiries";
 import Protected from "components/Protected";
 import SchoolProgramViewer from "views/admin/Academy/school-programs/SchoolProgramViewer";
 import CourseViewer from "views/admin/Academy/course/CourseViewer";
 import SchoolProgramDetails from "views/admin/Academy/school-programs/SchoolProgramDetails";
+import TestimonialViewer from "views/admin/Testimonials/TestimonialViewer";
 
 export default function Admin() {
 	return (
@@ -104,12 +103,15 @@ export default function Admin() {
 
 						<Route path={paths.enquiries} exact component={Enquiries} />
 
-						{/* <Route path={paths.testimonials} component={Testimonial} /> */}
-						<Route path={paths.addNewTestimonial} component={AddTestimonial} />
+						<Route
+							path={paths.addNewTestimonial}
+							exact
+							component={TestimonialViewer}
+						/>
 						<Route
 							path={`${paths.editTestimonial}/:id`}
 							exact
-							component={EditTestimonial}
+							component={TestimonialViewer}
 						/>
 						<Route
 							path={`${paths.viewTestimonial}/:id`}
@@ -139,11 +141,7 @@ export default function Admin() {
 
 						<Route path={paths.academy} exact component={Academy} />
 						<Route path={paths.initiatives} exact component={Initiatives} />
-						<Route
-							path={`${paths.editTestimonial}/:id`}
-							exact
-							component={EditTestimonial}
-						/>
+
 						<Route
 							path={`${paths.viewTestimonial}/:id`}
 							exact
