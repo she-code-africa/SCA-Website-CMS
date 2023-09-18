@@ -335,7 +335,7 @@ export default function Sidebar() {
 									Companies{" "}
 								</Link>{" "}
 							</li>{" "}
-							<li className="items-center">
+							{/* <li className="items-center">
 								<Link
 									className={
 										"  uppercase py-3 font-bold block text-sm " +
@@ -355,7 +355,7 @@ export default function Sidebar() {
 									</i>{" "}
 									Profile
 								</Link>{" "}
-							</li>{" "}
+							</li>{" "} */}
 							<li className="self-end mt-1">
 								<button onClick={logout}>
 									<AiOutlineLogout />
