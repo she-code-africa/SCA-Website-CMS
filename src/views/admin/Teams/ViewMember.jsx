@@ -90,11 +90,7 @@ const ViewMember = () => {
 									</Link>
 									<div className="flex">
 										<button
-											className={`${
-												member?.state === "published"
-													? "opacity-50"
-													: "opacity-0"
-											} text-white bg-pink-500 px-4 py-1 mr-2 rounded`}
+											className={`text-black bg-pink-500 px-4 py-1 mr-2 rounded`}
 											onClick={() => {
 												setAction("publish");
 												setIsOpen(true);

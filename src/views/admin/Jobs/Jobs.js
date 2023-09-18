@@ -65,7 +65,7 @@ const Jobs = () => {
 							<div className="flex items-center justify-between px-4 mt-3">
 								<h5 className="font-medium text-xl">Jobs</h5>
 								<Link
-									to={paths.addMember}
+									to={paths.addNewJob}
 									className="rounded bg-pink-500 text-white text-xs  px-4 py-2">
 									Add
 								</Link>
