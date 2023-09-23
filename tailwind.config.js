@@ -1,24 +1,23 @@
 const plugin = require("tailwindcss/plugin");
 
 module.exports = {
-	purge: {
-		enabled: true,
-		content: [
-			"./public/**/*.html",
-			"./public/*.html",
-			"./src/**/*.js",
-			"./src/*.js",
-			"./src/**/*.html",
-			"./src/*.html",
-			"./public/**/*.js",
-			"./public/*.js",
-		],
-		options: {
-			safelist: [],
-		},
-	},
+	content: [
+		"./src/**/*.js",
+		"./src/*.js",
+		"./src/**/*.html",
+		"./src/*.html",
+		"./public/**/*.js",
+		"./public/*.js",
+		"./src/**/**/*.{js, jsx}",
+		"./views/**/**/*.{js,jsx}",
+		"./views/**/*.{js,jsx}",
+		"./src/**/*.{js,jsx}",
+	],
 	theme: {
 		extend: {
+			colors: {
+				"black-with-opacity": "rgba(0, 0, 0, 0.6)",
+			},
 			minHeight: {
 				"screen-75": "75vh",
 			},

@@ -15,9 +15,15 @@ import Auth from "layouts/Auth.js";
 // views without layouts
 import Landing from "views/Landing.js";
 import Profile from "views/Profile.js";
-import "./index.css";
+
 // import Index from "views/Index.js";
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+	defaultOptions: {
+		queries: {
+			refetchOnWindowFocus: false,
+		},
+	},
+});
 
 ReactDOM.render(
 	<QueryClientProvider client={queryClient}>

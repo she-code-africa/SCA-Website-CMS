@@ -7,11 +7,9 @@ import HeaderStats from "components/Headers/HeaderStats.js";
 import FooterAdmin from "components/Footers/FooterAdmin.js";
 
 // views
-
 import Dashboard from "views/admin/Dashboard.js";
 import Settings from "views/admin/Settings.js";
-
-import { TeamList, AddMember, EditMember, ViewMember } from "views/admin/Teams";
+import { TeamList, ViewMember, TeamViewer } from "views/admin/Teams";
 import {
 	VolunteerList,
 	AddVolunteer,
@@ -42,25 +40,28 @@ import EditScholarship from "views/admin/Initiatives/EditScholarship";
 import AddScholarship from "views/admin/Initiatives/AddScholarship";
 import Testimonials from "views/admin/Testimonials";
 import ViewTestimonial from "views/admin/Testimonials/TestimonialDetails";
-import EditTestimonial from "views/admin/Testimonials/EditTestimonial";
-import AddTestimonial from "views/admin/Testimonials/AddTestimonial";
 import Enquiries from "views/admin/Enquiries";
+import Protected from "components/Protected";
+import SchoolProgramViewer from "views/admin/Academy/school-programs/SchoolProgramViewer";
+import CourseViewer from "views/admin/Academy/course/CourseViewer";
+import SchoolProgramDetails from "views/admin/Academy/school-programs/SchoolProgramDetails";
+import TestimonialViewer from "views/admin/Testimonials/TestimonialViewer";
 
 export default function Admin() {
 	return (
-		<>
+		<Protected>
 			<Sidebar />
 			<div className="relative md:ml-64 bg-slate-100 min-h-screen flex flex-col">
 				<AdminNavbar /> {/* Header */}
 				<HeaderStats />
-				<div className="px-4 flex items-center flex-1 md:px-10 mx-auto w-full -mt-20 mb-12">
+				<div className="px-4 flex md:px-10 mx-auto w-full -mt-20 mb-12">
 					<Switch>
 						<Route path={paths.dashboard} exact component={Dashboard} />
 						<Route path={paths.settings} exact component={Settings} />
 						<Route path={paths.team} exact component={TeamList} />
 						<Route path={paths.viewMember} exact component={ViewMember} />
-						<Route path={paths.addMember} exact component={AddMember} />
-						<Route path="/admin/team/edit/:id" exact component={EditMember} />
+						<Route path={paths.addMember} exact component={TeamViewer} />
+						<Route path={paths.editMember} exact component={TeamViewer} />
 
 						<Route path={paths.jobs} exact component={Jobs} />
 						<Route path={paths.addNewJob} exact component={AddJob} />
@@ -102,12 +103,15 @@ export default function Admin() {
 
 						<Route path={paths.enquiries} exact component={Enquiries} />
 
-						{/* <Route path={paths.testimonials} component={Testimonial} /> */}
-						<Route path={paths.addNewTestimonial} component={AddTestimonial} />
+						<Route
+							path={paths.addNewTestimonial}
+							exact
+							component={TestimonialViewer}
+						/>
 						<Route
 							path={`${paths.editTestimonial}/:id`}
 							exact
-							component={EditTestimonial}
+							component={TestimonialViewer}
 						/>
 						<Route
 							path={`${paths.viewTestimonial}/:id`}
@@ -137,11 +141,7 @@ export default function Admin() {
 
 						<Route path={paths.academy} exact component={Academy} />
 						<Route path={paths.initiatives} exact component={Initiatives} />
-						<Route
-							path={`${paths.editTestimonial}/:id`}
-							exact
-							component={EditTestimonial}
-						/>
+
 						<Route
 							path={`${paths.viewTestimonial}/:id`}
 							exact
@@ -185,12 +185,37 @@ export default function Admin() {
 							component={ViewScholarship}
 						/>
 
+						<Route
+							path={paths.addSchoolProgram}
+							exact
+							component={SchoolProgramViewer}
+						/>
+
+						<Route
+							path={`${paths.editSchoolProgram}/:id`}
+							exact
+							component={SchoolProgramViewer}
+						/>
+
+						<Route
+							path={`${paths.viewSchoolProgram}/:id`}
+							exact
+							component={SchoolProgramDetails}
+						/>
+
+						<Route path={paths.addCourse} exact component={CourseViewer} />
+
+						<Route
+							path={`${paths.editCourse}/:id`}
+							exact
+							component={CourseViewer}
+						/>
 						{/* <Redirect from = "/admin"
         to = "/admin/dashboard" /> */}
 					</Switch>
 				</div>
 				<FooterAdmin />
 			</div>
-		</>
+		</Protected>
 	);
 }

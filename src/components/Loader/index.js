@@ -1,18 +1,20 @@
 import React from "react";
-import SyncLoader from "react-spinners/SyncLoader";
+import BarLoader from "react-spinners/BarLoader";
+import ClipLoader from "react-spinners/ClipLoader";
+
+const override = {
+	display: "block",
+	margin: "0 auto",
+	borderColor: "red",
+};
 
 const Loader = () => {
-	const override = {
-		display: "block",
-		margin: "0 auto",
-		borderColor: "red",
-	};
 	return (
-		<div className="flex w-full justify-center">
-			<SyncLoader
+		<div className="flex w-full justify-center min-h-[50vh] items-center">
+			<ClipLoader
 				color="#EC4899"
 				cssOverride={override}
-				size={25}
+				size={50}
 				aria-label="Loading Spinner"
 				data-testid="loader"
 			/>
@@ -21,3 +23,15 @@ const Loader = () => {
 };
 
 export default Loader;
+
+export const BarrLoader = () => {
+	return (
+		<BarLoader
+			color="#EC4899"
+			cssOverride={override}
+			size={25}
+			aria-label="Loading Spinner"
+			data-testid="loader"
+		/>
+	);
+};

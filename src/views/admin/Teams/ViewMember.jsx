@@ -16,7 +16,7 @@ const ViewMember = () => {
 	const [isOpen, setIsOpen] = useState(false);
 	const [action, setAction] = useState("");
 	const [loading, setLoading] = useState(false);
-	const { id, cat: catId } = useParams();
+	const { id, catId } = useParams();
 	const response = useQuery(["member", id], () => getTeamMember(catId, id), {
 		enabled: !isOpen,
 	});
@@ -29,7 +29,7 @@ const ViewMember = () => {
 			setLoading(false);
 		},
 		onError: () => {
-			toast("Error");
+			toast("Error Publishing Team Member");
 			setIsOpen(false);
 			setLoading(false);
 		},
@@ -90,11 +90,7 @@ const ViewMember = () => {
 									</Link>
 									<div className="flex">
 										<button
-											className={`${
-												member?.state === "published"
-													? "opacity-50"
-													: "opacity-0"
-											} text-white bg-pink-500 px-4 py-1 mr-2 rounded`}
+											className={`text-black bg-pink-500 px-4 py-1 mr-2 rounded`}
 											onClick={() => {
 												setAction("publish");
 												setIsOpen(true);

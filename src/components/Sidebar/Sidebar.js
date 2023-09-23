@@ -1,12 +1,20 @@
 /*eslint-disable*/
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import NotificationDropdown from "components/Dropdowns/NotificationDropdown.js";
 import UserDropdown from "components/Dropdowns/UserDropdown.js";
 const logo = require("../../assets/img/she-code-africa-logo.png").default;
+import Cookies from "js-cookie";
+import { AiOutlineLogout } from "react-icons/ai";
 
 export default function Sidebar() {
 	const [collapseShow, setCollapseShow] = React.useState("hidden");
+	const history = useHistory();
+	const logout = () => {
+		Cookies.remove("isLoggedIn");
+		localStorage.removeItem("token");
+		history.push("/login");
+	};
 	return (
 		<>
 			<nav className="md:left-0 md:block md:fixed md:top-0 md:bottom-0 md:overflow-y-auto md:flex-row md:flex-nowrap md:overflow-hidden shadow-xl bg-white flex flex-wrap items-center justify-between relative md:w-64 z-10 py-4 px-6">
@@ -23,7 +31,7 @@ export default function Sidebar() {
 					<Link
 						className="md:block text-left md:pb-2 text-slate-600 mr-0 inline-block whitespace-nowrap text-sm uppercase font-bold p-4 px-0"
 						to="/">
-						<img className="logo" src={logo} alt="" />
+						<img className="logo !w-10" src={logo} alt="" />
 					</Link>{" "}
 					{/* User */}{" "}
 					<ul className="md:hidden items-center flex flex-wrap list-none">
@@ -87,7 +95,7 @@ export default function Sidebar() {
 										className={
 											"fas fa-tv mr-2 text-sm " +
 											(window.location.href.indexOf("/admin/dashboard") !== -1
-												? "opacity-75"
+												? "opacity-75 text-pink-400"
 												: "text-slate-300")
 										}>
 										{" "}
@@ -108,7 +116,7 @@ export default function Sidebar() {
 										className={
 											"fas fa-users mr-2 text-sm " +
 											(window.location.href.indexOf("/admin/team") !== -1
-												? "opacity-75"
+												? "opacity-75 text-pink-400"
 												: "text-slate-300")
 										}>
 										{" "}
@@ -129,7 +137,7 @@ export default function Sidebar() {
 										className={
 											"fas fa-handshake mr-2 text-sm " +
 											(window.location.href.indexOf("/admin/volunteer") !== -1
-												? "opacity-75"
+												? "opacity-75 text-pink-400"
 												: "text-slate-300")
 										}>
 										{" "}
@@ -150,7 +158,7 @@ export default function Sidebar() {
 										className={
 											"fas fa-question mr-2 text-sm " +
 											(window.location.href.indexOf("/admin/enquiries") !== -1
-												? "opacity-75"
+												? "opacity-75 text-pink-400"
 												: "text-slate-300")
 										}>
 										{" "}
@@ -172,7 +180,7 @@ export default function Sidebar() {
 											"fas fa-table mr-2 text-sm " +
 											(window.location.href.indexOf("/admin/testimonials") !==
 											-1
-												? "opacity-75"
+												? "opacity-75 text-pink-400"
 												: "text-slate-300")
 										}>
 										{" "}
@@ -193,7 +201,7 @@ export default function Sidebar() {
 										className={
 											"fas fa-calendar mr-2 text-sm " +
 											(window.location.href.indexOf("/admin/events") !== -1
-												? "opacity-75"
+												? "opacity-75 text-pink-400"
 												: "text-slate-300")
 										}>
 										{" "}
@@ -214,7 +222,7 @@ export default function Sidebar() {
 										className={
 											"fas fa-calendar-week mr-2 text-sm " +
 											(window.location.href.indexOf("/admin/academy") !== -1
-												? "opacity-75"
+												? "opacity-75 text-pink-400"
 												: "text-slate-300")
 										}>
 										{" "}
@@ -222,7 +230,7 @@ export default function Sidebar() {
 									Academy{" "}
 								</Link>{" "}
 							</li>{" "}
-							<li className="items-center">
+							{/* <li className="items-center">
 								<Link
 									className={
 										"  uppercase py-3 font-bold block text-sm " +
@@ -235,14 +243,14 @@ export default function Sidebar() {
 										className={
 											"fas fa-layer-group mr-2 text-sm " +
 											(window.location.href.indexOf("/admin/chapters") !== -1
-												? "opacity-75"
+												? "opacity-75 text-pink-400"
 												: "text-slate-300")
 										}>
 										{" "}
 									</i>{" "}
 									Community{" "}
 								</Link>{" "}
-							</li>{" "}
+							</li>{" "} */}
 							<li className="items-center">
 								<Link
 									className={
@@ -256,7 +264,7 @@ export default function Sidebar() {
 										className={
 											"fas fa-layer-group mr-2 text-sm " +
 											(window.location.href.indexOf("/admin/initiatives") !== -1
-												? "opacity-75"
+												? "opacity-75 text-pink-400"
 												: "text-slate-300")
 										}>
 										{" "}
@@ -277,7 +285,7 @@ export default function Sidebar() {
 										className={
 											"fas fa-heart mr-2 text-sm " +
 											(window.location.href.indexOf("/admin/partners") !== -1
-												? "opacity-75"
+												? "opacity-75 text-pink-400"
 												: "text-slate-300")
 										}>
 										{" "}
@@ -298,7 +306,7 @@ export default function Sidebar() {
 										className={
 											"fas fa-building mr-2 text-sm " +
 											(window.location.href.indexOf("/admin/jobs") !== -1
-												? "opacity-75"
+												? "opacity-75 text-pink-400"
 												: "text-slate-300")
 										}>
 										{" "}
@@ -319,7 +327,7 @@ export default function Sidebar() {
 										className={
 											"fas fa-building mr-2 text-sm " +
 											(window.location.href.indexOf("/admin/companies") !== -1
-												? "opacity-75"
+												? "opacity-75 text-pink-400"
 												: "text-slate-300")
 										}>
 										{" "}
@@ -327,7 +335,7 @@ export default function Sidebar() {
 									Companies{" "}
 								</Link>{" "}
 							</li>{" "}
-							<li className="items-center">
+							{/* <li className="items-center">
 								<Link
 									className={
 										"  uppercase py-3 font-bold block text-sm " +
@@ -338,46 +346,22 @@ export default function Sidebar() {
 									to="/admin/settings">
 									<i
 										className={
-											"fas fa-tools mr-2 text-sm " +
+											"fas fa-user-circle text-slate-400 mr-2 text-sm" +
 											(window.location.href.indexOf("/admin/settings") !== -1
-												? "opacity-75"
+												? "opacity-75 text-pink-400"
 												: "text-slate-300")
 										}>
 										{" "}
 									</i>{" "}
-									Settings{" "}
+									Profile
 								</Link>{" "}
-							</li>{" "}
-							<li className="items-center">
-								<Link
-									className="text-slate-700 hover:text-slate-500   uppercase py-3 font-bold block text-sm"
-									to="/profile">
-									<i className="fas fa-user-circle text-slate-400 mr-2 text-sm">
-										{" "}
-									</i>{" "}
-									Profile Page{" "}
-								</Link>{" "}
-							</li>{" "}
+							</li>{" "} */}
+							<li className="self-end mt-1">
+								<button onClick={logout}>
+									<AiOutlineLogout />
+								</button>
+							</li>
 						</ul>{" "}
-						{/* <li className="items-center">
-                                                              <Link
-                                                                className="text-slate-700 hover:text-slate-500   uppercase py-3 font-bold block text-sm"
-                                                                to="/auth/login"
-                                                             >
-                                                                <i className="fas fa-fingerprint text-slate-400 mr-2 text-sm"></i>{" "}
-                                                                Login
-                                                              </Link>
-                                                            </li>
-
-                                                            <li className="items-center">
-                                                              <Link
-                                                                className="text-slate-700 hover:text-slate-500   uppercase py-3 font-bold block text-sm"
-                                                                to="/auth/register"
-                                                             >
-                                                                <i className="fas fa-clipboard-list text-slate-300 mr-2 text-sm"></i>{" "}
-                                                                Register
-                                                              </Link>
-                                                            </li> */}{" "}
 					</div>{" "}
 				</div>{" "}
 			</nav>{" "}
