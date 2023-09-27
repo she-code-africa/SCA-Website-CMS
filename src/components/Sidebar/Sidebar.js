@@ -1,23 +1,31 @@
 /*eslint-disable*/
-import React from "react";
+import React, { useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import NotificationDropdown from "components/Dropdowns/NotificationDropdown.js";
 import UserDropdown from "components/Dropdowns/UserDropdown.js";
 const logo = require("../../assets/img/she-code-africa-logo.png").default;
 import Cookies from "js-cookie";
 import { AiOutlineLogout } from "react-icons/ai";
+import Modal from "components/Modal";
 
 export default function Sidebar() {
-	const [collapseShow, setCollapseShow] = React.useState("hidden");
+	const [collapseShow, setCollapseShow] = useState("hidden");
+	const [isOpen, setIsOpen] = useState(false);
 	const history = useHistory();
 	const logout = () => {
 		Cookies.remove("isLoggedIn");
 		localStorage.removeItem("token");
 		history.push("/login");
 	};
+	const handleModal = () => {
+		setIsOpen(!isOpen);
+	};
 	return (
 		<>
-			<nav className="md:left-0 md:block md:fixed md:top-0 md:bottom-0 md:overflow-y-auto md:flex-row md:flex-nowrap md:overflow-hidden shadow-xl bg-white flex flex-wrap items-center justify-between relative md:w-64 z-10 py-4 px-6">
+			<nav
+				className="md:left-0 md:block md:fixed md:top-0 md:bottom-0 md:overflow-y-auto md:flex-row md:flex-nowrap md:overflow-hidden shadow-xl bg-white flex flex-wrap items-center justify-between relative md:w-64 z-10 py-4 px-6 md:overflow-y-scroll 
+								scrollbar-thin
+								scrollbar-thumb-pink-500 scrollbar-track-pink-300">
 				<div className="md:flex-col md:items-stretch md:min-h-full md:flex-nowrap px-0 flex flex-wrap items-center justify-between w-full mx-auto ">
 					{" "}
 					{/* Toggler */}{" "}
@@ -81,7 +89,7 @@ export default function Sidebar() {
 						</form>{" "}
 						{/* Divider */} <hr className="my-4 md:min-w-full" />{" "}
 						{/* Heading */} {/* Navigation */}{" "}
-						<ul className="md:flex-col md:min-w-full flex flex-col list-none mb-4">
+						<ul className="md:flex-col md:min-w-full flex flex-col list-none mb-4 ">
 							<li className="items-center">
 								<Link
 									className={
@@ -149,6 +157,29 @@ export default function Sidebar() {
 								<Link
 									className={
 										"  uppercase py-3 font-bold block text-sm " +
+										(window.location.href.indexOf("/admin/talent-request") !==
+										-1
+											? "text-pink-400 hover:text-pink-400"
+											: "text-slate-700 hover:text-slate-500")
+									}
+									to="/admin/talent-request">
+									<i
+										className={
+											"fas fa-handshake mr-2 text-sm " +
+											(window.location.href.indexOf("/admin/talent-request") !==
+											-1
+												? "opacity-75 text-pink-400"
+												: "text-slate-300")
+										}>
+										{" "}
+									</i>{" "}
+									Talent Request{" "}
+								</Link>{" "}
+							</li>{" "}
+							<li className="items-center">
+								<Link
+									className={
+										"  uppercase py-3 font-bold block text-sm " +
 										(window.location.href.indexOf("/admin/enquiries") !== -1
 											? "text-pink-400 hover:text-pink-400"
 											: "text-slate-700 hover:text-slate-500")
@@ -186,6 +217,51 @@ export default function Sidebar() {
 										{" "}
 									</i>{" "}
 									Testimonials{" "}
+								</Link>{" "}
+							</li>{" "}
+							<li className="items-center">
+								<Link
+									className={
+										"  uppercase py-3 font-bold block text-sm " +
+										(window.location.href.indexOf("/admin/chapters") !== -1
+											? "text-pink-400 hover:text-pink-400"
+											: "text-slate-700 hover:text-slate-500")
+									}
+									to="/admin/chapters">
+									<i
+										className={
+											"fas fa-handshake mr-2 text-sm " +
+											(window.location.href.indexOf("/admin/chapters") !== -1
+												? "opacity-75 text-pink-400"
+												: "text-slate-300")
+										}>
+										{" "}
+									</i>{" "}
+									Chapters{" "}
+								</Link>{" "}
+							</li>{" "}
+							<li className="items-center">
+								<Link
+									className={
+										"  uppercase py-3 font-bold block text-sm " +
+										(window.location.href.indexOf("/admin/success-stories") !==
+										-1
+											? "text-pink-400 hover:text-pink-400"
+											: "text-slate-700 hover:text-slate-500")
+									}
+									to="/admin/success-stories">
+									<i
+										className={
+											"fas fa-handshake mr-2 text-sm " +
+											(window.location.href.indexOf(
+												"/admin/success-stories"
+											) !== -1
+												? "opacity-75 text-pink-400"
+												: "text-slate-300")
+										}>
+										{" "}
+									</i>{" "}
+									Success Stories{" "}
 								</Link>{" "}
 							</li>{" "}
 							<li className="items-center">
@@ -318,6 +394,27 @@ export default function Sidebar() {
 								<Link
 									className={
 										"  uppercase py-3 font-bold block text-sm " +
+										(window.location.href.indexOf("/admin/reach") !== -1
+											? "text-pink-400 hover:text-pink-400"
+											: "text-slate-700 hover:text-slate-500")
+									}
+									to="/admin/reach">
+									<i
+										className={
+											"fas fa-building mr-2 text-sm " +
+											(window.location.href.indexOf("/admin/reach") !== -1
+												? "opacity-75 text-pink-400"
+												: "text-slate-300")
+										}>
+										{" "}
+									</i>{" "}
+									Our Reach{" "}
+								</Link>{" "}
+							</li>{" "}
+							<li className="items-center">
+								<Link
+									className={
+										"  uppercase py-3 font-bold block text-sm " +
 										(window.location.href.indexOf("/admin/companies") !== -1
 											? "text-pink-400 hover:text-pink-400"
 											: "text-slate-700 hover:text-slate-500")
@@ -357,7 +454,7 @@ export default function Sidebar() {
 								</Link>{" "}
 							</li>{" "} */}
 							<li className="self-end mt-1">
-								<button onClick={logout}>
+								<button onClick={handleModal}>
 									<AiOutlineLogout />
 								</button>
 							</li>
@@ -365,6 +462,25 @@ export default function Sidebar() {
 					</div>{" "}
 				</div>{" "}
 			</nav>{" "}
+			<Modal title="Logout" isOpen={isOpen} onClose={handleModal}>
+				<div className="flex flex-col gap-y-3 justify-center">
+					<div>
+						<h1>Are you sure you want to logout?</h1>
+					</div>
+					<div className="flex gap-2 justify-center">
+						<button
+							className="text-white bg-red-500 rounded-lg px-4 py-1 hover:opacity-75"
+							onClick={logout}>
+							Yes
+						</button>
+						<button
+							className="text-white bg-gray-500 rounded-lg px-4 py-1 hover:opacity-75"
+							onClick={handleModal}>
+							No
+						</button>
+					</div>
+				</div>
+			</Modal>
 		</>
 	);
 }

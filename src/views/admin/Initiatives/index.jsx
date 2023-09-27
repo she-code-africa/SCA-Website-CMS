@@ -10,19 +10,19 @@ import {
 	TableDataRow,
 	TableData,
 	TableBody,
-	TableActions,
 } from "components/Table/DisplayTable";
 import DeleteModal from "components/Modal/DeleteModal";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import moment from "moment";
-import { Link } from "react-router-dom";
-import { paths } from "utils";
+import InitiativeModal from "components/Initiative/InitiativeModal";
 
 const Initiatives = () => {
 	const [initiatives, setInitiatives] = useState([]);
-	const [isOpen, setIsOpen] = useState(false);
 	const [selectedId, setSelectedId] = useState("");
+	const [isInitiativeModalOpen, setIsInitiativeModalOpen] = useState(false);
+	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+	const [newItem, setNewItem] = useState();
 	const queryClient = useQueryClient();
 	const { isLoading } = useQuery("initiatives", getInitiatives, {
 		onSuccess: (data) => {
@@ -36,6 +36,7 @@ const Initiatives = () => {
 		onSuccess: () => {
 			queryClient.invalidateQueries("initiatives");
 			toast.success("Initiatives deleted Successfully");
+			handleDeleteModal();
 		},
 		onError: () => {
 			console.log("error");
@@ -47,23 +48,31 @@ const Initiatives = () => {
 		mutate(selectedId);
 	};
 
-	const handleModal = () => {
-		setIsOpen(!isOpen);
+	const handleInitiativeModal = () => {
+		setIsInitiativeModalOpen(!isInitiativeModalOpen);
+	};
+
+	const handleDeleteModal = () => {
+		setIsDeleteModalOpen(!isDeleteModalOpen);
 	};
 
 	return (
 		<div className="w-full z-40 bg-white rounded-md">
 			<div className="flex items-center justify-between px-4 mt-3">
 				<h5 className="font-medium text-xl">Initiatives</h5>
-				<Link
-					to={paths.addNewScholarship}
-					className="rounded bg-pink-500 text-white text-xs  px-4 py-2">
+				<button
+					className="rounded-md bg-pink-500 text-white text-xs  px-4 py-2"
+					onClick={() => {
+						setNewItem(true);
+						setSelectedId("");
+						handleInitiativeModal();
+					}}>
 					Add
-				</Link>
+				</button>
 			</div>
 
 			<Table width="full">
-				<TableHeaderRow className="grid grid-cols-5">
+				<TableHeaderRow className="grid grid-cols-4">
 					{header.map(({ label }, index) => {
 						return <TableHeader key={index}>{label}</TableHeader>;
 					})}
@@ -74,36 +83,18 @@ const Initiatives = () => {
 						({ _id, name, description, link, createdAt }, index) => {
 							return (
 								<TableDataRow
+									onClick={() => {
+										setSelectedId(_id);
+										handleInitiativeModal();
+										setNewItem(false);
+									}}
 									key={index}
-									className="grid grid-cols-5 px-4 py-3 bg-white">
+									className="grid grid-cols-4 px-4 py-3 bg-white">
 									<TableData>{name}</TableData>
-
 									<TableData>{description}</TableData>
 									<TableData>{link}</TableData>
 									<TableData>
 										{moment(createdAt).format("DD MMM, YYYY")}
-									</TableData>
-									<TableData noTruncate>
-										<TableActions>
-											<Link
-												to={`${paths.viewScholarship}/${_id}`}
-												className="mb-1 px-3 text-sm text-left">
-												View
-											</Link>
-											<Link
-												to={`${paths.editScholarship}/${_id}`}
-												className="mb-1 px-3 text-sm text-left">
-												Edit
-											</Link>
-											<button
-												className="mb-1 px-3 text-sm text-left"
-												onClick={() => {
-													setSelectedId(_id);
-													handleModal();
-												}}>
-												Delete
-											</button>
-										</TableActions>
 									</TableData>
 								</TableDataRow>
 							);
@@ -111,12 +102,23 @@ const Initiatives = () => {
 					)}
 				</TableBody>
 			</Table>
-			<DeleteModal
-				title="Delete Team Member"
-				handleDelete={handleDelete}
-				isOpen={isOpen}
-				handleModal={handleModal}
-			/>
+			{isDeleteModalOpen && (
+				<DeleteModal
+					title="Delete Initative"
+					handleDelete={handleDelete}
+					isOpen={isDeleteModalOpen}
+					handleModal={handleDeleteModal}
+				/>
+			)}
+			{isInitiativeModalOpen && (
+				<InitiativeModal
+					handleDeleteModal={() => setIsDeleteModalOpen(true)}
+					isOpen={isInitiativeModalOpen}
+					handleModal={handleInitiativeModal}
+					id={selectedId}
+					newItem={newItem}
+				/>
+			)}
 			<ToastContainer />
 		</div>
 	);

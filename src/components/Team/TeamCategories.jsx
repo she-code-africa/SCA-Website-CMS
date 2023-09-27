@@ -23,30 +23,17 @@ const TeamCategory = () => {
 	const { mutate: addCategory } = useMutation(addTeamCategory, {
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["team-categories"] });
-			toast.success("Team category added successfully");
-		},
-		onError: () => {
-			queryClient.invalidateQueries({ queryKey: ["team-categories"] });
-			toast.error("Could not add team category");
 		},
 	});
 	const { mutateAsync: updateCategory } = useMutation(editTeamCategories, {
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["team-categories"] });
-			toast.success("Team category updated successfully");
-		},
-		onError: () => {
-			toast.error("Could not update team category");
 		},
 	});
 
 	const { mutateAsync: deleteCategory } = useMutation(deleteTeamCategory, {
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["team-categories"] });
-			toast.success("Team Category Delete Successfully");
-		},
-		onError: (error) => {
-			toast.error("Error deleting team category");
 		},
 	});
 

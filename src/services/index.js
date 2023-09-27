@@ -21,23 +21,13 @@ export async function editEvent({ id, data }) {
 }
 
 export async function publishEvent(id) {
-	const event = await api.patch(`${baseUrl}/events/${id}`);
+	const event = await api.patch(`${baseUrl}/events/${id}/publish`);
 	return event;
 }
 
 export async function archiveEvent(id) {
-	const event = await api.patch(`${baseUrl}/events/${id}`);
+	const event = await api.patch(`${baseUrl}/events/${id}/archive`);
 	return event;
-}
-
-export async function getChapters() {
-	const chapters = await api.get(`${baseUrl}/chapters/member-chapters`);
-	return chapters;
-}
-
-export async function getReach() {
-	const reach = await api.get(`${baseUrl}/reach`);
-	return reach;
 }
 
 export async function getPartners() {
@@ -61,11 +51,6 @@ export async function deletePartner(id) {
 	await api.delete(`${baseUrl}/partners/${id}`);
 }
 
-export async function getSuccessStories() {
-	const partners = await api.get(`${baseUrl}/program-success`);
-	return partners;
-}
-
 export async function getTeams() {
 	const teams = await api.get(`${baseUrl}/teams/members`);
 	return teams;
@@ -79,11 +64,6 @@ export async function getTeamCategories() {
 export async function getPrograms() {
 	const programs = await api.get(`${baseUrl}/programs/member-programs`);
 	return programs;
-}
-
-export async function getProgramsCategories() {
-	const programsCategories = await api.get(`${baseUrl}/programs/categories`);
-	return programsCategories;
 }
 
 export async function mutateEnquires(enquiryData) {
@@ -361,4 +341,123 @@ export async function deleteCourse(id) {
 
 export async function getVolunteerRequest() {
 	return await api.get(`${baseUrl}/volunteer-request/`);
+}
+
+export async function getOurReach() {
+	return await api.get(`${baseUrl}/reach`);
+}
+
+export async function getReach(id) {
+	return await api.get(`${baseUrl}/reach/${id}`);
+}
+
+export async function createOurReach(data) {
+	return await api.post(`${baseUrl}/reach`, data);
+}
+
+export async function editOurReach({ id, data }) {
+	return await api.put(`${baseUrl}/reach/${id}`, data);
+}
+
+export async function deleteOurReach(id) {
+	return await api.delete(`${baseUrl}/reach/${id}`);
+}
+
+export async function getTalentRequests() {
+	return await api.get(`${baseUrl}/talent-request`);
+}
+
+export async function getTalentRequest(id) {
+	return await api.get(`${baseUrl}/talent-request/${id}`);
+}
+
+export async function createTalentRequest(data) {
+	return await api.post(`${baseUrl}/talent-request`, data);
+}
+
+export async function editTalentRequest({ id, data }) {
+	return await api.put(`${baseUrl}/talent-request/${id}`, data);
+}
+
+export async function getSuccessStories() {
+	return await api.get(`${baseUrl}/program-success`);
+}
+
+export async function getSuccessStory(id) {
+	return await api.get(`${baseUrl}/program-success/${id}`);
+}
+
+export async function createSuccessStory(data) {
+	return await api.post(`${baseUrl}/program-success`, data);
+}
+
+export async function editSuccessStory({ id, data }) {
+	return await api.put(`${baseUrl}/program-success/${id}`, data);
+}
+
+export async function publishSuccessStory(id) {
+	return await api.patch(`${baseUrl}/program-success/${id}/publish`);
+}
+
+export async function archiveSuccessStory(id) {
+	return await api.patch(`${baseUrl}/program-success/${id}/publish`);
+}
+
+export async function getProgramCategories() {
+	return await api.get(`${baseUrl}/programs/categories`);
+}
+
+export async function createProgramCategory(data) {
+	return await api.post(`${baseUrl}/programs/category`, data);
+}
+
+export async function deleteProgramCategory(id) {
+	return await api.delete(`${baseUrl}/programs/category/${id}`);
+}
+
+export async function editProgramCategory({ id, data }) {
+	return await api.delete(`${baseUrl}/programs/category/${id}`, data);
+}
+
+export async function getChapterCategories() {
+	return await api.get(`${baseUrl}/chapters/categories`);
+}
+
+export async function createChapterCategory(data) {
+	return await api.post(`${baseUrl}/chapters/categories`, data);
+}
+
+export async function deleteChapterCategory(id) {
+	return await api.delete(`${baseUrl}/chapters/categories/${id}`);
+}
+
+export async function editChapterCategory({ id, data }) {
+	return await api.delete(`${baseUrl}/chapters/categories/${id}`, data);
+}
+
+export async function getChapters() {
+	return await api.get(`${baseUrl}/chapters/member-chapters`);
+}
+
+export async function createChapter(data) {
+	return await api.post(`${baseUrl}/chapters/member-chapters`, data);
+}
+
+export async function deleteChapter({ id, categoryId }) {
+	return await api.delete(
+		`${baseUrl}/chapters/categories/${categoryId}/member-chapters/${id}`
+	);
+}
+
+export async function getChapter(categoryId, id) {
+	return await api.get(
+		`${baseUrl}/chapters/categories/${categoryId}/member-chapters/${id}`
+	);
+}
+
+export async function editChapter({ id, categoryId, data }) {
+	return await api.delete(
+		`${baseUrl}/chapters/categories/${categoryId}/member-chapters/${id}`,
+		data
+	);
 }
