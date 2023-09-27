@@ -1,8 +1,10 @@
 import DeleteModal from "components/Modal/DeleteModal";
-import React, { useState, useCallback } from "react";
+import React, { useState } from "react";
 import { BsCheck2, BsPencil, BsPlus, BsTrash, BsX } from "react-icons/bs";
 import ReactPlaceholder from "react-placeholder";
 import "react-placeholder/lib/reactPlaceholder.css";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Category = ({
 	title,
@@ -20,19 +22,24 @@ const Category = ({
 	const [editIndex, setEditIndex] = useState();
 	const [deleteIndex, setDeleteIndex] = useState();
 	const [isOpen, setIsOpen] = useState(false);
-	const [selectedId, setSelectedId] = useState();
 
 	const handleModal = () => {
 		setIsOpen(!isOpen);
 	};
 
-	const handleSubmit = useCallback(() => {
+	const handleSubmit = async () => {
 		if (newCategory) {
-			addCategory({ name: newCategory });
+			try {
+				await addCategory({ name: newCategory });
+				toast.success("Category Added Successfully");
+			} catch (error) {
+				console.log(error);
+				toast.error("Could not add Category");
+			}
+			setNewCategory("");
 		}
 		setShowInput(false);
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [newCategory]);
+	};
 
 	const handleEditClick = () => {
 		setShowEdit(!showEdit);
@@ -46,13 +53,23 @@ const Category = ({
 		setShowActions(!showActions);
 	};
 
-	const handleDelete = async () => {
-		handleModal();
-		await remove(selectedId);
+	const handleUpdate = async (id) => {
+		try {
+			await update({ id, name: editInput });
+			toast.success("Category Updated Successfully");
+			handleEditInput();
+		} catch (error) {
+			toast.error("Could not update category");
+		}
 	};
 
-	const handleUpdate = (id) => {
-		update({ id, name: editInput });
+	const handleDelete = async (id) => {
+		try {
+			await remove(id);
+			toast.success("Category Deleted Successfully");
+		} catch (error) {
+			toast.error("Error Deleting Category");
+		}
 	};
 
 	return (
@@ -76,15 +93,18 @@ const Category = ({
 								style={{ maxHeight: "180px", overflowY: "scroll" }}>
 								{showInput && (
 									<li className="flex flex-col">
-										<form onSubmit={handleSubmit}>
+										<form
+											onSubmit={handleSubmit}
+											className="flex gap-2 items-center">
 											<input
+												className="h-[24px] max-w-[110px] rounded-md px-2"
 												type="text"
 												value={newCategory}
 												onChange={(event) => setNewCategory(event.target.value)}
 											/>
 											<button
 												type="submit"
-												className="bg-pink-500 px-4 py-1 text-white mt-3"
+												className="bg-pink-500 text-xs px-4 py-1 text-white rounded-md"
 												onClick={addCategory}
 												style={{ alignSelf: "end" }}>
 												Add
@@ -127,9 +147,8 @@ const Category = ({
 															<button
 																className="ml-2"
 																onClick={() => {
-																	setSelectedId(_id);
+																	handleDelete(_id);
 																	handleDeleteClick();
-																	handleModal();
 																}}>
 																<BsCheck2 />
 															</button>
@@ -173,6 +192,7 @@ const Category = ({
 				isOpen={isOpen}
 				handleModal={handleModal}
 			/>
+			<ToastContainer />
 		</>
 	);
 };

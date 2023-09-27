@@ -9,7 +9,13 @@ import FooterAdmin from "components/Footers/FooterAdmin.js";
 // views
 import Dashboard from "views/admin/Dashboard.js";
 import Settings from "views/admin/Settings.js";
-import { TeamList, ViewMember, TeamViewer } from "views/admin/Teams";
+import TeamList from "views/admin/Teams";
+import PartnersList from "views/admin/Partners";
+import TalentRequestList from "views/admin/TalentRequest";
+import Reach from "views/admin/Reach";
+import SuccessStories from "views/admin/SuccessStories";
+import Events from "views/admin/Events";
+
 import {
 	VolunteerList,
 	AddVolunteer,
@@ -23,21 +29,14 @@ import {
 import Jobs from "views/admin/Jobs/Jobs";
 import AddJob from "views/admin/Jobs/AddJob";
 import EditJob from "views/admin/Jobs/EditJob";
-import { PartnersList, AddPartner, EditPartner } from "views/admin/Partners";
 import { paths } from "utils";
 import JobDetails from "views/admin/Jobs/JobDetails";
 import Companies from "views/admin/Companies";
 import EditCompany from "views/admin/Companies/EditCompany";
 import CompanyDetails from "views/admin/Companies/CompanyDetails";
-import Events from "views/admin/Events";
-import EditEvent from "views/admin/Events/EditEvent";
-import EventDetails from "views/admin/Events/EventDetails";
-import AddEvent from "views/admin/Events/AddEvent";
+
 import Academy from "views/admin/Academy";
 import Initiatives from "views/admin/Initiatives";
-import ViewScholarship from "views/admin/Initiatives/ViewScholarship";
-import EditScholarship from "views/admin/Initiatives/EditScholarship";
-import AddScholarship from "views/admin/Initiatives/AddScholarship";
 import Testimonials from "views/admin/Testimonials";
 import ViewTestimonial from "views/admin/Testimonials/TestimonialDetails";
 import Enquiries from "views/admin/Enquiries";
@@ -46,6 +45,7 @@ import SchoolProgramViewer from "views/admin/Academy/school-programs/SchoolProgr
 import CourseViewer from "views/admin/Academy/course/CourseViewer";
 import SchoolProgramDetails from "views/admin/Academy/school-programs/SchoolProgramDetails";
 import TestimonialViewer from "views/admin/Testimonials/TestimonialViewer";
+import Chapters from "views/admin/Chapters";
 
 export default function Admin() {
 	return (
@@ -59,9 +59,21 @@ export default function Admin() {
 						<Route path={paths.dashboard} exact component={Dashboard} />
 						<Route path={paths.settings} exact component={Settings} />
 						<Route path={paths.team} exact component={TeamList} />
-						<Route path={paths.viewMember} exact component={ViewMember} />
-						<Route path={paths.addMember} exact component={TeamViewer} />
-						<Route path={paths.editMember} exact component={TeamViewer} />
+						<Route path={paths.partners} exact component={PartnersList} />
+						<Route path={paths.reach} exact component={Reach} />
+						<Route
+							path={paths.talentRequest}
+							exact
+							component={TalentRequestList}
+						/>
+						<Route
+							path={paths.successStories}
+							exact
+							component={SuccessStories}
+						/>
+						<Route path={paths.events} exact component={Events} />
+						<Route path={paths.initiatives} exact component={Initiatives} />
+						<Route path={paths.chapter} exact component={Chapters} />
 
 						<Route path={paths.jobs} exact component={Jobs} />
 						<Route path={paths.addNewJob} exact component={AddJob} />
@@ -78,27 +90,6 @@ export default function Admin() {
 							path={`${paths.viewCompany}/:id`}
 							exact
 							component={CompanyDetails}
-						/>
-
-						<Route path={paths.events} exact component={Events} />
-						<Route path={paths.addNewEvent} exact component={AddEvent} />
-						<Route
-							path={`${paths.editEvent}/:id`}
-							exact
-							component={EditEvent}
-						/>
-						<Route
-							path={`${paths.viewEvent}/:id`}
-							exact
-							component={EventDetails}
-						/>
-
-						<Route path={paths.partners} exact component={PartnersList} />
-						<Route path={paths.addPartner} exact component={AddPartner} />
-						<Route
-							path={`${paths.editPartner}/:id`}
-							exact
-							component={EditPartner}
 						/>
 
 						<Route path={paths.enquiries} exact component={Enquiries} />
@@ -140,7 +131,6 @@ export default function Admin() {
 						/>
 
 						<Route path={paths.academy} exact component={Academy} />
-						<Route path={paths.initiatives} exact component={Initiatives} />
 
 						<Route
 							path={`${paths.viewTestimonial}/:id`}
@@ -169,21 +159,6 @@ export default function Admin() {
 						/>
 
 						<Route path={paths.testimonials} exact component={Testimonials} />
-						<Route
-							path={paths.addNewScholarship}
-							exact
-							component={AddScholarship}
-						/>
-						<Route
-							path={`${paths.editScholarship}/:id`}
-							exact
-							component={EditScholarship}
-						/>
-						<Route
-							path={`${paths.viewScholarship}/:id`}
-							exact
-							component={ViewScholarship}
-						/>
 
 						<Route
 							path={paths.addSchoolProgram}

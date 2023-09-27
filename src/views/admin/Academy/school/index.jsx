@@ -1,5 +1,4 @@
 import Category from "components/Categories";
-import { BarrLoader } from "components/Loader";
 import React, { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { getSchools, createSchool, editSchool, deleteSchool } from "services";
@@ -7,7 +6,7 @@ import { getSchools, createSchool, editSchool, deleteSchool } from "services";
 const School = () => {
 	const [schools, setSchools] = useState([]);
 	const queryClient = useQueryClient();
-	const { isLoading } = useQuery("schools", getSchools, {
+	useQuery("schools", getSchools, {
 		onSuccess: (data) => {
 			setSchools(data);
 		},

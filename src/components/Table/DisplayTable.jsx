@@ -45,8 +45,12 @@ export const TableBody = ({ loading, children }) => {
 	);
 };
 
-export const TableDataRow = ({ className, children }) => {
-	return <tr className={className}>{children}</tr>;
+export const TableDataRow = ({ className, children, onClick }) => {
+	return (
+		<tr className={`${className} hover:cursor-pointer`} onClick={onClick}>
+			{children}
+		</tr>
+	);
 };
 
 export const TableData = ({ children, className, noTruncate }) => {

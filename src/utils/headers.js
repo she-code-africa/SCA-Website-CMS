@@ -33,6 +33,16 @@ export const courses = [
 	},
 ];
 
+export const reach = [
+	{ value: "name", label: "Name" },
+	{ value: "value", label: "Value" },
+	{ value: "updatedAt", label: "Updated" },
+	{
+		value: "createdAt",
+		label: "Created",
+	},
+];
+
 export const initiatives = [
 	{
 		value: "name",
@@ -112,6 +122,7 @@ export const events = [
 	{ value: "title", label: "Title" },
 	{ value: "description", label: "Description" },
 	{ value: "link", label: "Link" },
+	{ value: "state", label: "State" },
 	{ value: "eventDate", label: "Event Date" },
 	{ value: "createdAt", label: "Created" },
 ];
@@ -148,6 +159,10 @@ export const partners = [
 	{
 		value: "featured",
 		label: "Featured",
+	},
+	{
+		value: "updatedAt",
+		label: "Updated At",
 	},
 	{
 		value: "createdAt",
@@ -194,6 +209,123 @@ export const volunteer = [
 	{
 		value: "volunteerRole",
 		label: "Volunteer Role",
+	},
+	{
+		value: "createdAt",
+		label: "Created At",
+	},
+];
+
+export const talentRequest = [
+	{
+		value: "fullname",
+		label: "Full Name",
+	},
+	{
+		value: "email",
+		label: "Email",
+	},
+	{
+		value: "experienceLevel",
+		label: "Experience Level",
+	},
+	{
+		value: "jobRole",
+		label: "Job Role",
+	},
+	{
+		value: "jobDescription",
+		label: "Job Description",
+	},
+	{
+		value: "company",
+		label: "Company",
+	},
+	{
+		value: "companyLink",
+		label: "Company Link",
+	},
+	{
+		value: "updatedAt",
+		label: "Updated At",
+	},
+	{
+		value: "createdAt",
+		label: "Created At",
+	},
+];
+
+export const successStory = [
+	{
+		value: "name",
+		label: "Name",
+	},
+	{
+		value: "position",
+		label: "Position",
+	},
+	{
+		value: "story",
+		label: "Story",
+	},
+	{
+		value: "programCategory",
+		label: "Category",
+	},
+	{
+		value: "author",
+		label: "Author",
+	},
+	{
+		value: "state",
+		label: "State",
+	},
+	{
+		value: "publishDate",
+		label: "Published",
+	},
+	{
+		value: "updatedAt",
+		label: "Updated At",
+	},
+	{
+		value: "createdAt",
+		label: "Created At",
+	},
+];
+
+export const chapters = [
+	{
+		value: "name",
+		label: "Name",
+	},
+	{
+		value: "location",
+		label: "Location",
+	},
+	{
+		value: "category",
+		label: "Category",
+	},
+	{
+		value: "leader",
+		label: "Leader",
+	},
+	{
+		value: "author",
+		label: "Author",
+	},
+	{
+		value: "state",
+		label: "State",
+	},
+	{
+		value: "publishDate",
+		label: "Publish Date",
+	},
+	{
+		value: "updatedAt",
+		label: "Updated At",
 	},
 	{
 		value: "createdAt",
