@@ -332,3 +332,33 @@ export const chapters = [
 		label: "Created At",
 	},
 ];
+
+export const programs = [
+	{
+		value: "title",
+		label: "Title",
+	},
+	{ value: "cohort", label: "Cohort" },
+	{
+		value: "category",
+		label: "Category",
+	},
+	{ value: "briefContent", label: "Brief Content" },
+	{
+		value: "state",
+		label: "State",
+	},
+	{
+		value: "author",
+		label: "Author",
+	},
+
+	{
+		value: "updatedAt",
+		label: "Updated At",
+	},
+	{
+		value: "createdAt",
+		label: "Created At",
+	},
+];

@@ -7,6 +7,7 @@ export const paths = {
 	successStories: "/admin/success-stories",
 	events: "/admin/events",
 	chapter: "/admin/chapters",
+	programs: "/admin/programs",
 	settings: "/admin/settings",
 
 	allVolunteers: "/admin/volunteer",

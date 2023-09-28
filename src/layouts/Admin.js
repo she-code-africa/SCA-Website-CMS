@@ -46,6 +46,7 @@ import CourseViewer from "views/admin/Academy/course/CourseViewer";
 import SchoolProgramDetails from "views/admin/Academy/school-programs/SchoolProgramDetails";
 import TestimonialViewer from "views/admin/Testimonials/TestimonialViewer";
 import Chapters from "views/admin/Chapters";
+import Programs from "views/admin/Program";
 
 export default function Admin() {
 	return (
@@ -74,6 +75,7 @@ export default function Admin() {
 						<Route path={paths.events} exact component={Events} />
 						<Route path={paths.initiatives} exact component={Initiatives} />
 						<Route path={paths.chapter} exact component={Chapters} />
+						<Route path={paths.programs} exact component={Programs} />
 
 						<Route path={paths.jobs} exact component={Jobs} />
 						<Route path={paths.addNewJob} exact component={AddJob} />

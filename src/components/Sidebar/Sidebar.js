@@ -23,7 +23,7 @@ export default function Sidebar() {
 	return (
 		<>
 			<nav
-				className="md:left-0 md:block md:fixed md:top-0 md:bottom-0 md:overflow-y-auto md:flex-row md:flex-nowrap md:overflow-hidden shadow-xl bg-white flex flex-wrap items-center justify-between relative md:w-64 z-10 py-4 px-6 md:overflow-y-scroll 
+				className="md:left-0 md:block md:fixed md:top-0 md:bottom-0 md:flex-row md:flex-nowrap md:overflow-hidden shadow-xl bg-white flex flex-wrap items-center justify-between relative md:w-64 z-10 py-4 px-6 md:overflow-y-scroll 
 								scrollbar-thin
 								scrollbar-thumb-pink-500 scrollbar-track-pink-300">
 				<div className="md:flex-col md:items-stretch md:min-h-full md:flex-nowrap px-0 flex flex-wrap items-center justify-between w-full mx-auto ">
@@ -37,9 +37,9 @@ export default function Sidebar() {
 					</button>{" "}
 					{/* Brand */}{" "}
 					<Link
-						className="md:block text-left md:pb-2 text-slate-600 mr-0 inline-block whitespace-nowrap text-sm uppercase font-bold p-4 px-0"
+						className="md:block text-left md:py-2 text-slate-600 mr-0 inline-block whitespace-nowrap text-sm uppercase font-bold py-4 px-0"
 						to="/">
-						<img className="logo !w-10" src={logo} alt="" />
+						<img className="logo !w-6" src={logo} alt="" />
 					</Link>{" "}
 					{/* User */}{" "}
 					<ul className="md:hidden items-center flex flex-wrap list-none">
@@ -238,6 +238,27 @@ export default function Sidebar() {
 										{" "}
 									</i>{" "}
 									Chapters{" "}
+								</Link>{" "}
+							</li>{" "}
+							<li className="items-center">
+								<Link
+									className={
+										"  uppercase py-3 font-bold block text-sm " +
+										(window.location.href.indexOf("/admin/programs") !== -1
+											? "text-pink-400 hover:text-pink-400"
+											: "text-slate-700 hover:text-slate-500")
+									}
+									to="/admin/programs">
+									<i
+										className={
+											"fas fa-handshake mr-2 text-sm " +
+											(window.location.href.indexOf("/admin/programs") !== -1
+												? "opacity-75 text-pink-400"
+												: "text-slate-300")
+										}>
+										{" "}
+									</i>{" "}
+									Programs{" "}
 								</Link>{" "}
 							</li>{" "}
 							<li className="items-center">

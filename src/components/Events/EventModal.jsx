@@ -33,7 +33,6 @@ const EventModal = ({
 	};
 	const [event, setEvent] = useState(intialEventValue);
 	const { title, description, eventDate, link, image, state } = event;
-	console.log(eventDate);
 	const queryClient = useQueryClient();
 	const [edit, setEdit] = useState(false);
 	const [loading, setLoading] = useState(false);
