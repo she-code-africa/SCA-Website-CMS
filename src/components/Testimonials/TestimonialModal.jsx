@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
-import { createEvent, getEvent, editEvent } from "services";
+import { createTestimonial, getTestimonial, editTestimonial } from "services";
 import Modal from "components/Modal";
 import Placeholder from "components/Placeholder";
 import { ToastContainer, toast } from "react-toastify";
@@ -10,29 +10,27 @@ import { BiSolidImageAdd, BiArchiveIn, BiArchiveOut } from "react-icons/bi";
 import { GrView } from "react-icons/gr";
 import Tooltip from "components/Tooltip";
 import Loader from "components/Loader";
-import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
-import { publishEvent } from "services";
-import { archiveEvent } from "services";
+import { publishTestimonial } from "services";
+import { archiveTestimonial } from "services";
+import { updateTestimonialStatus } from "services";
 
-const EventModal = ({
+const TestimonialModal = ({
 	isOpen,
 	handleModal,
 	handleDeleteModal,
 	newItem,
 	id,
-	catId,
 }) => {
-	const intialEventValue = {
-		title: "",
-		description: "",
-		eventDate: "",
+	const intialTestimonialValue = {
+		firstName: "",
+		testimony: "",
 		image: "",
-		link: "",
+		lastName: "",
 	};
-	const [event, setEvent] = useState(intialEventValue);
-	const { title, description, eventDate, link, image, state } = event;
+	const [testimonial, setTestimonial] = useState(intialTestimonialValue);
+	const { firstName, testimony, lastName, image, state } = testimonial;
 	const queryClient = useQueryClient();
 	const [edit, setEdit] = useState(false);
 	const [loading, setLoading] = useState(false);
@@ -40,27 +38,34 @@ const EventModal = ({
 		edit || newItem ? "shadow focus:outline-none focus:ring !py-3" : ""
 	} w-full ease-linear transition-all duration-150 basis-9/12`;
 
-	const { data, isLoading } = useQuery(["event", id], () => getEvent(id), {
-		onSuccess: (data) => {
-			setEvent(data);
-		},
-	});
+	const { data, isLoading } = useQuery(
+		["testimonial", id],
+		() => getTestimonial(id),
+		{
+			onSuccess: (data) => {
+				setTestimonial(data);
+			},
+		}
+	);
 
-	const { mutate: addEvent, isLoading: creating } = useMutation(createEvent, {
-		onSuccess: () => {
-			toast.success("Event added successfully");
-			setEvent(intialEventValue);
-			queryClient.invalidateQueries({ queryKey: ["events"] });
-			handleModal();
-		},
-		onError: () => {
-			toast.error("Error Adding Data");
-			handleModal();
-		},
-	});
+	const { mutate: addTestimonial, isLoading: creating } = useMutation(
+		createTestimonial,
+		{
+			onSuccess: () => {
+				toast.success("Testimonial added successfully");
+				setTestimonial(intialTestimonialValue);
+				queryClient.invalidateQueries({ queryKey: ["testimonials"] });
+				handleModal();
+			},
+			onError: () => {
+				toast.error("Error Adding Data");
+				handleModal();
+			},
+		}
+	);
 
 	const handleOnChange = (e) => {
-		setEvent((prev) => ({
+		setTestimonial((prev) => ({
 			...prev,
 			image: e.target.files[0],
 		}));
@@ -69,98 +74,83 @@ const EventModal = ({
 	const handleInputChange = useCallback(
 		(e) => {
 			const { name, value } = e.target;
-			setEvent((prev) => ({
+			setTestimonial((prev) => ({
 				...prev,
 				[name]: value,
 			}));
 		},
-		[setEvent]
+		[setTestimonial]
 	);
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
 		if (
-			title === "" ||
-			description === "" ||
-			eventDate === "" ||
+			firstName === "" ||
+			testimony === "" ||
 			image === "" ||
-			link === ""
+			lastName === ""
 		) {
 			toast.error("Please fill all fields");
 		} else {
 			const formData = new FormData();
-			formData.append("title", title);
-			formData.append("description", description);
-			formData.append("eventDate", eventDate);
-			formData.append("link", link);
+			formData.append("firstName", firstName);
+			formData.append("testimony", testimony);
+			formData.append("lastName", lastName);
 			formData.append("image", image);
-			newItem ? addEvent(formData) : updateEventDetails();
+			newItem ? addTestimonial(formData) : updateTestimonialDetails();
 		}
 	};
 
-	const { mutateAsync: updateEvent, isLoading: updating } = useMutation(
-		editEvent,
+	const { mutateAsync: updateTestimonial, isLoading: updating } = useMutation(
+		editTestimonial,
 		{
 			onSuccess: () => {
-				queryClient.invalidateQueries({ queryKey: ["events"] });
-				queryClient.invalidateQueries({ queryKey: ["event"] });
-				toast.success("Updated Event successfully");
+				queryClient.invalidateQueries({ queryKey: ["testimonials"] });
+				queryClient.invalidateQueries({ queryKey: ["testimonial"] });
+				toast.success("Updated Testimonial successfully");
 				handleModal();
 			},
 			onError: () => {
-				toast.error("Error updating Event");
+				toast.error("Error updating Testimonial");
 				handleModal();
 			},
 		}
 	);
 
-	const updateEventDetails = async () => {
-		// Compare the current event state with the fetched data to identify updated fields
+	const updateTestimonialDetails = async () => {
+		// Compare the current testimonial state with the fetched data to identify updated fields
 		const updatedFields = new FormData();
-		for (const [key, value] of Object.entries(event)) {
-			if (event[key] !== data[key]) {
+		for (const [key, value] of Object.entries(testimonial)) {
+			if (testimonial[key] !== data[key]) {
 				updatedFields.append(key, value);
 			}
 		}
-		await updateEvent({ id, catId, data: updatedFields });
+		await updateTestimonial({ id, data: updatedFields });
 	};
 
-	const { mutateAsync: publish } = useMutation(publishEvent, {
+	const { mutateAsync: updateState } = useMutation(updateTestimonialStatus, {
 		onSuccess: () => {
+			toast.success("Testimonial state updated successfully");
+			queryClient.invalidateQueries(["testimonial"]);
+			queryClient.invalidateQueries(["testimonials"]);
 			setLoading(false);
-			toast.success("Event Published Successfully");
-			queryClient.invalidateQueries({ queryKey: ["events"] });
-			queryClient.invalidateQueries({ queryKey: ["event"] });
 		},
 		onError: () => {
+			toast.error("Error updating testimonial state");
 			setLoading(false);
-			toast.error("Error Publishing Event");
-		},
-	});
-
-	const { mutateAsync: archive } = useMutation(archiveEvent, {
-		onSuccess: () => {
-			setLoading(false);
-			toast.success("Event Archived Successfully");
-
-			queryClient.invalidateQueries({ queryKey: ["events"] });
-			queryClient.invalidateQueries({ queryKey: ["event"] });
-		},
-		onError: () => {
-			setLoading(false);
-			toast.error("Error Archiving Event");
 		},
 	});
 
 	const handleState = async () => {
 		setLoading(true);
-		state === "published" ? await archive(id) : await publish(id);
+		let state = testimonial.state === "published" ? "draft" : "published";
+		await updateState({ id, data: { state: state } });
 	};
 
 	const header = () => {
 		return (
 			<div className="flex justify-between items-center w-full mr-5 px-2">
-				<h2 className="font-semibold">Event Details</h2>
+				<h2 className="font-semibold">Testimonial Details</h2>
 				{!newItem && (
 					<div className="flex items-center gap-3 hover:cursor-pointer">
 						<div onClick={handleState}>
@@ -229,7 +219,7 @@ const EventModal = ({
 														: URL.createObjectURL(image)
 													: ""
 											}
-											alt={title}
+											alt={firstName}
 										/>
 									) : (
 										<Placeholder name="image" />
@@ -246,15 +236,15 @@ const EventModal = ({
 							<div className="relative w-full mb-3 flex items-center ">
 								<label
 									className="block uppercase text-slate-600 text-xs font-bold basis-3/12"
-									htmlFor="title">
-									Title
+									htmlFor="firstName">
+									First Name
 								</label>
 								<input
 									required
 									type="text"
 									className={`${inputClass}`}
-									name="title"
-									value={title}
+									name="firstName"
+									value={firstName}
 									onChange={handleInputChange}
 									disabled={!edit && !newItem}
 								/>
@@ -263,15 +253,15 @@ const EventModal = ({
 							<div className="relative w-full mb-3 flex items-center ">
 								<label
 									className="block uppercase text-slate-600 text-xs font-bold basis-3/12"
-									htmlFor="link">
-									Link
+									htmlFor="lastName">
+									Last Name
 								</label>
 								<input
 									required
-									type="url"
+									type="text"
 									className={`${inputClass}`}
-									name="link"
-									value={link}
+									name="lastName"
+									value={lastName}
 									onChange={handleInputChange}
 									disabled={!edit && !newItem}
 								/>
@@ -279,32 +269,14 @@ const EventModal = ({
 
 							<div className="relative w-full mb-3 flex items-center ">
 								<label
-									className="block uppercase text-slate-600 text-xs font-bold  basis-3/12"
-									htmlFor="eventDate">
-									Event Date
-								</label>
-								<DatePicker
-									selected={eventDate ? new Date(eventDate) : new Date()}
-									onChange={(date) =>
-										setEvent((prevEvent) => ({
-											...prevEvent,
-											eventDate: date,
-										}))
-									}
-									className={`${inputClass} ml-6 !w-[95%]`}
-								/>
-							</div>
-
-							<div className="relative w-full mb-3 flex items-center ">
-								<label
 									className="block uppercase text-slate-600 text-xs font-bold basis-3/12 self-start"
-									htmlFor="description">
-									Description
+									htmlFor="testimony">
+									testimony
 								</label>
 								<textarea
 									className={`${inputClass}`}
-									name="description"
-									value={description}
+									name="testimony"
+									value={testimony}
 									onChange={handleInputChange}
 									rows={8}
 									disabled={!edit && !newItem}
@@ -344,4 +316,4 @@ const EventModal = ({
 	);
 };
 
-export default EventModal;
+export default TestimonialModal;

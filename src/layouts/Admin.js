@@ -15,6 +15,8 @@ import TalentRequestList from "views/admin/TalentRequest";
 import Reach from "views/admin/Reach";
 import SuccessStories from "views/admin/SuccessStories";
 import Events from "views/admin/Events";
+import Enquiries from "views/admin/Enquiries";
+import Testimonials from "views/admin/Testimonials";
 
 import {
 	VolunteerList,
@@ -37,15 +39,12 @@ import CompanyDetails from "views/admin/Companies/CompanyDetails";
 
 import Academy from "views/admin/Academy";
 import Initiatives from "views/admin/Initiatives";
-import Testimonials from "views/admin/Testimonials";
-import ViewTestimonial from "views/admin/Testimonials/TestimonialDetails";
-import Enquiries from "views/admin/Enquiries";
 import Protected from "components/Protected";
 import SchoolProgramViewer from "views/admin/Academy/school-programs/SchoolProgramViewer";
 import CourseViewer from "views/admin/Academy/course/CourseViewer";
 import SchoolProgramDetails from "views/admin/Academy/school-programs/SchoolProgramDetails";
-import TestimonialViewer from "views/admin/Testimonials/TestimonialViewer";
 import Chapters from "views/admin/Chapters";
+import Programs from "views/admin/Program";
 
 export default function Admin() {
 	return (
@@ -74,6 +73,9 @@ export default function Admin() {
 						<Route path={paths.events} exact component={Events} />
 						<Route path={paths.initiatives} exact component={Initiatives} />
 						<Route path={paths.chapter} exact component={Chapters} />
+						<Route path={paths.programs} exact component={Programs} />
+						<Route path={paths.enquiries} exact component={Enquiries} />
+						<Route path={paths.testimonials} exact component={Testimonials} />
 
 						<Route path={paths.jobs} exact component={Jobs} />
 						<Route path={paths.addNewJob} exact component={AddJob} />
@@ -90,24 +92,6 @@ export default function Admin() {
 							path={`${paths.viewCompany}/:id`}
 							exact
 							component={CompanyDetails}
-						/>
-
-						<Route path={paths.enquiries} exact component={Enquiries} />
-
-						<Route
-							path={paths.addNewTestimonial}
-							exact
-							component={TestimonialViewer}
-						/>
-						<Route
-							path={`${paths.editTestimonial}/:id`}
-							exact
-							component={TestimonialViewer}
-						/>
-						<Route
-							path={`${paths.viewTestimonial}/:id`}
-							exact
-							component={ViewTestimonial}
 						/>
 
 						<Route path={paths.allVolunteers} exact component={VolunteerList} />
@@ -132,12 +116,6 @@ export default function Admin() {
 
 						<Route path={paths.academy} exact component={Academy} />
 
-						<Route
-							path={`${paths.viewTestimonial}/:id`}
-							exact
-							component={ViewTestimonial}
-						/>
-
 						<Route path={paths.allVolunteers} exact component={VolunteerList} />
 						<Route path={paths.addVolunteer} exact component={AddVolunteer} />
 						<Route path={paths.editVolunteer} exact component={EditVolunteer} />
@@ -157,8 +135,6 @@ export default function Admin() {
 							exact
 							component={EditVolunteerCategory}
 						/>
-
-						<Route path={paths.testimonials} exact component={Testimonials} />
 
 						<Route
 							path={paths.addSchoolProgram}

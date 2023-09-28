@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import { getTestimonials } from "services";
+import { getTestimonials, deleteTestimonial } from "services";
 import { testimonials as header } from "utils/headers";
 import {
 	TableHeaderRow,
@@ -9,20 +9,19 @@ import {
 	TableDataRow,
 	TableData,
 	TableBody,
-	TableActions,
 } from "components/Table/DisplayTable";
 import moment from "moment";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Link } from "react-router-dom";
-import { paths } from "utils";
-import { deleteTestimonial } from "services";
 import DeleteModal from "components/Modal/DeleteModal";
+import TestimonialModal from "components/Testimonials/TestimonialModal";
 
 const Testimonials = () => {
 	const [testimonials, setTestimonials] = useState([]);
 	const [selectedId, setSelectedId] = useState();
-	const [isOpen, setIsOpen] = useState(false);
+	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+	const [isTestimonialModalOpen, setIsTestimonialModalOpen] = useState(false);
+	const [newItem, setNewItem] = useState();
 	const queryClient = useQueryClient();
 	const { isLoading } = useQuery("testimonials", getTestimonials, {
 		onSuccess: (data) => {
@@ -33,19 +32,23 @@ const Testimonials = () => {
 		},
 	});
 
-	const handleModal = () => {
-		setIsOpen(!isOpen);
+	const handleDeleteModal = () => {
+		setIsDeleteModalOpen(!isDeleteModalOpen);
+	};
+
+	const handleTestimonialModal = () => {
+		setIsTestimonialModalOpen(!isTestimonialModalOpen);
 	};
 
 	const { mutate: deleteMember } = useMutation(deleteTestimonial, {
 		onSuccess: () => {
 			queryClient.invalidateQueries(["testimonials"]);
-			handleModal();
 			toast.success("Testimonial Deleted successfully");
+			handleDeleteModal();
 		},
 		onError: () => {
-			handleModal();
 			toast.error("Could not delete testimonial");
+			handleDeleteModal();
 		},
 	});
 
@@ -58,14 +61,18 @@ const Testimonials = () => {
 			<div className="w-full z-40 bg-white rounded-md">
 				<div className="flex items-center justify-between px-4 mt-3">
 					<h5 className="font-medium text-xl">Testimonials</h5>
-					<Link
-						className="rounded bg-pink-500 text-white text-xs  px-4 py-2"
-						to={paths.addNewTestimonial}>
+					<button
+						className="rounded-md bg-pink-500 text-white text-xs  px-4 py-2"
+						onClick={() => {
+							setNewItem(true);
+							setSelectedId("");
+							handleTestimonialModal();
+						}}>
 						Add
-					</Link>
+					</button>
 				</div>
 				<Table width="full">
-					<TableHeaderRow className="grid grid-cols-[200px_1fr_100px_100px_50px] gap-x-4">
+					<TableHeaderRow className="grid grid-cols-[200px_1fr_100px_100px_100px_100px] gap-x-4">
 						{header.map(({ label }, index) => {
 							return <TableHeader key={index}>{label}</TableHeader>;
 						})}
@@ -82,13 +89,20 @@ const Testimonials = () => {
 									state,
 									testimony,
 									createdAt,
+									updatedAt,
+									publishDate,
 								},
 								index
 							) => {
 								return (
 									<TableDataRow
+										onClick={() => {
+											setSelectedId(_id);
+											handleTestimonialModal();
+											setNewItem(false);
+										}}
 										key={index}
-										className="grid grid-cols-[200px_1fr_100px_100px_50px] px-4 py-3 gap-x-4 bg-white">
+										className="grid grid-cols-[200px_1fr_100px_100px_100px_100px] px-4 py-3 gap-x-4 bg-white">
 										<TableData>
 											<span className="flex items-center gap-2">
 												<img
@@ -103,30 +117,13 @@ const Testimonials = () => {
 										<TableData noTruncate>{testimony}</TableData>
 										<TableData>{state}</TableData>
 										<TableData>
-											{moment(createdAt).format("DD MMM, YYYY")}
+											{moment(publishDate).format("DD MMM, YYYY")}
 										</TableData>
-										<TableData noTruncate>
-											<TableActions>
-												<Link
-													to={`${paths.viewTestimonial}/${_id}`}
-													className="mb-1 px-3 text-sm text-left">
-													View
-												</Link>
-												<Link
-													to={`${paths.editTestimonial}/${_id}`}
-													className="mb-1 px-3 text-sm text-left">
-													Edit
-												</Link>
-												<button
-													onClick={() => {
-														setSelectedId(_id);
-
-														handleModal();
-													}}
-													className="mb-1 px-3 text-sm text-left">
-													Delete
-												</button>
-											</TableActions>
+										<TableData>
+											{moment(updatedAt).format("DD MMM, YYYY")}
+										</TableData>
+										<TableData>
+											{moment(createdAt).format("DD MMM, YYYY")}
 										</TableData>
 									</TableDataRow>
 								);
@@ -135,12 +132,24 @@ const Testimonials = () => {
 					</TableBody>
 				</Table>
 			</div>
-			<DeleteModal
-				title="Delete Testimonial"
-				handleDelete={handleDelete}
-				isOpen={isOpen}
-				handleModal={handleModal}
-			/>
+			{isDeleteModalOpen && (
+				<DeleteModal
+					title="Delete Testimonial"
+					handleDelete={handleDelete}
+					isOpen={isDeleteModalOpen}
+					handleModal={handleDeleteModal}
+				/>
+			)}
+
+			{isTestimonialModalOpen && (
+				<TestimonialModal
+					handleDeleteModal={() => setIsDeleteModalOpen(true)}
+					isOpen={isTestimonialModalOpen}
+					handleModal={handleTestimonialModal}
+					id={selectedId}
+					newItem={newItem}
+				/>
+			)}
 			<ToastContainer />
 		</>
 	);

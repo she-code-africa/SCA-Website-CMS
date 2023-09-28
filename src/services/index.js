@@ -61,11 +61,6 @@ export async function getTeamCategories() {
 	return teamCategories;
 }
 
-export async function getPrograms() {
-	const programs = await api.get(`${baseUrl}/programs/member-programs`);
-	return programs;
-}
-
 export async function mutateEnquires(enquiryData) {
 	const enquiresResponse = await api.post(`${baseUrl}/enquiry`, enquiryData);
 	return enquiresResponse;
@@ -165,7 +160,7 @@ export async function archiveCompany(id) {
 }
 
 export async function unarchiveCompany(id) {
-	return await api.patch(`${baseUrl}/company/${id}/archive`);
+	return await api.patch(`${baseUrl}/company/${id}/unarchive`);
 }
 
 export async function addTeamMember(data) {
@@ -401,6 +396,45 @@ export async function publishSuccessStory(id) {
 
 export async function archiveSuccessStory(id) {
 	return await api.patch(`${baseUrl}/program-success/${id}/publish`);
+}
+
+export async function getPrograms() {
+	return await api.get(`${baseUrl}/programs/member-programs`);
+}
+
+export async function createProgram(data) {
+	return await api.post(`${baseUrl}/programs/member-programs`, data);
+}
+
+export async function getProgram(catId, id) {
+	return await api.get(
+		`${baseUrl}/programs/categories/${catId}/member-programs/${id}`
+	);
+}
+
+export async function deleteProgram({ id, categoryId }) {
+	return await api.delete(
+		`${baseUrl}/programs/categories/${categoryId}/member-programs/${id}`
+	);
+}
+
+export async function editProgram({ id, categoryId, data }) {
+	return await api.put(
+		`${baseUrl}/programs/categories/${categoryId}/member-programs/${id}`,
+		data
+	);
+}
+
+export async function publishProgram({ id, categoryId }) {
+	return await api.patch(
+		`${baseUrl}/programs/categories/${categoryId}/member-programs/${id}/publish`
+	);
+}
+
+export async function archiveProgram({ id, categoryId }) {
+	return await api.patch(
+		`${baseUrl}/programs/categories/${categoryId}/member-programs/${id}/archive`
+	);
 }
 
 export async function getProgramCategories() {

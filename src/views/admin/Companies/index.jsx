@@ -10,24 +10,30 @@ import {
 	TableDataRow,
 	TableData,
 	TableBody,
-	TableActions,
 } from "components/Table/DisplayTable";
-import { Link } from "react-router-dom";
-import { paths } from "utils";
 import { BarrLoader } from "components/Loader";
 import moment from "moment";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import CompanyModal from "components/Companies/CompanyModal";
 
 const Companies = () => {
 	const [companies, setCompanies] = useState([]);
+	const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false);
+	const [selectedId, setSelectedId] = useState("");
+
 	const { isLoading } = useQuery("companies", getCompanies, {
 		onSuccess: (data) => {
 			setCompanies(data);
 		},
-		onError: (err) => {
-			console.log(err);
-			console.log("error");
+		onError: () => {
+			toast.error("Could not fetch Companies");
 		},
 	});
+
+	const handleCompanyModal = () => {
+		setIsCompanyModalOpen(!isCompanyModalOpen);
+	};
 	return (
 		<>
 			<div className="flex w-full self-start">
@@ -36,7 +42,7 @@ const Companies = () => {
 				) : (
 					<div className="w-full px-4 z-40">
 						<Table width="full">
-							<TableHeaderRow className="grid grid-cols-[1fr_1fr_1fr_200px_100px_100px_30px]">
+							<TableHeaderRow className="grid grid-cols-[1fr_1fr_1fr_200px_100px_100px_100px]">
 								{companyHeader.map(({ label }, index) => {
 									return <TableHeader key={index}>{label}</TableHeader>;
 								})}
@@ -59,6 +65,7 @@ const Companies = () => {
 														companyLocation,
 														state,
 														companyPhone,
+														updatedAt,
 														createdAt,
 													},
 													index
@@ -66,7 +73,11 @@ const Companies = () => {
 													return (
 														<TableDataRow
 															key={index}
-															className="grid grid-cols-[1fr_1fr_1fr_200px_100px_100px_30px] px-4 py-3 bg-white">
+															onClick={() => {
+																setSelectedId(_id);
+																handleCompanyModal();
+															}}
+															className="grid grid-cols-[1fr_1fr_1fr_200px_100px_100px_100px] px-4 py-3 bg-white">
 															<TableData>
 																<span>{companyName}</span>
 															</TableData>
@@ -75,21 +86,10 @@ const Companies = () => {
 															<TableData>{companyPhone}</TableData>
 															<TableData>{state}</TableData>
 															<TableData>
-																{moment(createdAt).format("DD MMM, YYYY")}
+																{moment(updatedAt).format("DD MMM, YYYY")}
 															</TableData>
-															<TableData noTruncate>
-																<TableActions>
-																	<Link
-																		to={`${paths.viewCompany}/${_id}`}
-																		className="mb-1 px-3 text-sm text-left">
-																		View
-																	</Link>
-																	<Link
-																		to={`${paths.editCompany}/${_id}`}
-																		className="mb-1 px-3 text-sm text-left">
-																		Edit
-																	</Link>
-																</TableActions>
+															<TableData>
+																{moment(createdAt).format("DD MMM, YYYY")}
 															</TableData>
 														</TableDataRow>
 													);
@@ -103,6 +103,14 @@ const Companies = () => {
 					</div>
 				)}
 			</div>
+			{isCompanyModalOpen && (
+				<CompanyModal
+					isOpen={isCompanyModalOpen}
+					handleModal={handleCompanyModal}
+					id={selectedId}
+				/>
+			)}
+			<ToastContainer />
 		</>
 	);
 };
