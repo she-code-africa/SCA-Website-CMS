@@ -94,6 +94,10 @@ export const companies = [
 		label: "State",
 	},
 	{
+		value: "updatedAt",
+		label: "Updated At",
+	},
+	{
 		value: "createdAt",
 		label: "Created At",
 	},
@@ -146,8 +150,12 @@ export const jobs = [
 		label: "Location",
 	},
 	{
+		value: "updatedAt",
+		label: "Updated At",
+	},
+	{
 		value: "createdAt",
-		label: "Created",
+		label: "Created At",
 	},
 ];
 
@@ -181,7 +189,15 @@ export const testimonials = [
 	},
 	{
 		value: "state",
-		label: "Status",
+		label: "State",
+	},
+	{
+		value: "publishDate",
+		label: "Publish Date",
+	},
+	{
+		value: "updateAt",
+		label: "Updated At",
 	},
 	{
 		value: "createdAt",

@@ -1,6 +1,6 @@
+import Loader from "components/Loader";
 import React, { useEffect, useRef, useState } from "react";
 import { HiEllipsisVertical } from "react-icons/hi2";
-import ReactPlaceholder from "react-placeholder";
 import "react-placeholder/lib/reactPlaceholder.css";
 
 const DisplayTable = () => {
@@ -32,16 +32,7 @@ export const TableHeader = ({ children }) => {
 
 export const TableBody = ({ loading, children }) => {
 	return (
-		<tbody className="bg-white">
-			<ReactPlaceholder
-				ready={!loading}
-				rows={4}
-				type="text"
-				color="#E0E0E0"
-				className="p-4">
-				<>{children}</>
-			</ReactPlaceholder>
-		</tbody>
+		<tbody className="bg-white">{loading ? <Loader /> : <>{children}</>}</tbody>
 	);
 };
 

@@ -160,7 +160,7 @@ export async function archiveCompany(id) {
 }
 
 export async function unarchiveCompany(id) {
-	return await api.patch(`${baseUrl}/company/${id}/archive`);
+	return await api.patch(`${baseUrl}/company/${id}/unarchive`);
 }
 
 export async function addTeamMember(data) {
