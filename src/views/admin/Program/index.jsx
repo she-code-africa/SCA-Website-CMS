@@ -93,7 +93,7 @@ const Programs = () => {
 	return (
 		<>
 			<div className="w-full grid grid-cols-12 z-40 gap-4">
-				<div className="col-span-9 bg-white rounded-md">
+				<div className="col-span-9 bg-white rounded-md h-fit">
 					<div className="flex items-center justify-between px-4 mt-3">
 						<h5 className="font-medium text-xl">Programs</h5>
 						<button

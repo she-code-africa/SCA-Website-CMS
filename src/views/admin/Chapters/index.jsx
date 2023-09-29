@@ -93,7 +93,7 @@ const Chapters = () => {
 	return (
 		<>
 			<div className="w-full grid grid-cols-12 z-40 gap-4">
-				<div className="col-span-9 bg-white rounded-md">
+				<div className="col-span-9 bg-white rounded-md h-fit">
 					<div className="flex items-center justify-between px-4 mt-3">
 						<h5 className="font-medium text-xl">Chapters</h5>
 						<button
@@ -108,7 +108,7 @@ const Chapters = () => {
 						</button>
 					</div>
 					<Table width="full">
-						<TableHeaderRow className="grid grid-cols-9">
+						<TableHeaderRow className="grid grid-cols-8">
 							{header.map(({ label }, index) => {
 								return <TableHeader key={index}>{label}</TableHeader>;
 							})}
@@ -125,7 +125,7 @@ const Chapters = () => {
 										category,
 										leader,
 										state,
-										author,
+
 										publishDate,
 										updateAt,
 										createdAt,
@@ -141,7 +141,7 @@ const Chapters = () => {
 												setNewItem(false);
 											}}
 											key={index}
-											className="grid grid-cols-9 px-4 py-3 bg-white group relative">
+											className="grid grid-cols-8 px-4 py-3 bg-white group relative">
 											<TableData>{name}</TableData>
 											<TableData>
 												{city}, {""}
@@ -149,7 +149,7 @@ const Chapters = () => {
 											</TableData>
 											<TableData>{category.name}</TableData>
 											<TableData>{leader}</TableData>
-											<TableData>{author}</TableData>
+
 											<TableData>{state}</TableData>
 											<TableData>
 												{moment(publishDate).format("DD MMM, YYYY")}
