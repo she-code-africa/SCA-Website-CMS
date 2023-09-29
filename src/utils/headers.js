@@ -17,6 +17,8 @@ export const team = [
 		value: "state",
 		label: "State",
 	},
+	{ value: "updatedAt", label: "Updated at" },
+
 	{
 		value: "createdAt",
 		label: "Created",
@@ -326,10 +328,6 @@ export const chapters = [
 	{
 		value: "leader",
 		label: "Leader",
-	},
-	{
-		value: "author",
-		label: "Author",
 	},
 	{
 		value: "state",

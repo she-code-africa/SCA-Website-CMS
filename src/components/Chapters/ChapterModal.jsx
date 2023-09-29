@@ -25,11 +25,10 @@ const ChapterModal = ({
 		city: "",
 		country: "",
 		leader: "",
-		author: "",
 		category: "",
 	};
 	const [chapter, setChapter] = useState(intial);
-	const { name, city, country, author, leader, category } = chapter;
+	const { name, city, country, leader, category } = chapter;
 	const [edit, setEdit] = useState(false);
 	const [categories, setCategories] = useState([]);
 	const inputClass = `border-0 px-3 py-0 placeholder-slate-300 text-slate-600 bg-white rounded text-sm ${

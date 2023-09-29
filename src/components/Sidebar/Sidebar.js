@@ -87,8 +87,8 @@ export default function Sidebar() {
 								/>
 							</div>{" "}
 						</form>{" "}
-						{/* Divider */} <hr className="my-4 md:min-w-full" />{" "}
-						{/* Heading */} {/* Navigation */}{" "}
+						{/* Divider */} <hr className="md:min-w-full" /> {/* Heading */}{" "}
+						{/* Navigation */}{" "}
 						<ul className="md:flex-col md:min-w-full flex flex-col list-none mb-4 ">
 							<li className="items-center">
 								<Link

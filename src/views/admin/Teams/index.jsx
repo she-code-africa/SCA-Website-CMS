@@ -62,7 +62,7 @@ const TeamList = () => {
 	return (
 		<>
 			<div className="w-full grid grid-cols-12 z-40 gap-4">
-				<div className="col-span-9 bg-white rounded-md">
+				<div className="col-span-9 bg-white rounded-md h-fit">
 					<div className="flex items-center justify-between px-4 mt-3">
 						<h5 className="font-medium text-xl">Team Members</h5>
 						<button
@@ -77,7 +77,7 @@ const TeamList = () => {
 						</button>
 					</div>
 					<Table width="full">
-						<TableHeaderRow className="grid grid-cols-5">
+						<TableHeaderRow className="grid grid-cols-6">
 							{header.map(({ label }, index) => {
 								return <TableHeader key={index}>{label}</TableHeader>;
 							})}
@@ -85,7 +85,10 @@ const TeamList = () => {
 						</TableHeaderRow>
 						<TableBody loading={isLoading}>
 							{team?.map(
-								({ _id, name, isLeader, state, team, createdAt }, index) => {
+								(
+									{ _id, name, isLeader, state, team, updatedAt, createdAt },
+									index
+								) => {
 									return (
 										<TableDataRow
 											onClick={() => {
@@ -95,13 +98,16 @@ const TeamList = () => {
 												setNewItem(false);
 											}}
 											key={index}
-											className="grid grid-cols-5 px-4 py-3 bg-white group relative">
+											className="grid grid-cols-6 px-4 py-3 bg-white group relative">
 											<TableData>
 												<span>{name}</span>
 											</TableData>
 											<TableData>{isLeader ? "Yes" : "No"}</TableData>
 											<TableData>{team.name}</TableData>
 											<TableData>{state}</TableData>
+											<TableData>
+												{moment(updatedAt).format("DD MMM, YYYY")}
+											</TableData>
 											<TableData>
 												{moment(createdAt).format("DD MMM, YYYY")}
 											</TableData>

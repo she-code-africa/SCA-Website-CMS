@@ -8,8 +8,14 @@ import { getUsers } from "services";
 import { getEvents } from "services";
 
 export default function HeaderStats() {
-	const { data: totalUsers } = useQuery("users", getUsers);
-	const { data: totalEvents } = useQuery("events", getEvents);
+	const { data: totalUsers, isLoading: loadingUsers } = useQuery(
+		"users",
+		getUsers
+	);
+	const { data: totalEvents, isLoading: loadingEvents } = useQuery(
+		"events",
+		getEvents
+	);
 	const [totalActiveEvents, setTotalActiveEvents] = useState();
 	useEffect(() => {
 		if (totalEvents) {
@@ -29,6 +35,7 @@ export default function HeaderStats() {
 						<div className="flex flex-wrap">
 							<div className="w-full lg:w-6/12 xl:w-3/12 px-4">
 								<CardStats
+									isLoading={loadingUsers}
 									statSubtitle="TOTAL USERS"
 									statTitle={`${totalUsers && totalUsers.length}`}
 									statIconName="far fa-chart-bar"
@@ -37,6 +44,7 @@ export default function HeaderStats() {
 							</div>
 							<div className="w-full lg:w-6/12 xl:w-3/12 px-4">
 								<CardStats
+									isLoading={loadingEvents}
 									statSubtitle="TOTAL EVENTS"
 									statTitle={`${totalEvents && totalEvents.length}`}
 									statIconName="fas fa-chart-pie"
@@ -45,6 +53,7 @@ export default function HeaderStats() {
 							</div>
 							<div className="w-full lg:w-6/12 xl:w-3/12 px-4">
 								<CardStats
+									isLoading={loadingEvents}
 									statSubtitle="ACTIVE PROGRAMS"
 									statTitle={`${totalActiveEvents && totalActiveEvents}`}
 									statIconName="fas fa-users"
