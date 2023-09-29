@@ -26,8 +26,12 @@ export const TableHeaderRow = ({ className, children }) => {
 	);
 };
 
-export const TableHeader = ({ children }) => {
-	return <th scope="col">{children}</th>;
+export const TableHeader = ({ className, children }) => {
+	return (
+		<th className={className} scope="col">
+			{children}
+		</th>
+	);
 };
 
 export const TableBody = ({ loading, children }) => {
@@ -46,7 +50,8 @@ export const TableDataRow = ({ className, children, onClick }) => {
 
 export const TableData = ({ children, className, noTruncate }) => {
 	return (
-		<td className={`${!noTruncate && "truncate"} text-xs relative`}>
+		<td
+			className={`${!noTruncate && "truncate"} text-xs relative ${className}`}>
 			{children}
 		</td>
 	);

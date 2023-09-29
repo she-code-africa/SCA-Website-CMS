@@ -228,6 +228,8 @@ export const volunteer = [
 		value: "volunteerRole",
 		label: "Volunteer Role",
 	},
+	{ value: "updatedAt", label: "Updated at" },
+
 	{
 		value: "createdAt",
 		label: "Created At",

@@ -797,6 +797,10 @@ video {
   grid-column: span 9 / span 9;
 }
 
+.col-span-2 {
+  grid-column: span 2 / span 2;
+}
+
 .float-left {
   float: left;
 }
@@ -1295,6 +1299,11 @@ video {
   max-width: 28rem;
 }
 
+.max-w-max {
+  max-width: -webkit-max-content;
+  max-width: max-content;
+}
+
 .flex-1 {
   flex: 1 1 0%;
 }
@@ -1419,6 +1428,10 @@ video {
   grid-template-columns: 60px 60px 1fr 1fr 100px 100px 50px;
 }
 
+.grid-cols-7 {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
 .flex-col {
   flex-direction: column;
 }
@@ -1486,6 +1499,11 @@ video {
 
 .gap-y-5 {
   row-gap: 1.25rem;
+}
+
+.gap-x-3 {
+  -webkit-column-gap: 0.75rem;
+          column-gap: 0.75rem;
 }
 
 .self-start {

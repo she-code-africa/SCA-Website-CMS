@@ -77,16 +77,33 @@ const TeamList = () => {
 						</button>
 					</div>
 					<Table width="full">
-						<TableHeaderRow className="grid grid-cols-6">
+						<TableHeaderRow className="grid grid-cols-7">
 							{header.map(({ label }, index) => {
-								return <TableHeader key={index}>{label}</TableHeader>;
+								return (
+									<TableHeader
+										className={`${
+											label.toLowerCase() === "name" ? "col-span-2" : ""
+										}`}
+										key={index}>
+										{label}
+									</TableHeader>
+								);
 							})}
 							<TableHeader></TableHeader>
 						</TableHeaderRow>
 						<TableBody loading={isLoading}>
 							{team?.map(
 								(
-									{ _id, name, isLeader, state, team, updatedAt, createdAt },
+									{
+										_id,
+										image,
+										name,
+										isLeader,
+										state,
+										team,
+										updatedAt,
+										createdAt,
+									},
 									index
 								) => {
 									return (
@@ -98,11 +115,20 @@ const TeamList = () => {
 												setNewItem(false);
 											}}
 											key={index}
-											className="grid grid-cols-6 px-4 py-3 bg-white group relative">
-											<TableData>
+											className="grid grid-cols-7 px-4 py-3 bg-white group relative">
+											<TableData className="flex gap-2 items-center col-span-2">
+												{image && (
+													<img
+														className="w-4 h-4 rounded-full"
+														src={image}
+														alt={name}
+													/>
+												)}
 												<span>{name}</span>
 											</TableData>
-											<TableData>{isLeader ? "Yes" : "No"}</TableData>
+											<TableData className="ml-3">
+												{isLeader ? "Yes" : "No"}
+											</TableData>
 											<TableData>{team.name}</TableData>
 											<TableData>{state}</TableData>
 											<TableData>

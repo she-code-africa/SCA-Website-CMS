@@ -41,7 +41,7 @@ const VolunteerList = () => {
 						</div>
 					</div>
 					<Table width="full">
-						<TableHeaderRow className="grid grid-cols-6 gap-x-4">
+						<TableHeaderRow className="grid grid-cols-7 gap-x-4">
 							{header.map(({ label }, index) => {
 								return <TableHeader key={index}>{label}</TableHeader>;
 							})}
@@ -56,6 +56,7 @@ const VolunteerList = () => {
 										currentRole,
 										purpose,
 										volunteerRole,
+										updatedAt,
 										createdAt,
 									},
 									index
@@ -63,7 +64,7 @@ const VolunteerList = () => {
 									return (
 										<TableDataRow
 											key={index}
-											className="grid grid-cols-6 px-4 py-3 gap-x-4 bg-white">
+											className="grid grid-cols-7 px-4 py-3 gap-x-4 bg-white">
 											<TableData>
 												<span>{fullname}</span>
 											</TableData>
@@ -71,6 +72,9 @@ const VolunteerList = () => {
 											<TableData>{currentRole}</TableData>
 											<TableData>{purpose}</TableData>
 											<TableData>{volunteerRole}</TableData>
+											<TableData>
+												{moment(updatedAt).format("DD MMM, YYYY")}
+											</TableData>
 											<TableData>
 												{moment(createdAt).format("DD MMM, YYYY")}
 											</TableData>
