@@ -13,9 +13,12 @@ import {
 import moment from "moment";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Pagination from "components/Pagination";
 
 const Enquiries = () => {
 	const [enquiries, setEnquiries] = useState([]);
+	const [currentPage, setCurrentPage] = useState(1);
+	const itemsPerPage = 10;
 	const { isLoading } = useQuery("enquiries", getEnquiries, {
 		onSuccess: (data) => {
 			setEnquiries(data);
@@ -39,26 +42,37 @@ const Enquiries = () => {
 						<TableHeader></TableHeader>
 					</TableHeaderRow>
 					<TableBody loading={isLoading}>
-						{enquiries.map(
-							({ _id, fullName, email, description, createdAt }, index) => {
-								return (
-									<TableDataRow
-										key={index}
-										className="grid grid-cols-[150px_150px_1fr_100px] px-4 py-3 gap-x-4 bg-white">
-										<TableData>
-											<span>{fullName}</span>
-										</TableData>
-										<TableData>{email}</TableData>
-										<TableData noTruncate>{description}</TableData>
+						{enquiries
+							?.slice(
+								(currentPage - 1) * itemsPerPage,
+								currentPage * itemsPerPage
+							)
+							.map(
+								({ _id, fullName, email, description, createdAt }, index) => {
+									return (
+										<TableDataRow
+											key={index}
+											className="grid grid-cols-[150px_150px_1fr_100px] px-4 py-3 gap-x-4 bg-white">
+											<TableData>
+												<span>{fullName}</span>
+											</TableData>
+											<TableData>{email}</TableData>
+											<TableData noTruncate>{description}</TableData>
 
-										<TableData>
-											{moment(createdAt).format("DD MMM, YYYY")}
-										</TableData>
-									</TableDataRow>
-								);
-							}
-						)}
+											<TableData>
+												{moment(createdAt).format("DD MMM, YYYY")}
+											</TableData>
+										</TableDataRow>
+									);
+								}
+							)}
 					</TableBody>
+					<Pagination
+						totalItems={enquiries.length}
+						itemsPerPage={itemsPerPage}
+						currentPage={currentPage}
+						onPageChange={setCurrentPage}
+					/>
 				</Table>
 			</div>
 			<ToastContainer />

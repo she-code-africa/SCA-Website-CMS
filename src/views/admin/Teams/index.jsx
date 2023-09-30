@@ -16,6 +16,7 @@ import DeleteModal from "components/Modal/DeleteModal";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import TeamModal from "components/Team/TeamModal";
+import Pagination from "components/Pagination";
 
 const TeamList = () => {
 	const [selectedId, setSelectedId] = useState();
@@ -25,6 +26,8 @@ const TeamList = () => {
 	const queryClient = useQueryClient();
 	const [newItem, setNewItem] = useState();
 	const [team, setTeam] = useState([]);
+	const [currentPage, setCurrentPage] = useState(1);
+	const itemsPerPage = 10;
 
 	const { isLoading } = useQuery("team", getTeams, {
 		onSuccess: (data) => {
@@ -92,56 +95,67 @@ const TeamList = () => {
 							<TableHeader></TableHeader>
 						</TableHeaderRow>
 						<TableBody loading={isLoading}>
-							{team?.map(
-								(
-									{
-										_id,
-										image,
-										name,
-										isLeader,
-										state,
-										team,
-										updatedAt,
-										createdAt,
-									},
-									index
-								) => {
-									return (
-										<TableDataRow
-											onClick={() => {
-												setSelectedId(_id);
-												setTeamId(team._id);
-												handleTeamModal();
-												setNewItem(false);
-											}}
-											key={index}
-											className="grid grid-cols-7 px-4 py-3 bg-white group relative">
-											<TableData className="flex gap-2 items-center col-span-2">
-												{image && (
-													<img
-														className="w-4 h-4 rounded-full"
-														src={image}
-														alt={name}
-													/>
-												)}
-												<span>{name}</span>
-											</TableData>
-											<TableData className="ml-3">
-												{isLeader ? "Yes" : "No"}
-											</TableData>
-											<TableData>{team.name}</TableData>
-											<TableData>{state}</TableData>
-											<TableData>
-												{moment(updatedAt).format("DD MMM, YYYY")}
-											</TableData>
-											<TableData>
-												{moment(createdAt).format("DD MMM, YYYY")}
-											</TableData>
-										</TableDataRow>
-									);
-								}
-							)}
+							{team
+								?.slice(
+									(currentPage - 1) * itemsPerPage,
+									currentPage * itemsPerPage
+								)
+								.map(
+									(
+										{
+											_id,
+											image,
+											name,
+											isLeader,
+											state,
+											team,
+											updatedAt,
+											createdAt,
+										},
+										index
+									) => {
+										return (
+											<TableDataRow
+												onClick={() => {
+													setSelectedId(_id);
+													setTeamId(team._id);
+													handleTeamModal();
+													setNewItem(false);
+												}}
+												key={index}
+												className="grid grid-cols-7 px-4 py-3 bg-white group relative">
+												<TableData className="flex gap-2 items-center col-span-2">
+													{image && (
+														<img
+															className="w-4 h-4 rounded-full"
+															src={image}
+															alt={name}
+														/>
+													)}
+													<span>{name}</span>
+												</TableData>
+												<TableData className="ml-3">
+													{isLeader ? "Yes" : "No"}
+												</TableData>
+												<TableData>{team.name}</TableData>
+												<TableData>{state}</TableData>
+												<TableData>
+													{moment(updatedAt).format("DD MMM, YYYY")}
+												</TableData>
+												<TableData>
+													{moment(createdAt).format("DD MMM, YYYY")}
+												</TableData>
+											</TableDataRow>
+										);
+									}
+								)}
 						</TableBody>
+						<Pagination
+							totalItems={team.length}
+							itemsPerPage={itemsPerPage}
+							currentPage={currentPage}
+							onPageChange={setCurrentPage}
+						/>
 					</Table>
 				</div>
 				<div className="col-span-3">

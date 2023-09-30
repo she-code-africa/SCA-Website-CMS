@@ -13,15 +13,18 @@ import moment from "moment";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { getVolunteerRequest } from "services";
+import Pagination from "components/Pagination";
 
 const VolunteerList = () => {
-	const [enquiries, setEnquiries] = useState([]);
-	const { isLoading } = useQuery("enquiries", getVolunteerRequest, {
+	const [volunteers, setVolunteers] = useState([]);
+	const [currentPage, setCurrentPage] = useState(1);
+	const itemsPerPage = 10;
+	const { isLoading } = useQuery("volunteers", getVolunteerRequest, {
 		onSuccess: (data) => {
-			setEnquiries(data);
+			setVolunteers(data);
 		},
 		onError: () => {
-			toast.error("Error Fetching Enquiries");
+			toast.error("Error Fetching Volunteers");
 		},
 	});
 	return (
@@ -48,41 +51,52 @@ const VolunteerList = () => {
 							<TableHeader></TableHeader>
 						</TableHeaderRow>
 						<TableBody loading={isLoading}>
-							{enquiries.map(
-								(
-									{
-										fullname,
-										email,
-										currentRole,
-										purpose,
-										volunteerRole,
-										updatedAt,
-										createdAt,
-									},
-									index
-								) => {
-									return (
-										<TableDataRow
-											key={index}
-											className="grid grid-cols-7 px-4 py-3 gap-x-4 bg-white">
-											<TableData>
-												<span>{fullname}</span>
-											</TableData>
-											<TableData>{email}</TableData>
-											<TableData>{currentRole}</TableData>
-											<TableData>{purpose}</TableData>
-											<TableData>{volunteerRole}</TableData>
-											<TableData>
-												{moment(updatedAt).format("DD MMM, YYYY")}
-											</TableData>
-											<TableData>
-												{moment(createdAt).format("DD MMM, YYYY")}
-											</TableData>
-										</TableDataRow>
-									);
-								}
-							)}
+							{volunteers
+								?.slice(
+									(currentPage - 1) * itemsPerPage,
+									currentPage * itemsPerPage
+								)
+								.map(
+									(
+										{
+											fullname,
+											email,
+											currentRole,
+											purpose,
+											volunteerRole,
+											updatedAt,
+											createdAt,
+										},
+										index
+									) => {
+										return (
+											<TableDataRow
+												key={index}
+												className="grid grid-cols-7 px-4 py-3 gap-x-4 bg-white">
+												<TableData>
+													<span>{fullname}</span>
+												</TableData>
+												<TableData>{email}</TableData>
+												<TableData>{currentRole}</TableData>
+												<TableData>{purpose}</TableData>
+												<TableData>{volunteerRole}</TableData>
+												<TableData>
+													{moment(updatedAt).format("DD MMM, YYYY")}
+												</TableData>
+												<TableData>
+													{moment(createdAt).format("DD MMM, YYYY")}
+												</TableData>
+											</TableDataRow>
+										);
+									}
+								)}
 						</TableBody>
+						<Pagination
+							totalItems={volunteers.length}
+							itemsPerPage={itemsPerPage}
+							currentPage={currentPage}
+							onPageChange={setCurrentPage}
+						/>
 					</Table>
 				</div>
 			</div>
