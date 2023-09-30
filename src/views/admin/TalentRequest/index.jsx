@@ -14,18 +14,19 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import moment from "moment";
 import TalentRequestModal from "components/TalentRequest/TalentRequestModal";
+import Pagination from "components/Pagination";
 
 const TalentRequestList = () => {
 	const [request, setRequest] = useState();
+	const [currentPage, setCurrentPage] = useState(1);
+	const itemsPerPage = 10;
 	const [talentRequests, setTalentRequests] = useState();
 	const [isTalentRequestModalOpen, setIsTalentRequestModalOpen] =
 		useState(false);
 
 	const { isLoading } = useQuery("talentRequests", getTalentRequests, {
 		onSuccess: (data) => {
-			console.log(data);
 			setTalentRequests(data);
-			console.log(talentRequests);
 		},
 		onError: () => {
 			toast.error("Error fetching Talent Request");
@@ -50,45 +51,56 @@ const TalentRequestList = () => {
 					<TableHeader></TableHeader>
 				</TableHeaderRow>
 				<TableBody loading={isLoading}>
-					{talentRequests?.map((data) => {
-						const {
-							_id,
-							fullname,
-							company,
-							companyLink,
-							email,
-							experienceLevel,
-							jobRole,
-							jobDescription,
-							createdAt,
-							updatedAt,
-						} = data;
-						return (
-							<TableDataRow
-								onClick={() => {
-									handleTalentRequestModal();
-									setRequest(data);
-								}}
-								key={_id}
-								className="grid grid-cols-9 px-4 py-3 bg-white">
-								<TableData>{fullname}</TableData>
-								<TableData>{email}</TableData>
+					{talentRequests
+						?.slice(
+							(currentPage - 1) * itemsPerPage,
+							currentPage * itemsPerPage
+						)
+						.map((data) => {
+							const {
+								_id,
+								fullname,
+								company,
+								companyLink,
+								email,
+								experienceLevel,
+								jobRole,
+								jobDescription,
+								createdAt,
+								updatedAt,
+							} = data;
+							return (
+								<TableDataRow
+									onClick={() => {
+										handleTalentRequestModal();
+										setRequest(data);
+									}}
+									key={_id}
+									className="grid grid-cols-9 px-4 py-3 bg-white">
+									<TableData>{fullname}</TableData>
+									<TableData>{email}</TableData>
 
-								<TableData>{experienceLevel}</TableData>
-								<TableData>{jobRole}</TableData>
-								<TableData>{jobDescription}</TableData>
-								<TableData>{company}</TableData>
-								<TableData>{companyLink}</TableData>
-								<TableData>
-									{moment(updatedAt).format("DD MMM, YYYY")}
-								</TableData>
-								<TableData>
-									{moment(createdAt).format("DD MMM, YYYY")}
-								</TableData>
-							</TableDataRow>
-						);
-					})}
+									<TableData>{experienceLevel}</TableData>
+									<TableData>{jobRole}</TableData>
+									<TableData>{jobDescription}</TableData>
+									<TableData>{company}</TableData>
+									<TableData>{companyLink}</TableData>
+									<TableData>
+										{moment(updatedAt).format("DD MMM, YYYY")}
+									</TableData>
+									<TableData>
+										{moment(createdAt).format("DD MMM, YYYY")}
+									</TableData>
+								</TableDataRow>
+							);
+						})}
 				</TableBody>
+				<Pagination
+					totalItems={talentRequests?.length}
+					itemsPerPage={itemsPerPage}
+					currentPage={currentPage}
+					onPageChange={setCurrentPage}
+				/>
 			</Table>
 			{isTalentRequestModalOpen && (
 				<TalentRequestModal

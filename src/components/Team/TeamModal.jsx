@@ -41,9 +41,11 @@ const TeamModal = ({
 	const [categories, setCategories] = useState([]);
 	const [edit, setEdit] = useState(false);
 	const [loading, setLoading] = useState(false);
-	const inputClass = `border-0 px-3 py-0 placeholder-slate-300 text-slate-600 bg-white rounded text-sm ${
-		edit || newItem ? "shadow focus:outline-none !py-3" : ""
-	} w-full ease-linear transition-all duration-150 basis-11/12`;
+	const inputClass = `px-3 py-0 placeholder-slate-300 text-slate-600 bg-white text-sm ${
+		edit || newItem
+			? "shadow focus:outline-none !py-3 border border-[#F5F5F5] rounded-lg"
+			: ""
+	} w-full ease-linear transition-all duration-150 basis-10/12`;
 
 	const { data, isLoading } = useQuery(
 		["team-member", id],
@@ -59,10 +61,10 @@ const TeamModal = ({
 		addTeamMember,
 		{
 			onSuccess: () => {
+				queryClient.invalidateQueries({ queryKey: ["team"] });
 				toast.success("Member added successfully");
 				setMember(intial);
 				handleModal();
-				queryClient.invalidateQueries({ queryKey: ["team"] });
 			},
 			onError: () => {
 				toast.error("Error Adding Data");
@@ -240,7 +242,7 @@ const TeamModal = ({
 								/>
 								<label
 									htmlFor="fileInput"
-									className="w-16 h-16 md:w-24 md:h-24 flex items-center justify-center bg-gray-300 rounded-full cursor-pointer hover:bg-gray-400 text-xs border">
+									className="w-16 h-16 md:w-24 md:h-24 flex items-center justify-center bg-gray-300 rounded-full cursor-pointer hover:bg-gray-400 text-sm border">
 									{image ? (
 										<img
 											className="rounded-full"
@@ -257,9 +259,7 @@ const TeamModal = ({
 										<Placeholder />
 									)}
 									{(edit || newItem) && (
-										<div
-											className="absolute right-3 bottom-0 z-2 text-black opacity-90 text-base"
-											size="2rem">
+										<div className="absolute right-2 -bottom-1 z-2 text-slate-600 opacity-90 text-xl">
 											<BiSolidImageAdd />
 										</div>
 									)}
@@ -267,7 +267,7 @@ const TeamModal = ({
 							</div>
 							<div className="relative w-full mb-3 flex items-center">
 								<label
-									className="block uppercase text-slate-600 text-xs font-bold basis-1/12"
+									className="block text-slate-600 text-base font-semibold basis-2/12"
 									htmlFor="name">
 									Name
 								</label>
@@ -284,7 +284,7 @@ const TeamModal = ({
 
 							<div className="relative w-full mb-3 flex items-center">
 								<label
-									className="block uppercase text-slate-600 text-xs font-bold basis-1/12"
+									className="block text-slate-600 text-base font-semibold basis-2/12"
 									htmlFor="team">
 									Team
 								</label>
@@ -313,7 +313,7 @@ const TeamModal = ({
 
 							<div className="relative w-full mb-3 flex items-center">
 								<label
-									className="block uppercase text-slate-600 text-xs font-bold basis-1/12"
+									className="block text-slate-600 text-base font-semibold basis-2/12"
 									htmlFor="role">
 									Role
 								</label>
@@ -329,7 +329,7 @@ const TeamModal = ({
 							</div>
 							<div className="relative w-full mb-3 flex items-center">
 								<label
-									className="block uppercase text-slate-600 text-xs font-bold basis-1/12 self-start"
+									className="block text-slate-600 text-base font-semibold basis-2/12 self-start"
 									htmlFor="bio">
 									Bio
 								</label>
@@ -345,7 +345,7 @@ const TeamModal = ({
 
 							<div className="relative w-full mb-3 flex items-center">
 								<label
-									className="block uppercase text-slate-600 text-xs font-bold basis-1/12 self-start"
+									className="block text-slate-600 text-base font-semibold basis-2/12 self-start"
 									htmlFor="isLeader">
 									Team Lead
 								</label>
@@ -365,11 +365,16 @@ const TeamModal = ({
 							</div>
 						</div>
 
-						<div className="my-4 w-full flex">
+						<div className="my-4 w-full flex justify-end">
 							{edit || newItem ? (
 								<button
-									className="bg-pink-500 text-white active:bg-pink-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 ease-linear transition-all duration-150 ml-auto"
-									onClick={addMember}>
+									className={`text-white active:bg-pink-6base font-semibold text-sm px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 ease-linear transition-all duration-150 ml-auto ${
+										!name && !image && !role && !bio
+											? "bg-gray-300 cursor-not-allowed"
+											: "bg-pink-500"
+									}`}
+									onClick={addMember}
+									disabled={!name && !image && !role && !bio}>
 									{creating || updating ? (
 										<AiOutlineLoading3Quarters className="animate-spin" />
 									) : (
@@ -379,7 +384,7 @@ const TeamModal = ({
 							) : (
 								id && (
 									<button
-										className="bg-red-500 text-white font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 ease-linear transition-all duration-150"
+										className="bg-red-500 text-whibase font-semibold text-sm px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 ease-linear transition-all duration-150 text-white"
 										onClick={() => {
 											handleModal();
 											handleDeleteModal();
