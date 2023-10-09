@@ -57,5 +57,8 @@
 		"postcss": "^8.4.29",
 		"tailwind-scrollbar": "^3.0.4",
 		"tailwindcss": "^3.3.3"
+	},
+	"engines": {
+		"node": "16.x"
 	}
 }
