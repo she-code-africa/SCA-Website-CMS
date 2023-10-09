@@ -26,7 +26,7 @@
 		"serve": "^14.2.1"
 	},
 	"scripts": {
-		"start": "serve -s build --openssl-legacy-provider",
+		"start": "serve -s build",
 		"build": "react-scripts build --openssl-legacy-provider && gulp licenses ",
 		"dev": "serve -s build --openssl-legacy-provider",
 		"test": "react-scripts test",
