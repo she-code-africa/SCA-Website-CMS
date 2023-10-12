@@ -1,5 +1,6 @@
 import api from "../utils/api";
 const baseUrl = process.env.REACT_APP_BASE_URL;
+console.log(baseUrl, "base url");
 
 export async function getEvents() {
 	const events = await api.get(`${baseUrl}/events`);
