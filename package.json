@@ -6,6 +6,11 @@
 	"license": "MIT",
 	"dependencies": {
 		"@fortawesome/fontawesome-free": "5.15.4",
+		"@fortawesome/fontawesome-svg-core": "^6.4.2",
+		"@fortawesome/free-brands-svg-icons": "^6.4.2",
+		"@fortawesome/free-regular-svg-icons": "^6.4.2",
+		"@fortawesome/free-solid-svg-icons": "^6.4.2",
+		"@fortawesome/react-fontawesome": "^0.2.0",
 		"@popperjs/core": "2.11.2",
 		"axios": "^1.4.0",
 		"chart.js": "2.9.4",
@@ -28,7 +33,7 @@
 	"scripts": {
 		"start": "serve -s build",
 		"build": "react-scripts build --openssl-legacy-provider && gulp licenses ",
-		"dev": "serve -s build --openssl-legacy-provider",
+		"dev": "react-scripts --openssl-legacy-provider start",
 		"test": "react-scripts test",
 		"eject": "react-scripts eject",
 		"install:clean": "rm -rf node_modules/ && rm -rf yarn.lock && yarn install && yarn build:tailwind && yarn start",
@@ -60,6 +65,6 @@
 		"tailwindcss": "^3.3.3"
 	},
 	"engines": {
-		"node": "16.x"
+		"node": "18.x"
 	}
 }

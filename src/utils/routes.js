@@ -1,0 +1,117 @@
+import { faOsi } from "@fortawesome/free-brands-svg-icons";
+import {
+	faTableColumns,
+	faPeopleGroup,
+	faHandHoldingHeart,
+	faUsersViewfinder,
+	faPersonCircleQuestion,
+	faComment,
+	faPeopleRoof,
+	faCalendar,
+	faBuilding,
+	faHandsPraying,
+	faBriefcase,
+	faHandshake,
+	faSchoolFlag,
+	faMedal,
+	faRectangleList,
+} from "@fortawesome/free-solid-svg-icons";
+export const routes = [
+	{
+		name: "dashboard",
+		label: "Dashboard",
+		icon: faTableColumns,
+		path: "dashboard",
+	},
+	{
+		name: "team",
+		label: "Team",
+		icon: faPeopleGroup,
+		path: "team",
+	},
+	{
+		name: "volunteers",
+		label: "Volunteers",
+		icon: faHandHoldingHeart,
+		path: "volunteer",
+	},
+	{
+		name: "talent",
+		label: "Talent Request",
+		icon: faUsersViewfinder,
+		path: "talent-request",
+	},
+	{
+		name: "enquiries",
+		label: "Enquiries",
+		icon: faPersonCircleQuestion,
+		path: "enquiries",
+	},
+	{
+		name: "testimonials",
+		label: "Testimonials",
+		icon: faComment,
+		path: "testimonials",
+	},
+	{
+		name: "chapters",
+		label: "Chapters",
+		icon: faPeopleRoof,
+		path: "chapters",
+	},
+	{
+		name: "programs",
+		label: "Programs",
+		icon: faRectangleList,
+		path: "programs",
+	},
+	{
+		name: "stories",
+		label: "Success Stories",
+		icon: faMedal,
+		path: "success-stories",
+	},
+	{
+		name: "events",
+		label: "Events",
+		icon: faCalendar,
+		path: "events",
+	},
+	{
+		name: "academy",
+		label: "Academy",
+		icon: faSchoolFlag,
+		path: "academy",
+	},
+	{
+		name: "initiatives",
+		label: "Initiatives",
+		icon: faOsi,
+		path: "initiatives",
+	},
+
+	{
+		name: "partners",
+		label: "Partners/Sponsors",
+		icon: faHandshake,
+		path: "partners",
+	},
+	{
+		name: "jobs",
+		label: "Jobs",
+		icon: faBriefcase,
+		path: "jobs",
+	},
+	{
+		name: "reach",
+		label: "Our Reach",
+		icon: faHandsPraying,
+		path: "reach",
+	},
+	{
+		name: "companies",
+		label: "Companies",
+		icon: faBuilding,
+		path: "companies",
+	},
+];
