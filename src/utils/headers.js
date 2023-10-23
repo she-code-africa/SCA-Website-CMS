@@ -30,6 +30,23 @@ export const courses = [
 	{ value: "shortDescription", label: "Description" },
 	{ value: "school", label: "School" },
 	{
+		value: "updatedAt",
+		label: "Updated",
+	},
+	{
+		value: "createdAt",
+		label: "Created",
+	},
+];
+
+export const schools = [
+	{ value: "name", label: "Name" },
+	{ value: "description", label: "Description" },
+	{
+		value: "updatedAt",
+		label: "Updated",
+	},
+	{
 		value: "createdAt",
 		label: "Created",
 	},
@@ -70,7 +87,9 @@ export const schoolPrograms = [
 	{ value: "cohort", label: "Cohort", type: "string" },
 	{ value: "briefContent", label: "Info", type: "string" },
 	{ value: "school", label: "School", type: "string" },
+	{ value: "state", label: "State", type: "string" },
 	{ value: "publishDate", label: "Published", type: "date" },
+	{ value: "updatedAt", label: "Updated at" },
 	{ value: "createdAt", label: "Created", type: "string" },
 ];
 

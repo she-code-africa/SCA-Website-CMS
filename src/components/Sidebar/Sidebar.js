@@ -1,17 +1,29 @@
 /*eslint-disable*/
 import React, { useState } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link, NavLink, useHistory } from "react-router-dom";
 import NotificationDropdown from "components/Dropdowns/NotificationDropdown.js";
 import UserDropdown from "components/Dropdowns/UserDropdown.js";
 const logo = require("../../assets/img/she-code-africa-logo.png").default;
 import Cookies from "js-cookie";
 import { AiOutlineLogout } from "react-icons/ai";
 import Modal from "components/Modal";
+import { routes } from "utils/routes";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faAngleDown, faAngleUp } from "@fortawesome/free-solid-svg-icons";
 
 export default function Sidebar() {
 	const [collapseShow, setCollapseShow] = useState("hidden");
 	const [isOpen, setIsOpen] = useState(false);
 	const history = useHistory();
+	const [expandedItems, setExpandedItems] = useState({});
+
+	const handleItemClick = (name) => {
+		setExpandedItems((prevState) => ({
+			...prevState,
+			[name]: !prevState[name], // Toggle the state for the clicked item
+		}));
+	};
+
 	const logout = () => {
 		Cookies.remove("isLoggedIn");
 		localStorage.removeItem("token");
@@ -83,403 +95,53 @@ export default function Sidebar() {
 								<input
 									type="text"
 									placeholder="Search"
-									className="border-0 px-3 py-2 h-12 border border-solid  border-slate-500 placeholder-slate-300 text-slate-600 bg-white rounded text-base leading-snug shadow-none outline-none focus:outline-none w-full font-normal"
+									className="px-3 py-2 h-12 border border-solid  border-slate-500 placeholder-slate-300 text-slate-600 bg-white rounded text-base leading-snug shadow-none outline-none focus:outline-none w-full font-normal"
 								/>
 							</div>{" "}
 						</form>{" "}
 						{/* Divider */} <hr className="md:min-w-full" /> {/* Heading */}{" "}
 						{/* Navigation */}{" "}
-						<ul className="md:flex-col md:min-w-full flex flex-col list-none mb-4 ">
-							<li className="items-center">
-								<Link
-									className={
-										"uppercase py-3 font-bold block text-sm " +
-										(window.location.href.indexOf("/admin/dashboard") !== -1
-											? "text-pink-400 hover:text-pink-400"
-											: "text-slate-700 hover:text-slate-500")
-									}
-									to="/admin/dashboard">
-									<i
-										className={
-											"fas fa-tv mr-2 text-sm " +
-											(window.location.href.indexOf("/admin/dashboard") !== -1
-												? "opacity-75 text-pink-400"
-												: "text-slate-300")
-										}>
-										{" "}
-									</i>{" "}
-									Dashboard{" "}
-								</Link>{" "}
-							</li>{" "}
-							<li className="items-center">
-								<Link
-									className={
-										"  uppercase py-3 font-bold block text-sm " +
-										(window.location.href.indexOf("/admin/team") !== -1
-											? "text-pink-400 hover:text-pink-400"
-											: "text-slate-700 hover:text-slate-500")
-									}
-									to="/admin/team">
-									<i
-										className={
-											"fas fa-users mr-2 text-sm " +
-											(window.location.href.indexOf("/admin/team") !== -1
-												? "opacity-75 text-pink-400"
-												: "text-slate-300")
-										}>
-										{" "}
-									</i>{" "}
-									Team{" "}
-								</Link>{" "}
-							</li>{" "}
-							<li className="items-center">
-								<Link
-									className={
-										"  uppercase py-3 font-bold block text-sm " +
-										(window.location.href.indexOf("/admin/volunteer") !== -1
-											? "text-pink-400 hover:text-pink-400"
-											: "text-slate-700 hover:text-slate-500")
-									}
-									to="/admin/volunteer">
-									<i
-										className={
-											"fas fa-handshake mr-2 text-sm " +
-											(window.location.href.indexOf("/admin/volunteer") !== -1
-												? "opacity-75 text-pink-400"
-												: "text-slate-300")
-										}>
-										{" "}
-									</i>{" "}
-									Volunteers{" "}
-								</Link>{" "}
-							</li>{" "}
-							<li className="items-center">
-								<Link
-									className={
-										"  uppercase py-3 font-bold block text-sm " +
-										(window.location.href.indexOf("/admin/talent-request") !==
-										-1
-											? "text-pink-400 hover:text-pink-400"
-											: "text-slate-700 hover:text-slate-500")
-									}
-									to="/admin/talent-request">
-									<i
-										className={
-											"fas fa-handshake mr-2 text-sm " +
-											(window.location.href.indexOf("/admin/talent-request") !==
-											-1
-												? "opacity-75 text-pink-400"
-												: "text-slate-300")
-										}>
-										{" "}
-									</i>{" "}
-									Talent Request{" "}
-								</Link>{" "}
-							</li>{" "}
-							<li className="items-center">
-								<Link
-									className={
-										"  uppercase py-3 font-bold block text-sm " +
-										(window.location.href.indexOf("/admin/enquiries") !== -1
-											? "text-pink-400 hover:text-pink-400"
-											: "text-slate-700 hover:text-slate-500")
-									}
-									to="/admin/enquiries">
-									<i
-										className={
-											"fas fa-question mr-2 text-sm " +
-											(window.location.href.indexOf("/admin/enquiries") !== -1
-												? "opacity-75 text-pink-400"
-												: "text-slate-300")
-										}>
-										{" "}
-									</i>{" "}
-									Enquiries{" "}
-								</Link>{" "}
-							</li>{" "}
-							<li className="items-center">
-								<Link
-									className={
-										"  uppercase py-3 font-bold block text-sm " +
-										(window.location.href.indexOf("/admin/testimonials") !== -1
-											? "text-pink-400 hover:text-pink-400"
-											: "text-slate-700 hover:text-slate-500")
-									}
-									to="/admin/testimonials">
-									<i
-										className={
-											"fas fa-table mr-2 text-sm " +
-											(window.location.href.indexOf("/admin/testimonials") !==
-											-1
-												? "opacity-75 text-pink-400"
-												: "text-slate-300")
-										}>
-										{" "}
-									</i>{" "}
-									Testimonials{" "}
-								</Link>{" "}
-							</li>{" "}
-							<li className="items-center">
-								<Link
-									className={
-										"  uppercase py-3 font-bold block text-sm " +
-										(window.location.href.indexOf("/admin/chapters") !== -1
-											? "text-pink-400 hover:text-pink-400"
-											: "text-slate-700 hover:text-slate-500")
-									}
-									to="/admin/chapters">
-									<i
-										className={
-											"fas fa-handshake mr-2 text-sm " +
-											(window.location.href.indexOf("/admin/chapters") !== -1
-												? "opacity-75 text-pink-400"
-												: "text-slate-300")
-										}>
-										{" "}
-									</i>{" "}
-									Chapters{" "}
-								</Link>{" "}
-							</li>{" "}
-							<li className="items-center">
-								<Link
-									className={
-										"  uppercase py-3 font-bold block text-sm " +
-										(window.location.href.indexOf("/admin/programs") !== -1
-											? "text-pink-400 hover:text-pink-400"
-											: "text-slate-700 hover:text-slate-500")
-									}
-									to="/admin/programs">
-									<i
-										className={
-											"fas fa-handshake mr-2 text-sm " +
-											(window.location.href.indexOf("/admin/programs") !== -1
-												? "opacity-75 text-pink-400"
-												: "text-slate-300")
-										}>
-										{" "}
-									</i>{" "}
-									Programs{" "}
-								</Link>{" "}
-							</li>{" "}
-							<li className="items-center">
-								<Link
-									className={
-										"  uppercase py-3 font-bold block text-sm " +
-										(window.location.href.indexOf("/admin/success-stories") !==
-										-1
-											? "text-pink-400 hover:text-pink-400"
-											: "text-slate-700 hover:text-slate-500")
-									}
-									to="/admin/success-stories">
-									<i
-										className={
-											"fas fa-handshake mr-2 text-sm " +
-											(window.location.href.indexOf(
-												"/admin/success-stories"
-											) !== -1
-												? "opacity-75 text-pink-400"
-												: "text-slate-300")
-										}>
-										{" "}
-									</i>{" "}
-									Success Stories{" "}
-								</Link>{" "}
-							</li>{" "}
-							<li className="items-center">
-								<Link
-									className={
-										"  uppercase py-3 font-bold block text-sm " +
-										(window.location.href.indexOf("/admin/events") !== -1
-											? "text-pink-400 hover:text-pink-400"
-											: "text-slate-700 hover:text-slate-500")
-									}
-									to="/admin/events">
-									<i
-										className={
-											"fas fa-calendar mr-2 text-sm " +
-											(window.location.href.indexOf("/admin/events") !== -1
-												? "opacity-75 text-pink-400"
-												: "text-slate-300")
-										}>
-										{" "}
-									</i>{" "}
-									Events{" "}
-								</Link>{" "}
-							</li>{" "}
-							<li className="items-center">
-								<Link
-									className={
-										"  uppercase py-3 font-bold block text-sm " +
-										(window.location.href.indexOf("/admin/academy") !== -1
-											? "text-pink-400 hover:text-pink-400"
-											: "text-slate-700 hover:text-slate-500")
-									}
-									to="/admin/academy">
-									<i
-										className={
-											"fas fa-calendar-week mr-2 text-sm " +
-											(window.location.href.indexOf("/admin/academy") !== -1
-												? "opacity-75 text-pink-400"
-												: "text-slate-300")
-										}>
-										{" "}
-									</i>{" "}
-									Academy{" "}
-								</Link>{" "}
-							</li>{" "}
-							{/* <li className="items-center">
-								<Link
-									className={
-										"  uppercase py-3 font-bold block text-sm " +
-										(window.location.href.indexOf("/admin/chapters") !== -1
-											? "text-pink-400 hover:text-pink-400"
-											: "text-slate-700 hover:text-slate-500")
-									}
-									to="/chapters">
-									<i
-										className={
-											"fas fa-layer-group mr-2 text-sm " +
-											(window.location.href.indexOf("/admin/chapters") !== -1
-												? "opacity-75 text-pink-400"
-												: "text-slate-300")
-										}>
-										{" "}
-									</i>{" "}
-									Community{" "}
-								</Link>{" "}
-							</li>{" "} */}
-							<li className="items-center">
-								<Link
-									className={
-										"  uppercase py-3 font-bold block text-sm " +
-										(window.location.href.indexOf("/admin/initiatives") !== -1
-											? "text-pink-400 hover:text-pink-400"
-											: "text-slate-700 hover:text-slate-500")
-									}
-									to="/admin/initiatives">
-									<i
-										className={
-											"fas fa-layer-group mr-2 text-sm " +
-											(window.location.href.indexOf("/admin/initiatives") !== -1
-												? "opacity-75 text-pink-400"
-												: "text-slate-300")
-										}>
-										{" "}
-									</i>{" "}
-									Initiatives{" "}
-								</Link>{" "}
-							</li>{" "}
-							<li className="items-center">
-								<Link
-									className={
-										"  uppercase py-3 font-bold block text-sm " +
-										(window.location.href.indexOf("/admin/partners") !== -1
-											? "text-pink-400 hover:text-pink-400"
-											: "text-slate-700 hover:text-slate-500")
-									}
-									to="/admin/partners">
-									<i
-										className={
-											"fas fa-heart mr-2 text-sm " +
-											(window.location.href.indexOf("/admin/partners") !== -1
-												? "opacity-75 text-pink-400"
-												: "text-slate-300")
-										}>
-										{" "}
-									</i>{" "}
-									Partners / Sponsors{" "}
-								</Link>{" "}
-							</li>{" "}
-							<li className="items-center">
-								<Link
-									className={
-										"  uppercase py-3 font-bold block text-sm " +
-										(window.location.href.indexOf("/admin/jobs") !== -1
-											? "text-pink-400 hover:text-pink-400"
-											: "text-slate-700 hover:text-slate-500")
-									}
-									to="/admin/jobs">
-									<i
-										className={
-											"fas fa-building mr-2 text-sm " +
-											(window.location.href.indexOf("/admin/jobs") !== -1
-												? "opacity-75 text-pink-400"
-												: "text-slate-300")
-										}>
-										{" "}
-									</i>{" "}
-									Jobs{" "}
-								</Link>{" "}
-							</li>{" "}
-							<li className="items-center">
-								<Link
-									className={
-										"  uppercase py-3 font-bold block text-sm " +
-										(window.location.href.indexOf("/admin/reach") !== -1
-											? "text-pink-400 hover:text-pink-400"
-											: "text-slate-700 hover:text-slate-500")
-									}
-									to="/admin/reach">
-									<i
-										className={
-											"fas fa-building mr-2 text-sm " +
-											(window.location.href.indexOf("/admin/reach") !== -1
-												? "opacity-75 text-pink-400"
-												: "text-slate-300")
-										}>
-										{" "}
-									</i>{" "}
-									Our Reach{" "}
-								</Link>{" "}
-							</li>{" "}
-							<li className="items-center">
-								<Link
-									className={
-										"  uppercase py-3 font-bold block text-sm " +
-										(window.location.href.indexOf("/admin/companies") !== -1
-											? "text-pink-400 hover:text-pink-400"
-											: "text-slate-700 hover:text-slate-500")
-									}
-									to="/admin/companies">
-									<i
-										className={
-											"fas fa-building mr-2 text-sm " +
-											(window.location.href.indexOf("/admin/companies") !== -1
-												? "opacity-75 text-pink-400"
-												: "text-slate-300")
-										}>
-										{" "}
-									</i>{" "}
-									Companies{" "}
-								</Link>{" "}
-							</li>{" "}
-							{/* <li className="items-center">
-								<Link
-									className={
-										"  uppercase py-3 font-bold block text-sm " +
-										(window.location.href.indexOf("/admin/settings") !== -1
-											? "text-pink-400 hover:text-pink-400"
-											: "text-slate-700 hover:text-slate-500")
-									}
-									to="/admin/settings">
-									<i
-										className={
-											"fas fa-user-circle text-slate-400 mr-2 text-sm" +
-											(window.location.href.indexOf("/admin/settings") !== -1
-												? "opacity-75 text-pink-400"
-												: "text-slate-300")
-										}>
-										{" "}
-									</i>{" "}
-									Profile
-								</Link>{" "}
-							</li>{" "} */}
+						<ul className="md:flex-col md:min-w-full flex flex-col list-none mb-4">
+							{routes.map(({ icon, name, label, path, items }) => (
+								<li key={name} className="py-3">
+									<NavLink
+										to={path}
+										className={`${
+											items ? "cursor-pointer" : ""
+										} uppercase font-bold text-sm flex gap-2 items-center`}
+										onClick={() => items && handleItemClick(name)}>
+										<FontAwesomeIcon icon={icon} />
+										{label}
+										{items && (
+											<div className="ml-4">
+												<FontAwesomeIcon
+													icon={expandedItems[name] ? faAngleUp : faAngleDown}
+												/>
+											</div>
+										)}
+									</NavLink>
+									{items && expandedItems[name] && (
+										<ul className="ml-8 flex flex-col gap-1.5 mt-1 list-disc">
+											{items.map(({ name, label, path }) => (
+												<li key={name} className="hover:text-pink-500">
+													<NavLink
+														to={path}
+														activeClassName="text-pink-500"
+														className="font-bold text-xs items-center">
+														{label}
+													</NavLink>
+												</li>
+											))}
+										</ul>
+									)}
+								</li>
+							))}
 							<li className="self-end mt-1">
 								<button onClick={handleModal}>
 									<AiOutlineLogout />
 								</button>
 							</li>
-						</ul>{" "}
+						</ul>
 					</div>{" "}
 				</div>{" "}
 			</nav>{" "}
