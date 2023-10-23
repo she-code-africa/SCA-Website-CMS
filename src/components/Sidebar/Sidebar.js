@@ -106,6 +106,7 @@ export default function Sidebar() {
 								<li key={name} className="py-3">
 									<NavLink
 										to={path}
+										activeClassName="text-pink-500"
 										className={`${
 											items ? "cursor-pointer" : ""
 										} uppercase font-bold text-sm flex gap-2 items-center`}

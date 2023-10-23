@@ -183,7 +183,7 @@ const TeamModal = ({
 	};
 	const header = () => {
 		return (
-			<div className="flex justify-between items-center w-full mr-5 px-2">
+			<div className="flex justify-between items-center w-full mr-1 px-2">
 				<h2 className="font-semibold">Team Member Details</h2>
 				{!newItem && (
 					<div className="flex items-center gap-3 hover:cursor-pointer">
@@ -242,10 +242,10 @@ const TeamModal = ({
 								/>
 								<label
 									htmlFor="fileInput"
-									className="w-16 h-16 md:w-24 md:h-24 flex items-center justify-center bg-gray-300 rounded-full cursor-pointer hover:bg-gray-400 text-sm border">
+									className="flex items-center justify-center bg-gray-300 rounded-full cursor-pointer hover:bg-gray-400 text-sm border">
 									{image ? (
 										<img
-											className="rounded-full"
+											className="rounded-full w-16 h-16 md:w-28 md:h-28 "
 											src={
 												image
 													? typeof image === "string"
@@ -269,7 +269,7 @@ const TeamModal = ({
 								<label
 									className="block text-slate-600 text-base font-semibold basis-2/12"
 									htmlFor="name">
-									Name
+									Name *
 								</label>
 								<input
 									required
@@ -286,7 +286,7 @@ const TeamModal = ({
 								<label
 									className="block text-slate-600 text-base font-semibold basis-2/12"
 									htmlFor="team">
-									Team
+									Team *
 								</label>
 
 								{edit || newItem ? (
@@ -315,7 +315,7 @@ const TeamModal = ({
 								<label
 									className="block text-slate-600 text-base font-semibold basis-2/12"
 									htmlFor="role">
-									Role
+									Role *
 								</label>
 								<input
 									required
@@ -331,7 +331,7 @@ const TeamModal = ({
 								<label
 									className="block text-slate-600 text-base font-semibold basis-2/12 self-start"
 									htmlFor="bio">
-									Bio
+									Bio *
 								</label>
 								<textarea
 									className={`${inputClass}`}
