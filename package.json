@@ -32,7 +32,7 @@
 	},
 	"scripts": {
 		"start": "serve -s build",
-		"build": "react-scripts build --openssl-legacy-provider && gulp licenses ",
+		"build": "react-scripts --openssl-legacy-provider build && gulp licenses ",
 		"dev": "react-scripts --openssl-legacy-provider start",
 		"test": "react-scripts test",
 		"eject": "react-scripts eject",
