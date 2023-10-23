@@ -8,7 +8,11 @@ const Placeholder = ({ name }) => {
 			{name === "image" ? (
 				<img src={image} alt="placholder" className="rounded-full max-h-40" />
 			) : (
-				<img src={avatar} alt="no avatar" className="rounded-full" />
+				<img
+					src={avatar}
+					alt="no avatar"
+					className="rounded-full max-h-[100px]"
+				/>
 			)}
 		</>
 	);

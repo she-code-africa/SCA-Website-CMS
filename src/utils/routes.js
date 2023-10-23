@@ -81,7 +81,7 @@ export const routes = [
 		name: "academy",
 		label: "Academy",
 		icon: faSchoolFlag,
-		path: "#",
+		path: "/admin/academy/schools",
 		items: [
 			{
 				name: "schools",

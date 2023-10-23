@@ -5,20 +5,21 @@ import ClipLoader from "react-spinners/ClipLoader";
 const override = {
 	display: "block",
 	margin: "0 auto",
-	borderColor: "red",
+	borderColor: "#EC4899",
 };
 
 const Loader = () => {
 	return (
-		<div className="flex w-full justify-center min-h-[50vh] items-center">
+		<span className="min-h-[30vh] flex justify-center items-center">
 			<ClipLoader
-				color="#EC4899"
+				color="#"
 				cssOverride={override}
 				size={50}
 				aria-label="Loading Spinner"
 				data-testid="loader"
+				className=""
 			/>
-		</div>
+		</span>
 	);
 };
 
