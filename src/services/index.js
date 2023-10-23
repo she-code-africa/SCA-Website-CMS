@@ -299,6 +299,10 @@ export async function unpublishSchoolProgram(id) {
 	return await api.put(`${baseUrl}/school-programs/${id}/unpublish`);
 }
 
+export async function getSchool(id) {
+	return await api.get(`${baseUrl}/schools/${id}`);
+}
+
 export async function getSchools() {
 	return await api.get(`${baseUrl}/schools`);
 }
@@ -307,7 +311,7 @@ export async function createSchool(data) {
 	return await api.post(`${baseUrl}/schools`, data);
 }
 
-export async function editSchool({ id, name: data }) {
+export async function editSchool({ id, data }) {
 	return await api.put(`${baseUrl}/schools/${id}`, data);
 }
 

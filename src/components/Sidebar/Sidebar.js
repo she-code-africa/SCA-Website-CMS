@@ -9,11 +9,21 @@ import { AiOutlineLogout } from "react-icons/ai";
 import Modal from "components/Modal";
 import { routes } from "utils/routes";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faAngleDown, faAngleUp } from "@fortawesome/free-solid-svg-icons";
 
 export default function Sidebar() {
 	const [collapseShow, setCollapseShow] = useState("hidden");
 	const [isOpen, setIsOpen] = useState(false);
 	const history = useHistory();
+	const [expandedItems, setExpandedItems] = useState({});
+
+	const handleItemClick = (name) => {
+		setExpandedItems((prevState) => ({
+			...prevState,
+			[name]: !prevState[name], // Toggle the state for the clicked item
+		}));
+	};
+
 	const logout = () => {
 		Cookies.remove("isLoggedIn");
 		localStorage.removeItem("token");
@@ -92,15 +102,38 @@ export default function Sidebar() {
 						{/* Divider */} <hr className="md:min-w-full" /> {/* Heading */}{" "}
 						{/* Navigation */}{" "}
 						<ul className="md:flex-col md:min-w-full flex flex-col list-none mb-4">
-							{routes.map(({ icon, name, label, path }) => (
-								<li className="hover:text-pink-500">
+							{routes.map(({ icon, name, label, path, items }) => (
+								<li key={name} className="py-3">
 									<NavLink
-										activeClassName="text-pink-500"
-										className="uppercase py-3 font-bold text-sm flex gap-2 items-center"
-										to={path}>
+										to={path}
+										className={`${
+											items ? "cursor-pointer" : ""
+										} uppercase font-bold text-sm flex gap-2 items-center`}
+										onClick={() => items && handleItemClick(name)}>
 										<FontAwesomeIcon icon={icon} />
 										{label}
+										{items && (
+											<div className="ml-4">
+												<FontAwesomeIcon
+													icon={expandedItems[name] ? faAngleUp : faAngleDown}
+												/>
+											</div>
+										)}
 									</NavLink>
+									{items && expandedItems[name] && (
+										<ul className="ml-8 flex flex-col gap-1.5 mt-1 list-disc">
+											{items.map(({ name, label, path }) => (
+												<li key={name} className="hover:text-pink-500">
+													<NavLink
+														to={path}
+														activeClassName="text-pink-500"
+														className="font-bold text-xs items-center">
+														{label}
+													</NavLink>
+												</li>
+											))}
+										</ul>
+									)}
 								</li>
 							))}
 							<li className="self-end mt-1">

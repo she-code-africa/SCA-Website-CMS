@@ -1,11 +1,9 @@
 import React from "react";
 import { Switch, Route } from "react-router-dom";
-
 import AdminNavbar from "components/Navbars/AdminNavbar.js";
 import Sidebar from "components/Sidebar/Sidebar.js";
 import HeaderStats from "components/Headers/HeaderStats.js";
 import FooterAdmin from "components/Footers/FooterAdmin.js";
-
 // views
 import Dashboard from "views/admin/Dashboard.js";
 import Settings from "views/admin/Settings.js";
@@ -17,7 +15,9 @@ import SuccessStories from "views/admin/SuccessStories";
 import Events from "views/admin/Events";
 import Enquiries from "views/admin/Enquiries";
 import Testimonials from "views/admin/Testimonials";
-
+import School from "views/admin/Academy/school";
+import SchoolPrograms from "views/admin/Academy/school-programs";
+import Courses from "views/admin/Academy/course";
 import {
 	VolunteerList,
 	AddVolunteer,
@@ -36,13 +36,8 @@ import JobDetails from "views/admin/Jobs/JobDetails";
 import Companies from "views/admin/Companies";
 import EditCompany from "views/admin/Companies/EditCompany";
 import CompanyDetails from "views/admin/Companies/CompanyDetails";
-
-import Academy from "views/admin/Academy";
 import Initiatives from "views/admin/Initiatives";
 import Protected from "components/Protected";
-import SchoolProgramViewer from "views/admin/Academy/school-programs/SchoolProgramViewer";
-import CourseViewer from "views/admin/Academy/course/CourseViewer";
-import SchoolProgramDetails from "views/admin/Academy/school-programs/SchoolProgramDetails";
 import Chapters from "views/admin/Chapters";
 import Programs from "views/admin/Program";
 
@@ -76,12 +71,17 @@ export default function Admin() {
 						<Route path={paths.programs} exact component={Programs} />
 						<Route path={paths.enquiries} exact component={Enquiries} />
 						<Route path={paths.testimonials} exact component={Testimonials} />
-
+						<Route path={paths.courses} exact component={Courses} />
+						<Route path={paths.schools} exact component={School} />
+						<Route
+							path={paths.schoolPrograms}
+							exact
+							component={SchoolPrograms}
+						/>
 						<Route path={paths.jobs} exact component={Jobs} />
 						<Route path={paths.addNewJob} exact component={AddJob} />
 						<Route path={`${paths.editJob}/:id`} exact component={EditJob} />
 						<Route path={`${paths.viewJob}/:id`} exact component={JobDetails} />
-
 						<Route path={paths.companies} exact component={Companies} />
 						<Route
 							path={`${paths.editCompany}/:id`}
@@ -93,11 +93,9 @@ export default function Admin() {
 							exact
 							component={CompanyDetails}
 						/>
-
 						<Route path={paths.allVolunteers} exact component={VolunteerList} />
 						<Route path={paths.addVolunteer} exact component={AddVolunteer} />
 						<Route path={paths.editVolunteer} exact component={EditVolunteer} />
-
 						<Route
 							path={paths.listVolunteerCategory}
 							exact
@@ -113,13 +111,9 @@ export default function Admin() {
 							exact
 							component={EditVolunteerCategory}
 						/>
-
-						<Route path={paths.academy} exact component={Academy} />
-
 						<Route path={paths.allVolunteers} exact component={VolunteerList} />
 						<Route path={paths.addVolunteer} exact component={AddVolunteer} />
 						<Route path={paths.editVolunteer} exact component={EditVolunteer} />
-
 						<Route
 							path={paths.listVolunteerCategory}
 							exact
@@ -134,32 +128,6 @@ export default function Admin() {
 							path={paths.editVolunteerCategory}
 							exact
 							component={EditVolunteerCategory}
-						/>
-
-						<Route
-							path={paths.addSchoolProgram}
-							exact
-							component={SchoolProgramViewer}
-						/>
-
-						<Route
-							path={`${paths.editSchoolProgram}/:id`}
-							exact
-							component={SchoolProgramViewer}
-						/>
-
-						<Route
-							path={`${paths.viewSchoolProgram}/:id`}
-							exact
-							component={SchoolProgramDetails}
-						/>
-
-						<Route path={paths.addCourse} exact component={CourseViewer} />
-
-						<Route
-							path={`${paths.editCourse}/:id`}
-							exact
-							component={CourseViewer}
 						/>
 						{/* <Redirect from = "/admin"
         to = "/admin/dashboard" /> */}
