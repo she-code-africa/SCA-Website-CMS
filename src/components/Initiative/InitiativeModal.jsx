@@ -93,7 +93,10 @@ const InitiativeModal = ({
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		newItem ? addInitiative(initiative) : await updateInitiativeDetails();
+		console.log(initiative);
+		newItem
+			? addInitiative({ name, description, link, isAvailable })
+			: await updateInitiativeDetails();
 	};
 	const header = () => {
 		return (
