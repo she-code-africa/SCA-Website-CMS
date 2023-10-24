@@ -59,18 +59,18 @@ export const routes = [
 		icon: faPeopleRoof,
 		path: "/admin/chapters",
 	},
-	{
-		name: "programs",
-		label: "Programs",
-		icon: faRectangleList,
-		path: "/admin/programs",
-	},
-	{
-		name: "stories",
-		label: "Success Stories",
-		icon: faMedal,
-		path: "/admin/success-stories",
-	},
+	// {
+	// 	name: "programs",
+	// 	label: "Programs",
+	// 	icon: faRectangleList,
+	// 	path: "/admin/programs",
+	// },
+	// {
+	// 	name: "stories",
+	// 	label: "Success Stories",
+	// 	icon: faMedal,
+	// 	path: "/admin/success-stories",
+	// },
 	{
 		name: "events",
 		label: "Events",
