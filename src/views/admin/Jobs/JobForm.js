@@ -104,7 +104,12 @@ const JobForm = ({ newJob }) => {
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
-		newJob ? addJob(job) : updateJob();
+		const isCompanyEmpty =
+			!company.companyName && !company.email && !company.companyUrl;
+
+		// Remove company if details are empty
+		const updatedJob = isCompanyEmpty ? { ...job, company: undefined } : job;
+		newJob ? addJob(updatedJob) : updateJob();
 	};
 
 	const handleInputChange = useCallback(
