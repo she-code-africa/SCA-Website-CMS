@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useQuery } from "react-query";
 import { getCompanies } from "services";
 import { companies as companyHeader } from "utils/headers";
-import Loader from "components/Loader";
 import {
 	TableHeaderRow,
 	TableHeader,
@@ -11,7 +10,6 @@ import {
 	TableData,
 	TableBody,
 } from "components/Table/DisplayTable";
-import { BarrLoader } from "components/Loader";
 import moment from "moment";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";

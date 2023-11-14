@@ -13,8 +13,6 @@ import {
 	faBriefcase,
 	faHandshake,
 	faSchoolFlag,
-	faMedal,
-	faRectangleList,
 } from "@fortawesome/free-solid-svg-icons";
 export const routes = [
 	{

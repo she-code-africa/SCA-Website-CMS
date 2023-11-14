@@ -12,8 +12,6 @@ import Tooltip from "components/Tooltip";
 import Loader from "components/Loader";
 import "react-datepicker/dist/react-datepicker.css";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
-import { publishTestimonial } from "services";
-import { archiveTestimonial } from "services";
 import { updateTestimonialStatus } from "services";
 
 const TestimonialModal = ({
