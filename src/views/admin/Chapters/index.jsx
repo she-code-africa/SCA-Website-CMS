@@ -108,7 +108,7 @@ const Chapters = () => {
 						</button>
 					</div>
 					<Table width="full">
-						<TableHeaderRow className="grid grid-cols-8">
+						<TableHeaderRow className="grid grid-cols-9">
 							{header.map(({ label }, index) => {
 								return <TableHeader key={index}>{label}</TableHeader>;
 							})}
@@ -125,7 +125,7 @@ const Chapters = () => {
 										category,
 										leader,
 										state,
-
+										link,
 										publishDate,
 										updateAt,
 										createdAt,
@@ -141,13 +141,15 @@ const Chapters = () => {
 												setNewItem(false);
 											}}
 											key={index}
-											className="grid grid-cols-8 px-4 py-3 bg-white group relative">
+											className="grid grid-cols-9 px-4 py-3 bg-white group relative">
 											<TableData>{name}</TableData>
 											<TableData>
 												{city}, {""}
 												{country}
 											</TableData>
 											<TableData>{category.name}</TableData>
+											<TableData>{link}</TableData>
+
 											<TableData>{leader}</TableData>
 
 											<TableData>{state}</TableData>

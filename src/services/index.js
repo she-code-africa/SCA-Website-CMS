@@ -339,8 +339,12 @@ export async function deleteCourse(id) {
 	return await api.delete(`${baseUrl}/courses/${id}`);
 }
 
-export async function getVolunteerRequest() {
+export async function getVolunteerRequests() {
 	return await api.get(`${baseUrl}/volunteer-request/`);
+}
+
+export async function getVolunteerRequest(id) {
+	return await api.get(`${baseUrl}/volunteer-request/${id}`);
 }
 
 export async function getOurReach() {
