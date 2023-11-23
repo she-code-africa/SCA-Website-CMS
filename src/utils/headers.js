@@ -343,6 +343,10 @@ export const chapters = [
 		label: "Location",
 	},
 	{
+		value: "link",
+		label: "Link",
+	},
+	{
 		value: "category",
 		label: "Category",
 	},

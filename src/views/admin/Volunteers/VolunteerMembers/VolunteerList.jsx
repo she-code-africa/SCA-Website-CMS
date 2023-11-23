@@ -12,14 +12,17 @@ import {
 import moment from "moment";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { getVolunteerRequest } from "services";
+import { getVolunteerRequests } from "services";
 import Pagination from "components/Pagination";
+import VolunteerModal from "components/Volunteers/VolunteerModal";
 
 const VolunteerList = () => {
 	const [volunteers, setVolunteers] = useState([]);
+	const [selectedId, setSelectedId] = useState();
 	const [currentPage, setCurrentPage] = useState(1);
+	const [isVolunteerModalOpen, setIsVolunteerModalOpen] = useState(false);
 	const itemsPerPage = 10;
-	const { isLoading } = useQuery("volunteers", getVolunteerRequest, {
+	const { isLoading } = useQuery("volunteers", getVolunteerRequests, {
 		onSuccess: (data) => {
 			setVolunteers(data);
 		},
@@ -27,6 +30,9 @@ const VolunteerList = () => {
 			toast.error("Error Fetching Volunteers");
 		},
 	});
+	const handleVolunteerModal = () => {
+		setIsVolunteerModalOpen(!isVolunteerModalOpen);
+	};
 	return (
 		<>
 			<div className="flex w-full px-4">
@@ -66,11 +72,16 @@ const VolunteerList = () => {
 											volunteerRole,
 											updatedAt,
 											createdAt,
+											_id,
 										},
 										index
 									) => {
 										return (
 											<TableDataRow
+												onClick={() => {
+													// setSelectedId(_id);
+													// handleVolunteerModal();
+												}}
 												key={index}
 												className="grid grid-cols-7 px-4 py-3 gap-x-4 bg-white">
 												<TableData>
@@ -101,6 +112,13 @@ const VolunteerList = () => {
 				</div>
 			</div>
 			<ToastContainer />
+			{isVolunteerModalOpen && (
+				<VolunteerModal
+					id={selectedId}
+					isOpen={isVolunteerModalOpen}
+					handleModal={handleVolunteerModal}
+				/>
+			)}
 		</>
 	);
 };

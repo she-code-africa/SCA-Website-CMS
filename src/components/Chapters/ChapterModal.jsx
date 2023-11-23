@@ -26,9 +26,10 @@ const ChapterModal = ({
 		country: "",
 		leader: "",
 		category: "",
+		link: "",
 	};
 	const [chapter, setChapter] = useState(intial);
-	const { name, city, country, leader, category } = chapter;
+	const { name, city, country, leader, category, link } = chapter;
 	const [edit, setEdit] = useState(false);
 	const [categories, setCategories] = useState([]);
 	const inputClass = `border-0 px-3 py-0 placeholder-slate-300 text-slate-600 bg-white rounded text-sm ${
@@ -175,10 +176,26 @@ const ChapterModal = ({
 								</label>
 								<input
 									required
-									type="text"
+									type="url"
 									className={`${inputClass}`}
 									name="city"
 									value={city}
+									onChange={handleInputChange}
+									disabled={!edit && !newItem}
+								/>
+							</div>
+							<div className="relative w-full mb-3 flex items-center">
+								<label
+									className="block uppercase text-slate-600 text-xs font-bold basis-3/12"
+									htmlFor="link">
+									Link
+								</label>
+								<input
+									required
+									type="text"
+									className={`${inputClass}`}
+									name="link"
+									value={link}
 									onChange={handleInputChange}
 									disabled={!edit && !newItem}
 								/>
