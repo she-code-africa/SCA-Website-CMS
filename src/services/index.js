@@ -123,7 +123,7 @@ export async function deleteJobCategory(id) {
 }
 
 export async function editJobCategory({ id, data }) {
-	return await api.delete(`${baseUrl}/job/category/${id}`, data);
+	return await api.put(`${baseUrl}/job/category/${id}`, data);
 }
 
 export async function getJobTypes() {
@@ -140,7 +140,7 @@ export async function deleteJobType(id) {
 }
 
 export async function editJobType({ id, data }) {
-	return await api.delete(`${baseUrl}/job/types/${id}`, data);
+	return await api.put(`${baseUrl}/job/types/${id}`, data);
 }
 
 export async function getCompanies() {
@@ -475,7 +475,7 @@ export async function deleteChapterCategory(id) {
 }
 
 export async function editChapterCategory({ id, data }) {
-	return await api.delete(`${baseUrl}/chapters/categories/${id}`, data);
+	return await api.put(`${baseUrl}/chapters/categories/${id}`, data);
 }
 
 export async function getChapters() {
@@ -499,7 +499,7 @@ export async function getChapter(categoryId, id) {
 }
 
 export async function editChapter({ id, categoryId, data }) {
-	return await api.delete(
+	return await api.put(
 		`${baseUrl}/chapters/categories/${categoryId}/member-chapters/${id}`,
 		data
 	);

@@ -90,7 +90,7 @@ const ChapterModal = ({
 				updatedFields[key] = chapter[key];
 			}
 		}
-		await updateChapter({ id, data: updatedFields });
+		await updateChapter({ categoryId, id, data: updatedFields });
 	};
 
 	const handleInputChange = useCallback(
