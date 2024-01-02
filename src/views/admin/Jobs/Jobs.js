@@ -140,6 +140,7 @@ const Jobs = () => {
 																				className="mb-1 px-3 text-sm text-left"
 																				onClick={() => {
 																					setSelectedId(_id);
+																					handleModal();
 																				}}>
 																				Delete
 																			</button>
