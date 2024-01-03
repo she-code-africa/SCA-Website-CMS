@@ -104,9 +104,17 @@ const JobForm = ({ newJob }) => {
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
-		const isCompanyEmpty =
-			!company.companyName && !company.email && !company.companyUrl;
-
+		let isCompanyEmpty;
+		if (company) {
+			isCompanyEmpty =
+				!company.companyName && !company.email && !company.companyUrl;
+		} else if (guestPostMetaData) {
+			isCompanyEmpty =
+				!guestPostMetaData.companyName &&
+				!guestPostMetaData.email &&
+				!guestPostMetaData.companyUrl;
+		}
+		console.log(company);
 		// Remove company if details are empty
 		const updatedJob = isCompanyEmpty ? { ...job, company: undefined } : job;
 		newJob ? addJob(updatedJob) : updateJob();
