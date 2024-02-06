@@ -13,6 +13,7 @@ import {
 	faBriefcase,
 	faHandshake,
 	faSchoolFlag,
+	faClipboard,
 } from "@fortawesome/free-solid-svg-icons";
 export const routes = [
 	{
@@ -57,12 +58,12 @@ export const routes = [
 		icon: faPeopleRoof,
 		path: "/admin/chapters",
 	},
-	// {
-	// 	name: "programs",
-	// 	label: "Programs",
-	// 	icon: faRectangleList,
-	// 	path: "/admin/programs",
-	// },
+	{
+		name: "reports",
+		label: "Reports",
+		icon: faClipboard,
+		path: "/admin/reports",
+	},
 	// {
 	// 	name: "stories",
 	// 	label: "Success Stories",

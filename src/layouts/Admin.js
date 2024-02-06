@@ -40,6 +40,7 @@ import Initiatives from "views/admin/Initiatives";
 import Protected from "components/Protected";
 import Chapters from "views/admin/Chapters";
 import Programs from "views/admin/Program";
+import Reports from "views/admin/Reports";
 
 export default function Admin() {
 	return (
@@ -55,6 +56,7 @@ export default function Admin() {
 						<Route path={paths.team} exact component={TeamList} />
 						<Route path={paths.partners} exact component={PartnersList} />
 						<Route path={paths.reach} exact component={Reach} />
+						<Route path={paths.reports} exact component={Reports} />
 						<Route
 							path={paths.talentRequest}
 							exact
