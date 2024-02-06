@@ -25,6 +25,26 @@ export const team = [
 	},
 ];
 
+export const report = [
+	{
+		value: "year",
+		label: "Year",
+	},
+	{
+		value: "link",
+		label: "Link",
+	},
+
+	{
+		value: "updatedAt",
+		label: "Updated At",
+	},
+	{
+		value: "createdAt",
+		label: "Created At",
+	},
+];
+
 export const courses = [
 	{ value: "name", label: "Course Name" },
 	{ value: "shortDescription", label: "Description" },
