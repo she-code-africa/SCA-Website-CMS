@@ -36,9 +36,8 @@ const EventModal = ({
 	const queryClient = useQueryClient();
 	const [edit, setEdit] = useState(false);
 	const [loading, setLoading] = useState(false);
-	const inputClass = `border-0 px-3 py-0 placeholder-slate-300 text-slate-600 bg-white rounded text-sm ${
-		edit || newItem ? "shadow focus:outline-none focus:ring !py-3" : ""
-	} w-full ease-linear transition-all duration-150 basis-9/12`;
+	const inputClass = `border-0 px-3 py-0 placeholder-slate-300 text-slate-600 bg-white rounded text-sm ${edit || newItem ? "shadow focus:outline-none focus:ring !py-3" : ""
+		} w-full ease-linear transition-all duration-150 basis-9/12`;
 
 	const { data, isLoading } = useQuery(["event", id], () => getEvent(id), {
 		onSuccess: (data) => {
@@ -207,7 +206,7 @@ const EventModal = ({
 					<form className="w-full px-4 md:px-8">
 						<div className="flex flex-col w-full gap-y-3">
 							<div className="self-center relative">
-								<input
+								{/* <input
 									required
 									className="hidden"
 									name="image"
@@ -215,7 +214,7 @@ const EventModal = ({
 									id="fileInput"
 									onChange={handleOnChange}
 									disabled={!edit && !newItem}
-								/>
+								/> */}
 								<label
 									htmlFor="fileInput"
 									className="flex items-center justify-center bg-gray-300 rounded-full cursor-pointer hover:bg-gray-400 text-xs border">

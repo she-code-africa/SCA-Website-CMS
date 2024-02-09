@@ -19,6 +19,7 @@ import VolunteerModal from "components/Volunteers/VolunteerModal";
 const VolunteerList = () => {
 	const [volunteers, setVolunteers] = useState([]);
 	const [selectedId, setSelectedId] = useState();
+	const [selectedVolunteer, setSelectedVolunteer] = useState();
 	const [currentPage, setCurrentPage] = useState(1);
 	const [isVolunteerModalOpen, setIsVolunteerModalOpen] = useState(false);
 	const itemsPerPage = 10;
@@ -79,8 +80,13 @@ const VolunteerList = () => {
 										return (
 											<TableDataRow
 												onClick={() => {
-													// setSelectedId(_id);
-													// handleVolunteerModal();
+													setSelectedId(_id);
+													setSelectedVolunteer({
+														fullname, email, currentRole,
+														purpose,
+														volunteerRole,
+													})
+													handleVolunteerModal();
 												}}
 												key={index}
 												className="grid grid-cols-7 px-4 py-3 gap-x-4 bg-white">
@@ -115,6 +121,7 @@ const VolunteerList = () => {
 			{isVolunteerModalOpen && (
 				<VolunteerModal
 					id={selectedId}
+					selectedVolunteer={selectedVolunteer}
 					isOpen={isVolunteerModalOpen}
 					handleModal={handleVolunteerModal}
 				/>
