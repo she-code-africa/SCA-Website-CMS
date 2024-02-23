@@ -518,7 +518,7 @@ export async function createReport(data) {
 }
 
 export async function editReport({ id, data }) {
-	return await api.put(`${baseUrl}/reports/${id}`, data);
+	return await api.put11(`${baseUrl}/reports/${id}`, data);
 }
 
 export async function deleteReport({ id }) {
