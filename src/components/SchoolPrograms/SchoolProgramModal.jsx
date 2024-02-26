@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import {
 	createSchoolProgram,
@@ -58,13 +58,12 @@ const SchoolProgramModal = ({
 	const { data, isLoading } = useQuery(
 		["schoolProgram", id],
 		() => getSchoolProgram(id),
-		{ enabled: !!id },
-		{
-			onSuccess: (data) => {
-				setSchoolProgram(data);
-			},
-		}
+		{ enabled: !!id }
 	);
+
+	useEffect(() => {
+		id && data && setSchoolProgram(data);
+	}, [id, data]);
 
 	useQuery("schools", getSchools, {
 		onSuccess: (data) => {
