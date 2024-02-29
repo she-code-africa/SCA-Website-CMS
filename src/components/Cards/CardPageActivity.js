@@ -1,26 +1,110 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useQuery } from "react-query";
+import { getActivityLog } from "services";
+import {
+	TableHeaderRow,
+	TableHeader,
+	Table,
+	TableDataRow,
+	TableData,
+	TableBody,
+} from "components/Table/DisplayTable";
+import { activityloglist as header } from "utils/headers";
+import Modal from "components/Modal";
+import Loader from "components/Loader";
+import moment from "moment";
+import "react-datepicker/dist/react-datepicker.css";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import Pagination from "components/Pagination";
 
-// components
 
-export default function CardPageVisits() {
-    return ( < >
-        <div className = "relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded" >
-        <div className = "rounded-t mb-0 px-4 py-3 border-0" >
-        <div className = "flex flex-wrap items-center" >
-        <div className = "relative w-full px-4 max-w-full flex-grow flex-1" >
-        <h3 className = "font-semibold text-base text-slate-700" >
-        Recent Activity Log </h3> </ div > </div> </ div > <div className = "block w-full overflow-x-auto" > {/* Projects table */ }
-         <table className = "items-center w-full bg-transparent text-sm border-collapse" >
-        <thead >
-        <tr >
-        <th className = "px-6 bg-slate-50 text-slate-500 align-middle border border-solid border-slate-100 py-3   uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left" >
-        Page name </th> <th className = "px-6 bg-slate-50 text-slate-500 align-middle border border-solid border-slate-100 py-3   uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left" >
-        User </th> <th className = "px-6 bg-slate-50 text-slate-500 align-middle border border-solid border-slate-100 py-3   uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left" >
-        Activity </th> </ tr > </thead> <tbody >
-        <tr >
-        <th className = "border-t-0 px-6 align-middle border-l-0 border-r-0   whitespace-nowrap p-4 text-left" >
-        dashboard </th> <td className = "border-t-0 px-6 align-middle border-l-0 border-r-0   whitespace-nowrap p-4" >
-        Mary Jane </td> <td className = "border-t-0 px-6 align-middle border-l-0 border-r-0   whitespace-nowrap p-4" >
-        Login </td> </ tr > </tbody> </ table > </div> </ div > </>
-    );
-}
+const ActivityList = () => {
+    const [activityLog, setActivity] = useState([]);
+	//const [selectedId, setSelectedId] = useState();
+    const [currentPage, setCurrentPage] = useState(1);
+	//const [isModalOpen, setIsModalOpen] = useState(false);
+	const itemsPerPage = 10;
+	const { isLoading } = useQuery("activityLog", getActivityLog, {
+		onSuccess: (data) => {
+			setActivity(data);
+		},
+		onError: () => {
+			toast.error("Error Fetching Activity Log(s)");
+		},
+	});
+    // const handleModal = () => {
+    //     setIsModalOpen(!isModalOpen);
+    // };
+    return (
+        <>
+        <div className = "flex w-full px-4" >
+            <div className={"relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded bg-white"}>
+                <div className="rounded-t mb-0 px-4 py-3 border-0 pb-0">
+					<div className="flex flex-wrap items-center">
+						<div className="relative w-full px-2 max-w-full flex justify-between flex-grow flex-1">
+							<h3 className={"font-semibold text-lg  text-slate-700"}>
+								Activity Log
+							</h3>
+						</div>
+					</div>
+				</div>
+                <Table width="full">
+                    <TableHeaderRow className="grid grid-cols-7 gap-x-4">
+							{header.map(({ label }, index) => {
+								return <TableHeader key={index}>{label}</TableHeader>;
+							})}
+							<TableHeader></TableHeader>
+					</TableHeaderRow>
+                    <TableBody loading={isLoading} >
+                        {activityLog
+                            ?.slice(
+                                (currentPage - 1) * itemsPerPage,
+                                currentPage * itemsPerPage
+                            )
+                            .map((data) => {
+                                const {
+                                    user,
+                                    page,
+                                    action,
+                                    createdAt,
+                                    updatedAt,
+                                    _id,
+                                } = data;
+                                return (
+                                        <TableDataRow 
+                                            onClick={()=> {
+
+                                            }}
+                                            key={_id}
+                                            className="grid grid-cols-7 px-4 py-3 gap-x-4 bg-white">
+                                            <TableData>
+												<span>{user}</span>
+											</TableData>
+											<TableData>{page}</TableData>
+											<TableData>{action}</TableData>
+											<TableData>
+												{moment(createdAt).format("DD MMM, YYYY")}
+											</TableData>
+											<TableData>
+												{moment(updatedAt).format("DD MMM, YYYY")}
+											</TableData>
+                                        </TableDataRow>
+                                    );
+                                }
+                            )}
+                    </TableBody>
+                    <Pagination
+                        totalItems={activityLog?.length}
+                        itemsPerPage={itemsPerPage}
+                        currentPage={currentPage}
+                        onPageChange={setCurrentPage}
+                    />
+                </Table>
+            </div>
+        </div>
+			<ToastContainer />
+        </>
+    )
+};
+export default ActivityList;

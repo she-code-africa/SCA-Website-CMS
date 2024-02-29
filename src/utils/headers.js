@@ -255,6 +255,29 @@ export const volunteer = [
 	},
 ];
 
+export const activityloglist = [
+	{
+		value: "user",
+		label: "User",
+	},
+	{
+		value: "page",
+		label: "Page",
+	},
+	{
+		value: "action",
+		label: "Action",
+	},
+	{
+		value: "createdAt",
+		label: "Created At",
+	},
+	{
+		value: "updatedAt",
+		label: "Updated At"
+	}
+];
+
 export const talentRequest = [
 	{
 		value: "fullname",

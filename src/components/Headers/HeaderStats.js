@@ -6,6 +6,14 @@ import CardStats from "components/Cards/CardStats.js";
 import { useQuery } from "react-query";
 import { getUsers } from "services";
 import { getEvents } from "services";
+import { getMembers } from "services";
+
+
+
+
+
+
+
 
 export default function HeaderStats() {
 	const { data: totalUsers, isLoading: loadingUsers } = useQuery(
@@ -15,6 +23,10 @@ export default function HeaderStats() {
 	const { data: totalEvents, isLoading: loadingEvents } = useQuery(
 		"events",
 		getEvents
+	);
+	const { data: totalMembers, isLoading: loadingMembers } = useQuery(
+		"teams",
+		getMembers
 	);
 	const [totalActiveEvents, setTotalActiveEvents] = useState();
 	useEffect(() => {
@@ -61,9 +73,17 @@ export default function HeaderStats() {
 							</div>
 							<div className="w-full lg:w-6/12 xl:w-3/12 px-4">
 								<CardStats
+									isLoading={loadingMembers}
+									statSubtitle="TOTAL TEAM MEMBERS"
+									statTitle={`${totalMembers && totalMembers.length}`}
+									statIconName="fas fa-user"
+								/>
+							</div>
+							<div className="w-full lg:w-6/12 xl:w-3/12 px-4">
+								<CardStats
 									statSubtitle="DAILY WEBSITE VISIT"
-									statTitle="49,650"
-									statDescripiron="22/03/2023"
+									statTitle="value"
+									statDescripiron="today's date"
 									statIconColor="bg-sky-500"
 								/>
 							</div>

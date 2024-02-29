@@ -188,6 +188,18 @@ export async function getTeamMember(catId, id) {
 	return member;
 }
 
+export async function getMembers() {
+	const totalMembers = await api.get(`${baseUrl}/teams/members`);
+	//{{PRODUCTION_ROOT_URL}}/api/teams/members
+	return totalMembers;
+}
+
+export async function getActivityLog() {
+	console.log("here...");
+	const allActivities = await api.get(`${baseUrl}/logs`)
+	console.log(allActivities);
+}
+
 export async function createEvent(data) {
 	const event = await api.post(`${baseUrl}/events`, data);
 	return event;
