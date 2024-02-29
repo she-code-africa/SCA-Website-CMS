@@ -8,13 +8,6 @@ import { getUsers } from "services";
 import { getEvents } from "services";
 import { getMembers } from "services";
 
-
-
-
-
-
-
-
 export default function HeaderStats() {
 	const { data: totalUsers, isLoading: loadingUsers } = useQuery(
 		"users",
