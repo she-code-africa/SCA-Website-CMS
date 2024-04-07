@@ -2,6 +2,21 @@ import api from "../utils/api";
 const baseUrl = process.env.REACT_APP_BASE_URL;
 console.log(baseUrl, "base url");
 
+//
+import { BetaAnalyticsDataClient } from "@google-analytics/data";
+const PROPERTY_ID = process.env.GA_PROPERTY_ID;
+const CLIENT_ID = process.env.GA_CLIENT_ID;
+// const { BetaAnalyticsDataClient } = require("@google-analytics/data");
+
+const analyticsDataClient = new BetaAnalyticsDataClient({
+    credentials: {
+        client_email: process.env.GA_CLIENT_EMAIL,
+        private_key: process.env.GA_PRIVATE_KEY?.replace(/\n/gm, "\n"),
+    },
+});
+
+//
+
 export async function getEvents() {
 	const events = await api.get(`${baseUrl}/events`);
 	return events;
@@ -515,4 +530,17 @@ export async function editChapter({ id, categoryId, data }) {
 		`${baseUrl}/chapters/categories/${categoryId}/member-chapters/${id}`,
 		data
 	);
+}
+
+export async function getGAAnalyticsData(){
+	return await analyticsDataClient.runReport({
+		property: `properties/${PROPERTY_ID}`,
+		dateRanges: [
+			{
+				startDate: 'today',
+				endDate: 'today'
+			},
+		],
+		metrics: [{ name: "screenPageViews" }],
+	});
 }
