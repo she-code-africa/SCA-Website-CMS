@@ -32,4 +32,5 @@ export const paths = {
 	addNewScholarship: "/admin/initiatives/add",
 	editScholarship: "/admin/initiatives/edit",
 	viewScholarship: "/admin/initiatives/view",
+	reports: "/admin/reports",
 };

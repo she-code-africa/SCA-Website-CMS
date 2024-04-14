@@ -27,10 +27,11 @@ const EventModal = ({
 	const intialEventValue = {
 		title: "",
 		description: "",
-		eventDate: "",
+		eventDate: new Date(),
 		image: "",
 		link: "",
 	};
+
 	const [event, setEvent] = useState(intialEventValue);
 	const { title, description, eventDate, link, image, state } = event;
 	const queryClient = useQueryClient();
@@ -40,11 +41,16 @@ const EventModal = ({
 		edit || newItem ? "shadow focus:outline-none focus:ring !py-3" : ""
 	} w-full ease-linear transition-all duration-150 basis-9/12`;
 
-	const { data, isLoading } = useQuery(["event", id], () => getEvent(id), {
-		onSuccess: (data) => {
-			setEvent(data);
-		},
-	});
+	const { data, isLoading } = useQuery(
+		["event", id],
+		() => getEvent(id),
+		{ enabled: !!id },
+		{
+			onSuccess: (data) => {
+				setEvent(data);
+			},
+		}
+	);
 
 	const { mutate: addEvent, isLoading: creating } = useMutation(createEvent, {
 		onSuccess: () => {
@@ -79,19 +85,21 @@ const EventModal = ({
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
+		console.log(!!eventDate);
 		if (
 			title === "" ||
 			description === "" ||
-			eventDate === "" ||
+			!eventDate ||
 			image === "" ||
 			link === ""
 		) {
 			toast.error("Please fill all fields");
 		} else {
+			const formattedDate = eventDate.toISOString().split("T")[0];
 			const formData = new FormData();
 			formData.append("title", title);
 			formData.append("description", description);
-			formData.append("eventDate", eventDate);
+			formData.append("eventDate", formattedDate);
 			formData.append("link", link);
 			formData.append("image", image);
 			newItem ? addEvent(formData) : updateEventDetails();
@@ -285,6 +293,7 @@ const EventModal = ({
 								</label>
 								<DatePicker
 									selected={eventDate ? new Date(eventDate) : new Date()}
+									dateFormat="yyyy-MM-dd"
 									onChange={(date) =>
 										setEvent((prevEvent) => ({
 											...prevEvent,

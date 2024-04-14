@@ -516,3 +516,23 @@ export async function editChapter({ id, categoryId, data }) {
 		data
 	);
 }
+
+export async function getReports() {
+	return await api.get(`${baseUrl}/reports`);
+}
+
+export async function getReport(id) {
+	return await api.get(`${baseUrl}/reports/${id}`);
+}
+
+export async function createReport(data) {
+	return await api.post(`${baseUrl}/reports`, data);
+}
+
+export async function editReport({ id, data }) {
+	return await api.put(`${baseUrl}/reports/${id}`, data);
+}
+
+export async function deleteReport(id) {
+	return await api.delete(`${baseUrl}/reports/${id}`);
+}

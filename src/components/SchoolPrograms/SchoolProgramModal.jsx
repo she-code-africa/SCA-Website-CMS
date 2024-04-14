@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import {
 	createSchoolProgram,
@@ -16,7 +16,8 @@ import { GrView } from "react-icons/gr";
 import Tooltip from "components/Tooltip";
 import Loader from "components/Loader";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
-import { BiArchiveIn, BiArchiveOut } from "react-icons/bi";
+import { BiArchiveIn, BiArchiveOut, BiSolidImageAdd } from "react-icons/bi";
+import Placeholder from "components/Placeholder";
 
 const SchoolProgramModal = ({
 	isOpen,
@@ -26,19 +27,25 @@ const SchoolProgramModal = ({
 	id,
 }) => {
 	const intialSchoolValue = {
-		name: "",
-		description: "",
+		title: "",
+		cohort: "",
+		briefContent: "",
+		extendedContent: "",
+		school: "",
+		state: "",
+		link: "",
+		image: "",
 	};
 	const [schoolProgram, setSchoolProgram] = useState(intialSchoolValue);
 	const {
-		name,
-		description,
 		title,
 		cohort,
 		briefContent,
 		extendedContent,
 		school,
 		state,
+		link,
+		image,
 	} = schoolProgram;
 	const queryClient = useQueryClient();
 	const [edit, setEdit] = useState(false);
@@ -51,18 +58,25 @@ const SchoolProgramModal = ({
 	const { data, isLoading } = useQuery(
 		["schoolProgram", id],
 		() => getSchoolProgram(id),
-		{
-			onSuccess: (data) => {
-				setSchoolProgram(data);
-			},
-		}
+		{ enabled: !!id }
 	);
+
+	useEffect(() => {
+		id && data && setSchoolProgram(data);
+	}, [id, data]);
 
 	useQuery("schools", getSchools, {
 		onSuccess: (data) => {
 			setSchools(data);
 		},
 	});
+
+	const handleOnChange = (e) => {
+		setSchoolProgram((prev) => ({
+			...prev,
+			image: e.target.files[0],
+		}));
+	};
 
 	const { mutate: addSchool, isLoading: creating } = useMutation(
 		createSchoolProgram,
@@ -102,10 +116,26 @@ const SchoolProgramModal = ({
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		if (name === "" || description === "") {
+		if (
+			title === "" ||
+			extendedContent === "" ||
+			school === "" ||
+			briefContent === "" ||
+			cohort === "" ||
+			link === "" ||
+			image === ""
+		) {
 			toast.error("Please fill all fields");
 		} else {
-			newItem ? addSchool({ name, description }) : await updateSchoolDetails();
+			const formData = new FormData();
+			formData.append("title", title);
+			formData.append("extendedContent", extendedContent);
+			formData.append("school", school);
+			formData.append("cohort", cohort);
+			formData.append("briefContent", briefContent);
+			formData.append("link", link);
+			formData.append("image", image);
+			newItem ? addSchool(formData) : await updateSchoolDetails();
 		}
 	};
 
@@ -216,6 +246,43 @@ const SchoolProgramModal = ({
 				) : (
 					<form className="w-full px-4 md:px-8">
 						<div className="flex flex-col w-full gap-y-3">
+							<div className="self-center relative">
+								<input
+									required
+									className="hidden"
+									name="image"
+									type="file"
+									id="fileInput"
+									onChange={handleOnChange}
+									disabled={!edit && !newItem}
+								/>
+								<label
+									htmlFor="fileInput"
+									className="flex items-center justify-center bg-gray-300 rounded-full cursor-pointer hover:bg-gray-400 text-xs border">
+									{image ? (
+										<img
+											className="rounded-full w-full max-h-40"
+											src={
+												image
+													? typeof image === "string"
+														? image
+														: URL.createObjectURL(image)
+													: ""
+											}
+											alt={title}
+										/>
+									) : (
+										<Placeholder name="image" />
+									)}
+									{(edit || newItem) && (
+										<div
+											className="absolute right-3 bottom-0 z-2 text-black opacity-90 text-base"
+											size="2rem">
+											<BiSolidImageAdd />
+										</div>
+									)}
+								</label>
+							</div>
 							<div className="relative w-full mb-3 flex items-center ">
 								<label
 									className="block uppercase text-slate-600 text-xs font-bold basis-3/12"
@@ -264,6 +331,22 @@ const SchoolProgramModal = ({
 									disabled={!edit && !newItem}
 								/>
 							</div>
+							<div className="relative w-full mb-3 flex items-center ">
+								<label
+									className="block uppercase text-slate-600 text-xs font-bold basis-3/12"
+									htmlFor="link">
+									Link
+								</label>
+								<input
+									required
+									type="url"
+									className={`${inputClass}`}
+									name="link"
+									value={link}
+									onChange={handleInputChange}
+									disabled={!edit && !newItem}
+								/>
+							</div>
 							<div className="relative w-full mb-3 flex items-center">
 								<label
 									className="block text-slate-600 text-xs font-bold basis-3/12 uppercase"
@@ -276,7 +359,7 @@ const SchoolProgramModal = ({
 									value={school}
 									name="school"
 									onChange={handleSchoolChange}
-									disabled={!edit || newItem}>
+									disabled={edit}>
 									<option value="">Select School</option>
 									{schools.map((school, index) => (
 										<option
