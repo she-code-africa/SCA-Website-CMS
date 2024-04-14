@@ -7,17 +7,12 @@ import { useQuery } from "react-query";
 import { getUsers } from "services";
 import { getEvents } from "services";
 import { getMembers } from "services";
-import { getGAAnalyticsData } from "services";
-// import GoogleAnalytics from "analytics";
-// import { GoogleOAuthProvider } from "@react-oauth/google";
+import GoogleAnalytics from "analytics";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
-const CLIENT_ID = process.env.REACT_APP_CLIENT_ID;
+const CLIENT_ID = process.env.REACT_APP_GA_CLIENT_ID;
 
 export default function HeaderStats() {
-	const { data: totalViews, isLoading: loadingViews } = useQuery(
-		"views",
-		getGAAnalyticsData
-	);
 	const { data: totalUsers, isLoading: loadingUsers } = useQuery(
 		"users",
 		getUsers
@@ -82,15 +77,9 @@ export default function HeaderStats() {
 								/>
 							</div>
 							<div className="w-full lg:w-6/12 xl:w-3/12 px-4">
-								{/* <GoogleOAuthProvider clientId={CLIENT_ID}>
+								<GoogleOAuthProvider clientId={CLIENT_ID}>
 									<GoogleAnalytics />
-								</GoogleOAuthProvider> */}
-								<CardStats
-									statSubtitle="DAILY WEBSITE VISIT"
-									statTitle= "heyo"
-									statDescripiron="today's date"
-									statIconColor="bg-sky-500"
-								/>
+								</GoogleOAuthProvider>
 							</div>
 						</div>
 					</div>

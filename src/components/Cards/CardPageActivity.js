@@ -17,13 +17,14 @@ import "react-datepicker/dist/react-datepicker.css";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Pagination from "components/Pagination";
+import ActivityLogModal from "components/ActivityLog/ActivityModal";
 
 
 const ActivityList = () => {
     const [activityLog, setActivity] = useState([]);
-	//const [selectedId, setSelectedId] = useState();
+	const [selectedId, setSelectedId] = useState();
     const [currentPage, setCurrentPage] = useState(1);
-	//const [isModalOpen, setIsModalOpen] = useState(false);
+	const [isModalOpen, setIsModalOpen] = useState(false);
 	const itemsPerPage = 10;
 	const { isLoading } = useQuery("activityLog", getActivityLog, {
 		onSuccess: (data) => {
@@ -33,9 +34,11 @@ const ActivityList = () => {
 			toast.error("Error Fetching Activity Log(s)");
 		},
 	});
-    // const handleModal = () => {
-    //     setIsModalOpen(!isModalOpen);
-    // };
+
+    const handleModal = () => {
+        setIsModalOpen(!isModalOpen);
+    };
+
     return (
         <>
         <div className = "flex w-full px-4" >
@@ -74,12 +77,13 @@ const ActivityList = () => {
                                 return (
                                         <TableDataRow 
                                             onClick={()=> {
-
+                                                handleModal();
+                                                setSelectedId(data);
                                             }}
                                             key={_id}
                                             className="grid grid-cols-7 px-4 py-3 gap-x-4 bg-white">
                                             <TableData>
-												<span>{user}</span>
+												<span>{user.firstName} {user.lastName}</span>
 											</TableData>
 											<TableData>{page}</TableData>
 											<TableData>{action}</TableData>
@@ -102,6 +106,13 @@ const ActivityList = () => {
                     />
                 </Table>
             </div>
+            { isModalOpen && (
+                <ActivityLogModal
+                    isOpen={isModalOpen}
+                    handleModal={handleModal}
+                    activityLogDetails={selectedId}
+                 />
+            )}
         </div>
 			<ToastContainer />
         </>
