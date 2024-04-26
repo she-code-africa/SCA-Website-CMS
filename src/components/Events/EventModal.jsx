@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { createEvent, getEvent, editEvent } from "services";
 import Modal from "components/Modal";
@@ -41,16 +41,16 @@ const EventModal = ({
 		edit || newItem ? "shadow focus:outline-none focus:ring !py-3" : ""
 	} w-full ease-linear transition-all duration-150 basis-9/12`;
 
-	const { data, isLoading } = useQuery(
-		["event", id],
-		() => getEvent(id),
-		{ enabled: !!id },
-		{
-			onSuccess: (data) => {
-				setEvent(data);
-			},
-		}
-	);
+	const { data, isLoading } = useQuery(["event", id], () => getEvent(id), {
+		enabled: !!id,
+	});
+
+	useEffect(() => {
+		if (!data) return;
+		setEvent(data);
+	});
+
+	console.log(data, isLoading);
 
 	const { mutate: addEvent, isLoading: creating } = useMutation(createEvent, {
 		onSuccess: () => {
