@@ -1195,6 +1195,14 @@ video {
   min-height: 75vh;
 }
 
+.min-h-\[400px\] {
+  min-height: 400px;
+}
+
+.min-h-\[300px\] {
+  min-height: 300px;
+}
+
 .\!w-6 {
   width: 1.5rem !important;
 }
@@ -1437,6 +1445,10 @@ video {
 
 .grid-cols-\[200px_1fr_100px_100px_100px_100px\] {
   grid-template-columns: 200px 1fr 100px 100px 100px 100px;
+}
+
+.grid-cols-6 {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 
 .flex-col {

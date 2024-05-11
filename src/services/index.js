@@ -77,6 +77,15 @@ export async function getEnquiries() {
 	return enquiresResponse;
 }
 
+export async function getEnquiry(id) {
+	const enquiresResponse = await api.get(`${baseUrl}/enquiry/${id}`);
+	return enquiresResponse;
+}
+
+export async function editEnquiry({ id, data }) {
+	return await api.put(`${baseUrl}/enquiry/${id}`, data);
+}
+
 export async function getJobs() {
 	const jobsResponse = await api.get(`${baseUrl}/job/postings`);
 	return jobsResponse;

@@ -158,9 +158,14 @@ export const enquiries = [
 		label: "Description",
 	},
 	{
+		value: "status",
+		label: "Status",
+	},
+	{
 		value: "created",
 		label: "Created",
 	},
+	{ value: "updated", label: "Updated" },
 ];
 
 export const events = [
