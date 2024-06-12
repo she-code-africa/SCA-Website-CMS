@@ -1,6 +1,7 @@
 import api from "../utils/api";
+import axios from "axios";
 const baseUrl = process.env.REACT_APP_BASE_URL;
-console.log(baseUrl, "base url");
+const sagBaseUrl = process.env.REACT_APP_STEM_A_GIRL_BASE_URL;
 
 export async function getEvents() {
 	const events = await api.get(`${baseUrl}/events`);
@@ -532,4 +533,24 @@ export async function editReport({ id, data }) {
 
 export async function deleteReport(id) {
 	return await api.delete(`${baseUrl}/reports/${id}`);
+}
+
+export async function getSAGSchools() {
+	return await axios.get(`${sagBaseUrl}/school`);
+}
+
+export async function createSAGSchool(data) {
+	return await axios.post(`${sagBaseUrl}/school`, data);
+}
+
+export async function getSAGSchool(id) {
+	return await axios.get(`${sagBaseUrl}/school/${id}`);
+}
+
+export async function editSAGSchool({ id, data }) {
+	return await axios.put(`${sagBaseUrl}/school/${id}`, data);
+}
+
+export async function deleteSAGSchool(id) {
+	return await axios.delete(`${sagBaseUrl}/school/${id}`);
 }

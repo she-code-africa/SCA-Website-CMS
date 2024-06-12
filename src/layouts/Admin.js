@@ -41,6 +41,7 @@ import Protected from "components/Protected";
 import Chapters from "views/admin/Chapters";
 import Programs from "views/admin/Program";
 import Reports from "views/admin/Reports";
+import Schools from "views/admin/Stem-a-girl/schools";
 
 export default function Admin() {
 	return (
@@ -131,6 +132,9 @@ export default function Admin() {
 							exact
 							component={EditVolunteerCategory}
 						/>
+
+						<Route path={paths.sagSchools} exact component={Schools} />
+
 						{/* <Redirect from = "/admin"
         to = "/admin/dashboard" /> */}
 					</Switch>

@@ -56,7 +56,7 @@ const EnquiriesModal = ({ isOpen, handleModal, id, canDelete }) => {
 						<Loader />
 					) : (
 						<form className="w-full px-4 md:px-8">
-							<div className="flex flex-col w-full gap-y-5 min-h-[300px]  justify-center">
+							<div className="flex flex-col w-full gap-y-5 min-h-[300px] justify-center">
 								<InputGroup>
 									<Input
 										label="Full Name"
