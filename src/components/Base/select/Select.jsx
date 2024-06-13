@@ -24,7 +24,7 @@ const Select = ({
 				disabled={disabled}>
 				{options.map((option) => (
 					<option value={option._id} key={option._id}>
-						{option.name}
+						{option.name ?? option.title}
 					</option>
 				))}
 			</select>

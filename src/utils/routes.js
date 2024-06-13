@@ -77,6 +77,49 @@ export const routes = [
 		path: "/admin/events",
 	},
 	{
+		name: "stem-a-girl",
+		label: "Stem a Girl",
+		icon: faCalendar,
+		path: "/admin/stem-a-girl/schools",
+		items: [
+			{
+				name: "schools",
+				label: "Schools",
+				path: "/admin/stem-a-girl/schools",
+			},
+			{
+				name: "courses",
+				label: "Courses",
+				path: "/admin/stem-a-girl/courses",
+			},
+			{
+				name: "activities",
+				label: "Activities",
+				path: "/admin/stem-a-girl/activities",
+			},
+			{
+				name: "enquiries",
+				label: "Enquiries",
+				path: "/admin/stem-a-girl/enquiries",
+			},
+			{
+				name: "events",
+				label: "Events",
+				path: "/admin/stem-a-girl/events",
+			},
+			{
+				name: "impact-stories",
+				label: "Impact Stories",
+				path: "/admin/stem-a-girl/impact-stories",
+			},
+			{
+				name: "testimonials",
+				label: "Testimonials",
+				path: "/admin/stem-a-girl/testimonials",
+			},
+		],
+	},
+	{
 		name: "academy",
 		label: "Academy",
 		icon: faSchoolFlag,

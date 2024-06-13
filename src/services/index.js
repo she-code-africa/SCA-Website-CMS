@@ -1,6 +1,7 @@
 import api from "../utils/api";
+import axios from "axios";
 const baseUrl = process.env.REACT_APP_BASE_URL;
-console.log(baseUrl, "base url");
+const sagBaseUrl = process.env.REACT_APP_STEM_A_GIRL_BASE_URL;
 
 export async function getEvents() {
 	const events = await api.get(`${baseUrl}/events`);
@@ -532,4 +533,124 @@ export async function editReport({ id, data }) {
 
 export async function deleteReport(id) {
 	return await api.delete(`${baseUrl}/reports/${id}`);
+}
+
+export async function getSAGSchools() {
+	return await axios.get(`${sagBaseUrl}/school`);
+}
+
+export async function createSAGSchool(data) {
+	return await axios.post(`${sagBaseUrl}/school`, data);
+}
+
+export async function getSAGSchool(id) {
+	return await axios.get(`${sagBaseUrl}/school/${id}`);
+}
+
+export async function editSAGSchool({ id, data }) {
+	return await axios.put(`${sagBaseUrl}/school/${id}`, data);
+}
+
+export async function deleteSAGSchool(id) {
+	return await axios.delete(`${sagBaseUrl}/school/${id}`);
+}
+
+export async function getSAGCourses() {
+	return await axios.get(`${sagBaseUrl}/course`);
+}
+
+export async function createSAGCourse(data) {
+	return await axios.post(`${sagBaseUrl}/course`, data);
+}
+
+export async function getSAGCourse(id) {
+	return await axios.get(`${sagBaseUrl}/course/${id}`);
+}
+
+export async function editSAGCourse({ id, data }) {
+	return await axios.put(`${sagBaseUrl}/course/${id}`, data);
+}
+
+export async function deleteSAGCourse(id) {
+	return await axios.delete(`${sagBaseUrl}/course/${id}`);
+}
+
+export async function getSAGActivities() {
+	return await axios.get(`${sagBaseUrl}/activity`);
+}
+
+export async function createSAGActivity(data) {
+	return await axios.post(`${sagBaseUrl}/activity`, data);
+}
+
+export async function getSAGActivity(id) {
+	return await axios.get(`${sagBaseUrl}/activity/${id}`);
+}
+
+export async function editSAGActivity({ id, data }) {
+	return await axios.put(`${sagBaseUrl}/activity/${id}`, data);
+}
+
+export async function deleteSAGActivity(id) {
+	return await axios.delete(`${sagBaseUrl}/activity/${id}`);
+}
+
+export async function getSAGEnquiries() {
+	return await axios.get(`${sagBaseUrl}/enquiry`);
+}
+
+export async function createSAGEnquiry(data) {
+	return await axios.post(`${sagBaseUrl}/enquiry`, data);
+}
+
+export async function getSAGEnquiry(id) {
+	return await axios.get(`${sagBaseUrl}/enquiry/${id}`);
+}
+
+export async function editSAGEnquiry({ id, data }) {
+	return await axios.put(`${sagBaseUrl}/enquiry/${id}`, data);
+}
+
+export async function deleteSAGEnquiry(id) {
+	return await axios.delete(`${sagBaseUrl}/enquiry/${id}`);
+}
+
+export async function getSAGEvents() {
+	return await axios.get(`${sagBaseUrl}/event`);
+}
+
+export async function createSAGEvent(data) {
+	return await axios.post(`${sagBaseUrl}/event`, data);
+}
+
+export async function getSAGEvent(id) {
+	return await axios.get(`${sagBaseUrl}/event/${id}`);
+}
+
+export async function editSAGEvent({ id, data }) {
+	return await axios.put(`${sagBaseUrl}/event/${id}`, data);
+}
+
+export async function deleteSAGEvent(id) {
+	return await axios.delete(`${sagBaseUrl}/event/${id}`);
+}
+
+export async function getSAGImpactStories() {
+	return await axios.get(`${sagBaseUrl}/impactStory`);
+}
+
+export async function createSAGImpactStory(data) {
+	return await axios.post(`${sagBaseUrl}/impactStory`, data);
+}
+
+export async function editSAGImpactStory({ id, data }) {
+	return await axios.put(`${sagBaseUrl}/impactStory/${id}`, data);
+}
+
+export async function getSAGTestimonials() {
+	return await axios.get(`${sagBaseUrl}/testimonials`);
+}
+
+export async function createSAGTestimonial(data) {
+	return await axios.post(`${sagBaseUrl}/testimonials`, data);
 }
