@@ -42,6 +42,8 @@ import Chapters from "views/admin/Chapters";
 import Programs from "views/admin/Program";
 import Reports from "views/admin/Reports";
 import Schools from "views/admin/Stem-a-girl/schools";
+import SAGCourses from "views/admin/Stem-a-girl/courses";
+import SAGActivities from "views/admin/Stem-a-girl/activities";
 
 export default function Admin() {
 	return (
@@ -134,6 +136,8 @@ export default function Admin() {
 						/>
 
 						<Route path={paths.sagSchools} exact component={Schools} />
+						<Route path={paths.sagCourses} exact component={SAGCourses} />
+						<Route path={paths.sagActivities} exact component={SAGActivities} />
 
 						{/* <Redirect from = "/admin"
         to = "/admin/dashboard" /> */}

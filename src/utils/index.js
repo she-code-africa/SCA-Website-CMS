@@ -34,4 +34,7 @@ export const paths = {
 	viewScholarship: "/admin/initiatives/view",
 	reports: "/admin/reports",
 	sagSchools: "/admin/stem-a-girl/schools",
+	sagCourses: "/admin/stem-a-girl/courses",
+	sagActivities: "/admin/stem-a-girl/activities",
+	sagEvents: "/admin/stem-a-girl/events",
 };
