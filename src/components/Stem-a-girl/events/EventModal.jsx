@@ -9,13 +9,19 @@ import Tooltip from "components/Tooltip";
 import Loader from "components/Loader";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { InputGroup, Input, Textarea } from "components/Base";
-import { createSAGCourse, getSAGCourse, editSAGCourse } from "services";
+import {
+	createSAGEvent,
+	getSAGEvent,
+	editSAGEvent,
+	getSAGActivities,
+} from "services";
 import { BiArchiveIn, BiArchiveOut, BiSolidImageAdd } from "react-icons/bi";
 import Placeholder from "components/Placeholder";
 import { Select } from "components/Base";
-import { getSAGActivities } from "services";
+import { Label } from "components/Base";
+import DatePicker from "react-datepicker";
 
-const CourseModal = ({
+const EventModal = ({
 	isOpen,
 	handleModal,
 	handleDeleteModal,
@@ -30,26 +36,28 @@ const CourseModal = ({
 		activity: "",
 		link: "",
 		state: "draft",
+		eventDate: new Date(),
 	};
-	const [course, setCourse] = useState(intial);
-	const { title, image, description, activity, link, state } = course;
+	const [event, setEvent] = useState(intial);
+	const { title, image, description, activity, link, state, eventDate } = event;
 	const [edit, setEdit] = useState(false);
 	const [activties, setActivities] = useState([]);
 	const [loading, setLoading] = useState(false);
 	const { isLoading, data } = useQuery(
-		["stem-a-girl-course", id],
-		() => getSAGCourse(id),
+		["stem-a-girl-event", id],
+		() => getSAGEvent(id),
 		{
 			onSuccess: ({ data }) => {
 				const newData = data.data;
 				!newItem &&
-					setCourse({
+					setEvent({
 						title: newData.title,
 						description: newData.description,
 						activity: newData.activity._id,
 						image: newData.image,
 						link: newData.link,
 						state: newData.state,
+						eventDate: newData.eventDate,
 					});
 			},
 		}
@@ -68,32 +76,32 @@ const CourseModal = ({
 		}
 	);
 
-	const { mutate: addCourse, isLoading: creating } = useMutation(
-		createSAGCourse,
+	const { mutate: addEvent, isLoading: creating } = useMutation(
+		createSAGEvent,
 		{
 			onSuccess: () => {
-				setCourse(intial);
-				toast.success("Course Created Successfully");
-				queryClient.invalidateQueries(["stem-a-girl-courses"]);
+				setEvent(intial);
+				toast.success("Event Created Successfully");
+				queryClient.invalidateQueries(["stem-a-girl-events"]);
 				handleModal();
 			},
 			onError: () => {
-				toast.error("Could not create Course");
+				toast.error("Could not create Event");
 			},
 		}
 	);
 
-	const { mutateAsync: editCourse, isLoading: updating } = useMutation(
-		editSAGCourse,
+	const { mutateAsync: editEvent, isLoading: updating } = useMutation(
+		editSAGEvent,
 		{
 			onSuccess: () => {
-				toast.success("Course updated Successfully");
-				queryClient.invalidateQueries(["stem-a-girl-course"]);
-				queryClient.invalidateQueries(["stem-a-girl-courses"]);
+				toast.success("Event updated Successfully");
+				queryClient.invalidateQueries(["stem-a-girl-event"]);
+				queryClient.invalidateQueries(["stem-a-girl-events"]);
 				handleModal();
 			},
 			onError: () => {
-				toast.error("Could not update Course");
+				toast.error("Could not update Event");
 			},
 			onSettled: () => {
 				setLoading(false);
@@ -104,39 +112,40 @@ const CourseModal = ({
 	const handleInputChange = useCallback(
 		(e) => {
 			const { name, value } = e.target;
-			setCourse((prev) => ({
+			setEvent((prev) => ({
 				...prev,
 				[name]: value,
 			}));
 		},
-		[setCourse]
+		[setEvent]
 	);
 
 	const handleOnChange = (e) => {
-		setCourse((prev) => ({
+		setEvent((prev) => ({
 			...prev,
 			image: e.target.files[0],
 		}));
 	};
 
-	const createCourse = () => {
+	const createEvent = () => {
 		const formData = new FormData();
 		formData.append("title", title);
 		formData.append("description", description);
 		formData.append("image", image);
 		formData.append("activity", activity);
 		formData.append("link", link);
-		addCourse(formData);
+		formData.append("eventDate", eventDate);
+		addEvent(formData);
 	};
 
-	const updateCourse = async () => {
+	const updateEvent = async () => {
 		const updatedFields = new FormData();
-		for (const [key, value] of Object.entries(course)) {
-			if (intial.hasOwnProperty(key) && course[key] !== data[key]) {
+		for (const [key, value] of Object.entries(event)) {
+			if (intial.hasOwnProperty(key) && event[key] !== data[key]) {
 				updatedFields.append(key, value);
 			}
 		}
-		await editCourse({ id, data: updatedFields });
+		await editEvent({ id, data: updatedFields });
 	};
 
 	const handleSubmit = async (e) => {
@@ -150,21 +159,21 @@ const CourseModal = ({
 		) {
 			toast.error("Please fill all fields");
 		}
-		newItem ? createCourse() : updateCourse();
+		newItem ? createEvent() : updateEvent();
 	};
 
 	const handleState = async () => {
 		setLoading(true);
-		console.log(course.state);
-		await editCourse({
+		console.log(event.state);
+		await editEvent({
 			id,
-			data: { state: course.state === "draft" ? "published" : "draft" },
+			data: { state: event.state === "draft" ? "published" : "draft" },
 		});
 	};
 	const header = () => {
 		return (
 			<div className="flex justify-between items-center w-full mr-5 px-2">
-				<h2 className="font-semibold">Course Details</h2>
+				<h2 className="font-semibold">Event Details</h2>
 				{!newItem && (
 					<div className="flex items-center gap-3 hover:cursor-pointer">
 						<div onClick={handleState}>
@@ -271,11 +280,29 @@ const CourseModal = ({
 									name="activity"
 									options={isActivitiesLoading ? [] : activties}
 									onChange={(e) => {
-										setCourse((prev) => ({
+										setEvent((prev) => ({
 											...prev,
 											activity: e.target.value,
 										}));
 									}}
+								/>
+							</InputGroup>
+							<InputGroup>
+								<Label htmlFor="eventDate" name="Event Date" />
+								<DatePicker
+									selected={eventDate ? new Date(eventDate) : new Date()}
+									dateFormat="yyyy-MM-dd"
+									onChange={(date) =>
+										setEvent((prevEvent) => ({
+											...prevEvent,
+											eventDate: date,
+										}))
+									}
+									className={`border-0 px-3 py-0 placeholder-slate-300 text-slate-600 bg-white rounded text-sm ${
+										edit || newItem
+											? "shadow focus:outline-none focus:ring !py-3"
+											: ""
+									} w-full ease-linear transition-all duration-150 basis-9/12ass} ml-6 !w-[95%]`}
 								/>
 							</InputGroup>
 
@@ -322,4 +349,4 @@ const CourseModal = ({
 	);
 };
 
-export default CourseModal;
+export default EventModal;
