@@ -97,11 +97,11 @@ export const routes = [
 				label: "Activities",
 				path: "/admin/stem-a-girl/activities",
 			},
-			{
-				name: "enquiries",
-				label: "Enquiries",
-				path: "/admin/stem-a-girl/enquiries",
-			},
+			// {
+			// 	name: "enquiries",
+			// 	label: "Enquiries",
+			// 	path: "/admin/stem-a-girl/enquiries",
+			// },
 			{
 				name: "events",
 				label: "Events",
