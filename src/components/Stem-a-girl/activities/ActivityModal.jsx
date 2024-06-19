@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import Modal from "components/Modal";
 import { ToastContainer, toast } from "react-toastify";
@@ -12,6 +12,7 @@ import { InputGroup, Input, Textarea } from "components/Base";
 import { createSAGActivity, getSAGActivity, editSAGActivity } from "services";
 import { BiSolidImageAdd } from "react-icons/bi";
 import Placeholder from "components/Placeholder";
+import DefaultImage from "../../../assets/img/default-stem-photo.png";
 
 const ActivityModal = ({
 	isOpen,
@@ -86,7 +87,15 @@ const ActivityModal = ({
 			image: e.target.files[0],
 		}));
 	};
-
+	useEffect(() => {
+		// URL to your image
+		fetch(DefaultImage)
+			.then((response) => response.blob())
+			.then((blob) => {
+				setActivityDetails((prev) => ({ ...prev, image: blob }));
+			})
+			.catch((error) => console.error("Error fetching the image:", error));
+	}, []);
 	const createActivity = () => {
 		const formData = new FormData();
 		formData.append("title", title);
@@ -107,7 +116,7 @@ const ActivityModal = ({
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		if (title === "" || description === "" || image === "") {
+		if (title === "" || description === "") {
 			toast.error("Please fill all fields");
 		}
 		newItem ? createActivity() : updateActivity();
