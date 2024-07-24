@@ -9,7 +9,7 @@ import Placeholder from "components/Placeholder";
 import { MdOutlineModeEditOutline } from "react-icons/md";
 import { GrView } from "react-icons/gr";
 import Tooltip from "components/Tooltip";
-import { BiSolidImageAdd, BiArchiveIn, BiArchiveOut } from "react-icons/bi";
+import { BiSolidImageAdd } from "react-icons/bi";
 
 import Loader from "components/Loader";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
@@ -95,7 +95,7 @@ const ChapterModal = ({
 
 	const updateChapterDetails = async () => {
 		// Compare the current chapter state with the fetched data to identify updated fields
-		const updatedFields = {};
+		const updatedFields = new FormData();
 		for (const [key] of Object.entries(chapter)) {
 			if (chapter[key] !== data[key]) {
 				updatedFields[key] = chapter[key];
@@ -115,11 +115,26 @@ const ChapterModal = ({
 		[setChapter]
 	);
 
+	// const handleSubmit = async (e) => {
+	// 	e.preventDefault();
+	// 	newItem ? addChapter(chapter) : await updateChapterDetails();
+	// };
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		newItem ? addChapter(chapter) : await updateChapterDetails();
+		const formData = new FormData();
+		formData.append("name", name);
+		formData.append("city", city);
+		formData.append("country", country);
+		formData.append("leader", leader);
+		formData.append("category", category);
+		formData.append("link", link);
+		if (image instanceof File) {
+			formData.append("image", image);
+		}
+	
+		newItem ? addChapter(formData) : await updateChapterDetails(formData);
 	};
-
+	
 	const handleCategoryChange = (event) => {
 		const categoryId = event.target.value;
 		setChapter((prevChapter) => ({
