@@ -4,9 +4,13 @@ import { createChapter, editChapter, getChapter } from "services";
 import Modal from "components/Modal";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Placeholder from "components/Placeholder";
+
 import { MdOutlineModeEditOutline } from "react-icons/md";
 import { GrView } from "react-icons/gr";
 import Tooltip from "components/Tooltip";
+import { BiSolidImageAdd, BiArchiveIn, BiArchiveOut } from "react-icons/bi";
+
 import Loader from "components/Loader";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { getChapterCategories } from "services";
@@ -26,10 +30,11 @@ const ChapterModal = ({
 		country: "",
 		leader: "",
 		category: "",
+		image: "",
 		link: "",
 	};
 	const [chapter, setChapter] = useState(intial);
-	const { name, city, country, leader, category, link } = chapter;
+	const { name, city, country, leader, category, image, link } = chapter;
 	const [edit, setEdit] = useState(false);
 	const [categories, setCategories] = useState([]);
 	const inputClass = `border-0 px-3 py-0 placeholder-slate-300 text-slate-600 bg-white rounded text-sm ${
@@ -66,6 +71,12 @@ const ChapterModal = ({
 			},
 		}
 	);
+	const handleOnChange = (e) => {
+		setChapter((prev) => ({
+			...prev,
+			image: e.target.files[0],
+		}));
+	};
 
 	const { mutateAsync: updateChapter, isLoading: updating } = useMutation(
 		editChapter,
@@ -151,7 +162,43 @@ const ChapterModal = ({
 					<Loader />
 				) : (
 					<form className="w-full px-4 md:px-8">
-						<div className="flex flex-col w-full gap-y-5">
+						<div className="flex flex-col w-full gap-y-5"><div className="self-center relative">
+								<input
+									required
+									className="hidden"
+									name="image"
+									type="file"
+									id="fileInput"
+									onChange={handleOnChange}
+									disabled={!edit && !newItem}
+								/>
+								<label
+									htmlFor="fileInput"
+									className="flex items-center justify-center bg-gray-300 rounded-full cursor-pointer hover:bg-gray-400 text-xs border">
+									{image ? (
+										<img
+											className="rounded-full w-full max-h-40"
+											src={
+												image
+													? typeof image === "string"
+														? image
+														: URL.createObjectURL(image)
+													: ""
+											}
+											alt={name}
+										/>
+									) : (
+										<Placeholder name="image" />
+									)}
+									{(edit || newItem) && (
+										<div
+											className="absolute right-3 bottom-0 z-2 text-black opacity-90 text-base"
+											size="2rem">
+											<BiSolidImageAdd />
+										</div>
+									)}
+								</label>
+							</div>
 							<div className="relative w-full mb-3 flex items-center">
 								<label
 									className="block uppercase text-slate-600 text-xs font-bold basis-3/12"
