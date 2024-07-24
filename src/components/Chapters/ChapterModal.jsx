@@ -73,14 +73,15 @@ const ChapterModal = ({
 			},
 		}
 	);
+	
 	const handleOnChange = (e) => {
+		const { name, value, files } = e.target;
 		setChapter((prev) => ({
-			...prev,
-			image: e.target.files[0],
+		  ...prev,
+		  [name]: files ? files[0] : value,
 		}));
-		// setChapter((prev) => ({ ...prev, image: file }));
-
-	};
+	  };
+	  
 
 	const { mutateAsync: updateChapter, isLoading: updating } = useMutation(
 		editChapter,
@@ -97,19 +98,18 @@ const ChapterModal = ({
 		}
 	);
 
+	
 	const updateChapterDetails = async () => {
-		// Compare the current chapter state with the fetched data to identify updated fields
 		const updatedFields = new FormData();
-		for (const [key] of Object.entries(chapter)) {
-
-			if (chapter[key] !== data[key]) {
-				updatedFields[key] = chapter[key];
-			}			;
-
+		for (const [key, value] of Object.entries(chapter)) {
+		  if (chapter[key] !== data[key]) {
+			updatedFields.append(key, value);
+		  }
 		}
 		await updateChapter({ categoryId, id, data: updatedFields });
-	};
-
+		console.log(data);
+	  };
+	  
 	const handleInputChange = useCallback(
 		(e) => {
 			const { name, value } = e.target;
@@ -121,26 +121,21 @@ const ChapterModal = ({
 		[setChapter]
 	);
 
-	// const handleSubmit = async (e) => {
-	// 	e.preventDefault();
-	// 	newItem ? addChapter(chapter) : await updateChapterDetails();
-	// };
+	
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		const formData = new FormData();
 		formData.append("name", name);
 		formData.append("city", city);
 		formData.append("country", country);
-		// formData.append("leader", leader);
 		formData.append("category", category);
 		formData.append("link", link);
 		formData.append("description", description);
+		formData.append("image", image);
 
-		if (image instanceof File) {
-			formData.append("image", image);
-		}
 	
-		newItem ? addChapter(formData) : await updateChapterDetails(formData);
+	
+		newItem ? addChapter(formData) : await updateChapterDetails();
 	};
 	
 	const handleCategoryChange = (event) => {
