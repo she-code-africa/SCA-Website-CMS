@@ -47,6 +47,7 @@ const ChapterModal = ({
 		() => getChapter(categoryId, id),
 		{
 			onSuccess: (data) => {
+
 				setChapter(data);
 			},
 		}
@@ -76,6 +77,7 @@ const ChapterModal = ({
 	
 	const handleOnChange = (e) => {
 		const { name, value, files } = e.target;
+
 		setChapter((prev) => ({
 		  ...prev,
 		  [name]: files ? files[0] : value,
@@ -97,19 +99,26 @@ const ChapterModal = ({
 			},
 		}
 	);
-
+	
 	
 	const updateChapterDetails = async () => {
 		const updatedFields = new FormData();
+	
 		for (const [key, value] of Object.entries(chapter)) {
-		  if (chapter[key] !== data[key]) {
-			updatedFields.append(key, value);
-		  }
+			if (key === 'category' && typeof value === 'object') {
+				updatedFields.append(key, value._id); 
+			} else if (chapter[key] !== data[key]) {
+				updatedFields.append(key, value);
+			}
 		}
+	
 		await updateChapter({ categoryId, id, data: updatedFields });
-		console.log(data);
-	  };
-	  
+		console.log(chapter);
+	
+		
+	};
+	
+	
 	const handleInputChange = useCallback(
 		(e) => {
 			const { name, value } = e.target;
@@ -122,30 +131,31 @@ const ChapterModal = ({
 	);
 
 	
+	
+
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		const formData = new FormData();
 		formData.append("name", name);
 		formData.append("city", city);
 		formData.append("country", country);
-		formData.append("category", category);
+		formData.append("category", category._id || category); 
 		formData.append("link", link);
 		formData.append("description", description);
-		formData.append("image", image);
-
-	
-	
+		formData.append("image", image);	
 		newItem ? addChapter(formData) : await updateChapterDetails();
 	};
 	
+	
 	const handleCategoryChange = (event) => {
-		const categoryId = event.target.value;
+		const selectedCategoryId = event.target.value;
+		const selectedCategory = categories.find((cat) => cat._id === selectedCategoryId);
 		setChapter((prevChapter) => ({
 			...prevChapter,
-			category: categoryId,
+			category: selectedCategory || { _id: selectedCategoryId }, 
 		}));
 	};
-
+	
 	const header = () => {
 		return (
 			<div className="flex justify-between items-center w-full mr-5 px-2">
