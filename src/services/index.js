@@ -493,7 +493,8 @@ export async function getChapters() {
 }
 
 export async function createChapter(data) {
-	return await api.post(`${baseUrl}/chapters/member-chapters`, data);
+	 const chapter = await api.post(`${baseUrl}/chapters/member-chapters`, data);
+	 return chapter
 }
 
 export async function deleteChapter({ id, categoryId }) {
