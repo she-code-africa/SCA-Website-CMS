@@ -4,9 +4,13 @@ import { createChapter, editChapter, getChapter } from "services";
 import Modal from "components/Modal";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Placeholder from "components/Placeholder";
+
 import { MdOutlineModeEditOutline } from "react-icons/md";
 import { GrView } from "react-icons/gr";
 import Tooltip from "components/Tooltip";
+import { BiSolidImageAdd } from "react-icons/bi";
+
 import Loader from "components/Loader";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { getChapterCategories } from "services";
@@ -24,12 +28,14 @@ const ChapterModal = ({
 		name: "",
 		city: "",
 		country: "",
-		leader: "",
+		// leader: "",
 		category: "",
+		image: "",
+		description: "",
 		link: "",
 	};
 	const [chapter, setChapter] = useState(intial);
-	const { name, city, country, leader, category, link } = chapter;
+	const { name, city, country, category, image, description, link } = chapter;
 	const [edit, setEdit] = useState(false);
 	const [categories, setCategories] = useState([]);
 	const inputClass = `border-0 px-3 py-0 placeholder-slate-300 text-slate-600 bg-white rounded text-sm ${
@@ -41,6 +47,7 @@ const ChapterModal = ({
 		() => getChapter(categoryId, id),
 		{
 			onSuccess: (data) => {
+
 				setChapter(data);
 			},
 		}
@@ -61,11 +68,22 @@ const ChapterModal = ({
 				queryClient.invalidateQueries(["chapters"]);
 				handleModal();
 			},
-			onError: () => {
+			onError: () => {  
+
 				toast.error("Could not create Chapter");
 			},
 		}
 	);
+	
+	const handleOnChange = (e) => {
+		const { name, value, files } = e.target;
+
+		setChapter((prev) => ({
+		  ...prev,
+		  [name]: files ? files[0] : value,
+		}));
+	  };
+	  
 
 	const { mutateAsync: updateChapter, isLoading: updating } = useMutation(
 		editChapter,
@@ -81,18 +99,26 @@ const ChapterModal = ({
 			},
 		}
 	);
-
+	
+	
 	const updateChapterDetails = async () => {
-		// Compare the current chapter state with the fetched data to identify updated fields
-		const updatedFields = {};
-		for (const [key] of Object.entries(chapter)) {
-			if (chapter[key] !== data[key]) {
-				updatedFields[key] = chapter[key];
+		const updatedFields = new FormData();
+	
+		for (const [key, value] of Object.entries(chapter)) {
+			if (key === 'category' && typeof value === 'object') {
+				updatedFields.append(key, value._id); 
+			} else if (chapter[key] !== data[key]) {
+				updatedFields.append(key, value);
 			}
 		}
+	
 		await updateChapter({ categoryId, id, data: updatedFields });
+		console.log(chapter);
+	
+		
 	};
-
+	
+	
 	const handleInputChange = useCallback(
 		(e) => {
 			const { name, value } = e.target;
@@ -104,19 +130,32 @@ const ChapterModal = ({
 		[setChapter]
 	);
 
+	
+	
+
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		newItem ? addChapter(chapter) : await updateChapterDetails();
+		const formData = new FormData();
+		formData.append("name", name);
+		formData.append("city", city);
+		formData.append("country", country);
+		formData.append("category", category._id || category); 
+		formData.append("link", link);
+		formData.append("description", description);
+		formData.append("image", image);	
+		newItem ? addChapter(formData) : await updateChapterDetails();
 	};
-
+	
+	
 	const handleCategoryChange = (event) => {
-		const categoryId = event.target.value;
+		const selectedCategoryId = event.target.value;
+		const selectedCategory = categories.find((cat) => cat._id === selectedCategoryId);
 		setChapter((prevChapter) => ({
 			...prevChapter,
-			category: categoryId,
+			category: selectedCategory || { _id: selectedCategoryId }, 
 		}));
 	};
-
+	
 	const header = () => {
 		return (
 			<div className="flex justify-between items-center w-full mr-5 px-2">
@@ -150,8 +189,44 @@ const ChapterModal = ({
 				{isLoading && !newItem ? (
 					<Loader />
 				) : (
-					<form className="w-full px-4 md:px-8">
-						<div className="flex flex-col w-full gap-y-5">
+					<form className="w-full px-4 md:px-8 ">
+						<div className="flex flex-col  w-full gap-y-2  "><div className="self-center relative">
+								<input
+									required
+									className="hidden"
+									name="image"
+									type="file"
+									id="fileInput"
+									onChange={handleOnChange}
+									disabled={!edit && !newItem}
+								/>
+								<label
+									htmlFor="fileInput"
+									className="flex items-center justify-center bg-gray-300 rounded-full cursor-pointer hover:bg-gray-400 text-xs border">
+									{image ? (
+										<img
+											className="rounded-full w-full max-h-40"
+											src={
+												image
+													? typeof image === "string"
+														? image
+														: URL.createObjectURL(image)
+													: ""
+											}
+											alt={name}
+										/>
+									) : (
+										<Placeholder name="image" />
+									)}
+									{(edit || newItem) && (
+										<div
+											className="absolute right-3 bottom-0 z-2 text-black opacity-90 text-base"
+											size="2rem">
+											<BiSolidImageAdd />
+										</div>
+									)}
+								</label>
+							</div>
 							<div className="relative w-full mb-3 flex items-center">
 								<label
 									className="block uppercase text-slate-600 text-xs font-bold basis-3/12"
@@ -217,7 +292,7 @@ const ChapterModal = ({
 								/>
 							</div>
 
-							<div className="relative w-full mb-3 flex items-center">
+							{/* <div className="relative w-full mb-3 flex items-center">
 								<label
 									className="block uppercase text-slate-600 text-xs font-bold basis-3/12"
 									htmlFor="leader">
@@ -232,7 +307,7 @@ const ChapterModal = ({
 									onChange={handleInputChange}
 									disabled={!edit && !newItem}
 								/>
-							</div>
+							</div> */}
 
 							<div className="relative w-full mb-3 flex items-center">
 								<label
@@ -261,6 +336,21 @@ const ChapterModal = ({
 								) : (
 									<span className={`${inputClass}`}>{category?.name}</span>
 								)}
+							</div>
+							<div className="relative w-full mb-3 flex items-center ">
+								<label
+									className="block uppercase text-slate-600 text-xs font-bold basis-3/12 self-start"
+									htmlFor="description">
+									Description
+								</label>
+								<textarea
+									className={`${inputClass}`}
+									name="description"
+									value={description}
+									onChange={handleInputChange}
+									rows={4}
+									disabled={!edit && !newItem}
+								/>
 							</div>
 						</div>
 
