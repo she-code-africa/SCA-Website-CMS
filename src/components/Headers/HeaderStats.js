@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 import CardStats from "components/Cards/CardStats.js";
 import { useQuery } from "react-query";
 import { getUsers } from "services";
-import { getEvents } from "services";
+import { getEvents, getMembers } from "services";
 
 export default function HeaderStats() {
 	const { data: totalUsers, isLoading: loadingUsers } = useQuery(
@@ -15,6 +15,10 @@ export default function HeaderStats() {
 	const { data: totalEvents, isLoading: loadingEvents } = useQuery(
 		"events",
 		getEvents
+	);
+	const { data: totalMembers, isLoading: loadingMembers } = useQuery(
+		"teams",
+		getMembers
 	);
 	const [totalActiveEvents, setTotalActiveEvents] = useState();
 	useEffect(() => {
@@ -56,17 +60,26 @@ export default function HeaderStats() {
 									isLoading={loadingEvents}
 									statSubtitle="ACTIVE PROGRAMS"
 									statTitle={`${totalActiveEvents && totalActiveEvents}`}
+									statIconName="fas fa-list"
+								/>
+							</div>
+							<div className="w-full lg:w-6/12 xl:w-3/12 px-4">
+								<CardStats
+									isLoading={loadingMembers}
+									statSubtitle="TOTAL TEAM MEMBERS"
+									statTitle={`${totalMembers && totalMembers.length}`}
 									statIconName="fas fa-users"
 								/>
 							</div>
 							<div className="w-full lg:w-6/12 xl:w-3/12 px-4">
 								<CardStats
 									statSubtitle="DAILY WEBSITE VISIT"
-									statTitle="49,650"
+									statTitle="value"
 									statDescripiron="22/03/2023"
 									statIconColor="bg-sky-500"
 								/>
 							</div>
+							
 						</div>
 					</div>
 				</div>
