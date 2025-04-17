@@ -198,6 +198,16 @@ export async function getTeamMember(catId, id) {
 	return member;
 }
 
+export async function getMembers() {
+	const totalMembers = await api.get(`${baseUrl}/teams/members`);
+	return totalMembers;
+}
+
+export async function getActivityLog() {
+	const allActivities = await api.get(`${baseUrl}/logs`)
+	return allActivities;
+}
+
 export async function createEvent(data) {
 	const event = await api.post(`${baseUrl}/events`, data);
 	return event;

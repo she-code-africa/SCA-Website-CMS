@@ -1946,6 +1946,7 @@ video {
 	}
 	.xl\:w-3\/12 {
 		width: 25%;
+		margin-bottom: 10px;
 	}
 	.xl\:w-4\/12 {
 		width: 33.333333%;
