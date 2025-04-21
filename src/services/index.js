@@ -204,7 +204,7 @@ export async function getMembers() {
 }
 
 export async function getActivityLog() {
-	const allActivities = await api.get(`${baseUrl}/logs`)
+	const allActivities = await api.get(`${baseUrl}/logs`);
 	return allActivities;
 }
 
@@ -498,13 +498,17 @@ export async function editChapterCategory({ id, data }) {
 	return await api.put(`${baseUrl}/chapters/categories/${id}`, data);
 }
 
-export async function getChapters() {
-	return await api.get(`${baseUrl}/chapters/member-chapters`);
+export async function getChapters(page) {
+	const chapters = await axios.get(
+		`${baseUrl}/chapters/member-chapters?page=${page}&limit=8)`
+	);
+
+	return chapters.data;
 }
 
 export async function createChapter(data) {
-	 const chapter = await api.post(`${baseUrl}/chapters/member-chapters`, data);
-	 return chapter
+	const chapter = await api.post(`${baseUrl}/chapters/member-chapters`, data);
+	return chapter;
 }
 
 export async function deleteChapter({ id, categoryId }) {
