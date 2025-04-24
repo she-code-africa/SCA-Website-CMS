@@ -178,6 +178,13 @@ const Chapters = () => {
 							)}
 						</TableBody>
 					</Table>
+					<div className="py-5 bg-transparent">
+						<ChapterPagination
+							onPageChange={handlePageChange}
+							totalPages={totalPages}
+							currentPage={currentPage}
+						/>
+					</div>
 				</div>
 				<div className="col-span-3">
 					<Category
@@ -187,13 +194,6 @@ const Chapters = () => {
 						remove={removeCategory}
 						update={updateCategory}
 					/>
-					<div className="">
-						<ChapterPagination
-							onPageChange={handlePageChange}
-							totalPages={totalPages}
-							currentPage={currentPage}
-						/>
-					</div>
 				</div>
 			</div>
 			{isDeleteModalOpen && (
