@@ -42,16 +42,12 @@ const ChapterModal = ({
 		edit || newItem ? "shadow focus:outline-none focus:ring !py-3" : ""
 	} w-full ease-linear transition-all duration-150 basis-9/12`;
 	console.log("hello", categoryId, id);
-	const { data, isLoading } = useQuery(
-		["chapter", id],
-		() => getChapter(categoryId, id),
-		{
-			onSuccess: (data) => {
-
-				setChapter(data);
-			},
-		}
-	);
+	const { data, isLoading } = useQuery(["chapter", id], () => getChapter(id), {
+		onSuccess: (data) => {
+			console.log(data);
+			setChapter(data);
+		},
+	});
 
 	useQuery("chapter-categories", getChapterCategories, {
 		onSuccess: (data) => {
@@ -68,22 +64,20 @@ const ChapterModal = ({
 				queryClient.invalidateQueries(["chapters"]);
 				handleModal();
 			},
-			onError: () => {  
-
+			onError: () => {
 				toast.error("Could not create Chapter");
 			},
 		}
 	);
-	
+
 	const handleOnChange = (e) => {
 		const { name, value, files } = e.target;
 
 		setChapter((prev) => ({
-		  ...prev,
-		  [name]: files ? files[0] : value,
+			...prev,
+			[name]: files ? files[0] : value,
 		}));
-	  };
-	  
+	};
 
 	const { mutateAsync: updateChapter, isLoading: updating } = useMutation(
 		editChapter,
@@ -99,26 +93,22 @@ const ChapterModal = ({
 			},
 		}
 	);
-	
-	
+
 	const updateChapterDetails = async () => {
 		const updatedFields = new FormData();
-	
+
 		for (const [key, value] of Object.entries(chapter)) {
-			if (key === 'category' && typeof value === 'object') {
-				updatedFields.append(key, value._id); 
+			if (key === "category" && typeof value === "object") {
+				updatedFields.append(key, value._id);
 			} else if (chapter[key] !== data[key]) {
 				updatedFields.append(key, value);
 			}
 		}
-	
+
 		await updateChapter({ categoryId, id, data: updatedFields });
 		console.log(chapter);
-	
-		
 	};
-	
-	
+
 	const handleInputChange = useCallback(
 		(e) => {
 			const { name, value } = e.target;
@@ -130,32 +120,30 @@ const ChapterModal = ({
 		[setChapter]
 	);
 
-	
-	
-
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		const formData = new FormData();
 		formData.append("name", name);
 		formData.append("city", city);
 		formData.append("country", country);
-		formData.append("category", category._id || category); 
+		formData.append("category", category._id || category);
 		formData.append("link", link);
 		formData.append("description", description);
-		formData.append("image", image);	
+		formData.append("image", image);
 		newItem ? addChapter(formData) : await updateChapterDetails();
 	};
-	
-	
+
 	const handleCategoryChange = (event) => {
 		const selectedCategoryId = event.target.value;
-		const selectedCategory = categories.find((cat) => cat._id === selectedCategoryId);
+		const selectedCategory = categories.find(
+			(cat) => cat._id === selectedCategoryId
+		);
 		setChapter((prevChapter) => ({
 			...prevChapter,
-			category: selectedCategory || { _id: selectedCategoryId }, 
+			category: selectedCategory || { _id: selectedCategoryId },
 		}));
 	};
-	
+
 	const header = () => {
 		return (
 			<div className="flex justify-between items-center w-full mr-5 px-2">
@@ -190,7 +178,8 @@ const ChapterModal = ({
 					<Loader />
 				) : (
 					<form className="w-full px-4 md:px-8 ">
-						<div className="flex flex-col  w-full gap-y-2  "><div className="self-center relative">
+						<div className="flex flex-col  w-full gap-y-2  ">
+							<div className="self-center relative">
 								<input
 									required
 									className="hidden"

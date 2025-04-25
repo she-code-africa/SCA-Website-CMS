@@ -512,22 +512,15 @@ export async function createChapter(data) {
 }
 
 export async function deleteChapter({ id, categoryId }) {
-	return await api.delete(
-		`${baseUrl}/chapters/categories/${categoryId}/member-chapters/${id}`
-	);
+	return await api.delete(`${baseUrl}/chapters/member-chapters/${id}`);
 }
 
-export async function getChapter(categoryId, id) {
-	return await api.get(
-		`${baseUrl}/chapters/categories/${categoryId}/member-chapters/${id}`
-	);
+export async function getChapter(id) {
+	return await api.get(`${baseUrl}/chapters/member-chapters/${id}`);
 }
 
 export async function editChapter({ id, categoryId, data }) {
-	return await api.put(
-		`${baseUrl}/chapters/categories/${categoryId}/member-chapters/${id}`,
-		data
-	);
+	return await api.put(`${baseUrl}/chapters/member-chapters/${id}`, data);
 }
 
 export async function getReports() {
