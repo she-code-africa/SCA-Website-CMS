@@ -33,6 +33,8 @@ const VolunteerList = () => {
 	const handleVolunteerModal = () => {
 		setIsVolunteerModalOpen(!isVolunteerModalOpen);
 	};
+
+
 	return (
 		<>
 			<div className="flex w-full px-4">
@@ -71,16 +73,16 @@ const VolunteerList = () => {
 											purpose,
 											volunteerRole,
 											updatedAt,
-											createdAt,
-											_id,
+											status,
+											_id
 										},
 										index
 									) => {
 										return (
 											<TableDataRow
 												onClick={() => {
-													// setSelectedId(_id);
-													// handleVolunteerModal();
+													setSelectedId(_id);
+													handleVolunteerModal();
 												}}
 												key={index}
 												className="grid grid-cols-7 px-4 py-3 gap-x-4 bg-white">
@@ -91,12 +93,11 @@ const VolunteerList = () => {
 												<TableData>{currentRole}</TableData>
 												<TableData>{purpose}</TableData>
 												<TableData>{volunteerRole}</TableData>
+												<TableData>{status}</TableData>
 												<TableData>
 													{moment(updatedAt).format("DD MMM, YYYY")}
 												</TableData>
-												<TableData>
-													{moment(createdAt).format("DD MMM, YYYY")}
-												</TableData>
+
 											</TableDataRow>
 										);
 									}

@@ -7,7 +7,7 @@ import { useQuery } from "react-query";
 import { getUsers } from "services";
 import { getEvents, getMembers } from "services";
 
-export default function HeaderStats() {
+export default function HeaderStats () {
 	const { data: totalUsers, isLoading: loadingUsers } = useQuery(
 		"users",
 		getUsers
@@ -36,7 +36,7 @@ export default function HeaderStats() {
 				<div className="px-4 md:px-10 mx-auto w-full">
 					<div>
 						{/* Card stats */}
-						<div className="flex flex-wrap">
+						<div className="flex flex-wrap gap-y-10">
 							<div className="w-full lg:w-6/12 xl:w-3/12 px-4">
 								<CardStats
 									isLoading={loadingUsers}
@@ -79,7 +79,7 @@ export default function HeaderStats() {
 									statIconColor="bg-sky-500"
 								/>
 							</div>
-							
+
 						</div>
 					</div>
 				</div>
