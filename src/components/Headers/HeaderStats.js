@@ -6,6 +6,10 @@ import CardStats from "components/Cards/CardStats.js";
 import { useQuery } from "react-query";
 import { getUsers } from "services";
 import { getEvents, getMembers } from "services";
+import GoogleAnalytics from "analytics";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+
+const CLIENT_ID = process.env.REACT_APP_GA_CLIENT_ID;
 
 export default function HeaderStats() {
 	const { data: totalUsers, isLoading: loadingUsers } = useQuery(
@@ -20,6 +24,7 @@ export default function HeaderStats() {
 		"teams",
 		getMembers
 	);
+	
 	const [totalActiveEvents, setTotalActiveEvents] = useState();
 	useEffect(() => {
 		if (totalEvents) {
@@ -72,12 +77,9 @@ export default function HeaderStats() {
 								/>
 							</div>
 							<div className="w-full lg:w-6/12 xl:w-3/12 px-4">
-								<CardStats
-									statSubtitle="DAILY WEBSITE VISIT"
-									statTitle="value"
-									statDescripiron="22/03/2023"
-									statIconColor="bg-sky-500"
-								/>
+								<GoogleOAuthProvider clientId={CLIENT_ID}>
+									<GoogleAnalytics />
+								</GoogleOAuthProvider>
 							</div>
 							
 						</div>
