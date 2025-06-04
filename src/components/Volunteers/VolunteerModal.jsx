@@ -39,7 +39,10 @@ const VolunteerModal = ({ isOpen, handleModal, id }) => {
 			toast.success("Volunteer status updated successfully");
 			handleModal();
 			getVolunteerRequests();
-		}
+		},
+		onError: (error) => {
+			toast.error("Error updating volunteer status");
+		},
 	})
 
 
@@ -132,7 +135,7 @@ const VolunteerModal = ({ isOpen, handleModal, id }) => {
 								</label>
 								<select
 									type="text"
-									className={`w-7/12 px-3 py-0 block text-slate-600 text-sm basis-7/12`}
+									className={`w-5/12 px-3 py-0 block text-slate-600 text-sm basis-7/12`}
 									name="status"
 									value={statusValue}
 									autoFocus

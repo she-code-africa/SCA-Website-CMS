@@ -48,7 +48,7 @@ export const TableDataRow = ({ className, children, onClick }) => {
 	);
 };
 
-export const TableData = ({ children, className, noTruncate }) => {
+export const TableData = ({ children, className = '', noTruncate }) => {
 	return (
 		<td
 			className={`${!noTruncate && "truncate"} text-xs relative ${className}`}>

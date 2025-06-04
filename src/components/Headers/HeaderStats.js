@@ -24,7 +24,7 @@ export default function HeaderStats () {
 		"teams",
 		getMembers
 	);
-	
+
 	const [totalActiveEvents, setTotalActiveEvents] = useState();
 	useEffect(() => {
 		if (totalEvents) {

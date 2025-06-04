@@ -86,9 +86,7 @@ const VolunteerList = () => {
 												}}
 												key={index}
 												className="grid grid-cols-7 px-4 py-3 gap-x-4 bg-white">
-												<TableData>
-													<span>{fullname}</span>
-												</TableData>
+												<TableData>{fullname}</TableData>
 												<TableData>{email}</TableData>
 												<TableData>{currentRole}</TableData>
 												<TableData>{purpose}</TableData>
