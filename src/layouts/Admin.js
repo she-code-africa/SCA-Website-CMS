@@ -41,6 +41,12 @@ import Protected from "components/Protected";
 import Chapters from "views/admin/Chapters";
 import Programs from "views/admin/Program";
 import Reports from "views/admin/Reports";
+import Schools from "views/admin/Stem-a-girl/schools";
+import SAGCourses from "views/admin/Stem-a-girl/courses";
+import SAGActivities from "views/admin/Stem-a-girl/activities";
+import SAGEvents from "views/admin/Stem-a-girl/events";
+import SAGImpactStories from "views/admin/Stem-a-girl/impact-stories";
+import SAGTestimonials from "views/admin/Stem-a-girl/testimonials";
 
 export default function Admin() {
 	return (
@@ -131,6 +137,22 @@ export default function Admin() {
 							exact
 							component={EditVolunteerCategory}
 						/>
+
+						<Route path={paths.sagSchools} exact component={Schools} />
+						<Route path={paths.sagCourses} exact component={SAGCourses} />
+						<Route path={paths.sagActivities} exact component={SAGActivities} />
+						<Route path={paths.sagEvents} exact component={SAGEvents} />
+						<Route
+							path={paths.sagImpactStories}
+							exact
+							component={SAGImpactStories}
+						/>
+						<Route
+							path={paths.sagTestimonials}
+							exact
+							component={SAGTestimonials}
+						/>
+
 						{/* <Redirect from = "/admin"
         to = "/admin/dashboard" /> */}
 					</Switch>

@@ -33,4 +33,10 @@ export const paths = {
 	editScholarship: "/admin/initiatives/edit",
 	viewScholarship: "/admin/initiatives/view",
 	reports: "/admin/reports",
+	sagSchools: "/admin/stem-a-girl/schools",
+	sagCourses: "/admin/stem-a-girl/courses",
+	sagActivities: "/admin/stem-a-girl/activities",
+	sagEvents: "/admin/stem-a-girl/events",
+	sagImpactStories: "/admin/stem-a-girl/impact-stories",
+	sagTestimonials: "/admin/stem-a-girl/testimonials",
 };

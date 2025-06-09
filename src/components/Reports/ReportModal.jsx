@@ -17,7 +17,6 @@ const ReportModal = ({
 	newItem,
 	id,
 }) => {
-	console.log(id);
 	const queryClient = useQueryClient();
 	const intial = {
 		link: "",

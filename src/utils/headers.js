@@ -158,9 +158,14 @@ export const enquiries = [
 		label: "Description",
 	},
 	{
+		value: "status",
+		label: "Status",
+	},
+	{
 		value: "created",
 		label: "Created",
 	},
+	{ value: "updated", label: "Updated" },
 ];
 
 export const events = [
@@ -420,4 +425,35 @@ export const programs = [
 		value: "createdAt",
 		label: "Created At",
 	},
+];
+
+export const activityloglist = [
+	{
+		value: "user",
+		label: "User",
+	},
+	{
+		value: "action",
+		label: "Action",
+	},
+	{
+		value: "page",
+		label: "Page",
+	},
+	{
+		value: "oldDoc",
+		label: "Old Value",
+	},
+	{
+		value: "newDoc",
+		label: "New Value",
+	},
+	{
+		value: "createdAt",
+		label: "Created At",
+	},
+	{
+		value: "updatedAt",
+		label: "Updated At"
+	}
 ];

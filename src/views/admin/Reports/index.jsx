@@ -14,7 +14,7 @@ import { getReports } from "services";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ReportModal from "components/Reports/ReportModal";
-import { deleteReport } from "services";
+import { deleteReport, editReport } from "services";
 import DeleteModal from "components/Modal/DeleteModal";
 
 const Reports = () => {
@@ -35,18 +35,19 @@ const Reports = () => {
 
 	const { mutate } = useMutation(deleteReport, {
 		onSuccess: () => {
-			queryClient.invalidateQueries(["reachs"]);
-			toast.success("Reach deleted Successfully");
-			handleDeleteModal();
+			queryClient.invalidateQueries(["reports"]);
+			toast.success("Report Deleted Successfully");
+			//handleDeleteModal();
 		},
 		onError: () => {
 			console.log("error");
-			toast.error("Could not delete reach");
+			toast.error("Could not delete Report");
 		},
 	});
 
 	const handleDelete = () => {
 		mutate(selectedId);
+		handleDeleteModal();
 	};
 
 	const { isLoading } = useQuery("reports", getReports, {
@@ -60,7 +61,7 @@ const Reports = () => {
 	return (
 		<div className="w-full z-40 bg-white rounded-md">
 			<div className="flex items-center justify-between px-4 mt-3">
-				<h5 className="font-medium text-xl">Our Reach</h5>
+				<h5 className="font-medium text-xl">Annual Reports</h5>
 				<button
 					className="rounded-md bg-pink-500 text-white text-xs  px-4 py-2"
 					onClick={() => {

@@ -23,6 +23,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ChapterModal from "components/Chapters/ChapterModal";
 import Category from "components/Categories";
+import ChapterPagination from "components/Chapters/ChapterPagination";
 
 const Chapters = () => {
 	const [selectedId, setSelectedId] = useState();
@@ -33,6 +34,9 @@ const Chapters = () => {
 	const [chapters, setChapters] = useState([]);
 	const [categories, setCatgeories] = useState([]);
 	const [categoryId, setCategoryId] = useState();
+	const [page, setPage] = useState(1);
+	const [totalPages, setTotalPages] = useState(0);
+	const [currentPage, setCurrentPage] = useState(1);
 
 	useQuery("chapter-categories", getChapterCategories, {
 		onSuccess: (data) => {
@@ -57,9 +61,11 @@ const Chapters = () => {
 		},
 	});
 
-	const { isLoading } = useQuery("chapters", getChapters, {
+	const { isLoading } = useQuery(["chapters", page], () => getChapters(page), {
 		onSuccess: (data) => {
-			setChapters(data);
+			setChapters(data.data);
+			setTotalPages(data.totalPages);
+			setCurrentPage(data.currentPage);
 		},
 		onError: (err) => {
 			toast.error("Could not fetch Chapters");
@@ -88,6 +94,10 @@ const Chapters = () => {
 
 	const handleDelete = () => {
 		deleteMember({ id: selectedId, categoryId: categoryId });
+	};
+
+	const handlePageChange = (page) => {
+		setPage(page);
 	};
 
 	return (
@@ -168,6 +178,13 @@ const Chapters = () => {
 							)}
 						</TableBody>
 					</Table>
+					<div className="py-5 bg-transparent">
+						<ChapterPagination
+							onPageChange={handlePageChange}
+							totalPages={totalPages}
+							currentPage={currentPage}
+						/>
+					</div>
 				</div>
 				<div className="col-span-3">
 					<Category
