@@ -22,6 +22,7 @@ const VolunteerList = () => {
 	const [currentPage, setCurrentPage] = useState(1);
 	const [isVolunteerModalOpen, setIsVolunteerModalOpen] = useState(false);
 	const itemsPerPage = 10;
+
 	const { isLoading } = useQuery("volunteers", getVolunteerRequests, {
 		onSuccess: (data) => {
 			setVolunteers(data);
@@ -30,6 +31,7 @@ const VolunteerList = () => {
 			toast.error("Error Fetching Volunteers");
 		},
 	});
+
 	const handleVolunteerModal = () => {
 		setIsVolunteerModalOpen(!isVolunteerModalOpen);
 	};
@@ -91,7 +93,7 @@ const VolunteerList = () => {
 												<TableData>{currentRole}</TableData>
 												<TableData>{purpose}</TableData>
 												<TableData>{volunteerRole}</TableData>
-												<TableData>{status}</TableData>
+												<TableData><span className={`p-1 rounded-md ${status === "Approved" ? 'bg-green-700 text-white' : status === 'Rejected' ? 'bg-red-500 text-white' : 'bg-gray-300'}`}>{status}</span></TableData>
 												<TableData>
 													{moment(updatedAt).format("DD MMM, YYYY")}
 												</TableData>
@@ -116,6 +118,7 @@ const VolunteerList = () => {
 					id={selectedId}
 					isOpen={isVolunteerModalOpen}
 					handleModal={handleVolunteerModal}
+					setVolunteers={setVolunteers}
 				/>
 			)}
 		</>

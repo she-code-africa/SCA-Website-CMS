@@ -6,7 +6,7 @@ import Loader from "components/Loader";
 import "react-datepicker/dist/react-datepicker.css";
 import { toast } from "react-toastify";
 
-const VolunteerModal = ({ isOpen, handleModal, id }) => {
+const VolunteerModal = ({ isOpen, handleModal, id, setVolunteers }) => {
 	const initialValues = {
 		fullName: "",
 		purpose: "",
@@ -27,6 +27,7 @@ const VolunteerModal = ({ isOpen, handleModal, id }) => {
 		{
 			onSuccess: (data) => {
 				setVolunteer(data);
+				setStatusValue(data.status);
 			},
 		}
 	);
@@ -35,12 +36,13 @@ const VolunteerModal = ({ isOpen, handleModal, id }) => {
 		mutationFn: () => {
 			return updateVolunteerStatus({ id: _id, status: statusValue });
 		},
-		onSuccess: () => {
+		onSuccess: async () => {
 			toast.success("Volunteer status updated successfully");
 			handleModal();
-			getVolunteerRequests();
+			const _data = await getVolunteerRequests();
+			setVolunteers(_data);
 		},
-		onError: (error) => {
+		onError: () => {
 			toast.error("Error updating volunteer status");
 		},
 	})
@@ -139,15 +141,14 @@ const VolunteerModal = ({ isOpen, handleModal, id }) => {
 									name="status"
 									value={statusValue}
 									autoFocus
-									disabled={status === "Pending" ? false : true}
 									onChange={(e) => {
 										setStatusValue(e.target.value);
 										setShowBtn(status === e.target.value ? false : true);
 									}}
 								>
 									<option value="Pending">Pending</option>
-									<option value="Approved">Approve</option>
-									<option value="Rejected">Reject</option>
+									<option value="Approved">Approved</option>
+									<option value="Rejected">Rejected</option>
 								</select>
 							</div>
 
