@@ -8,7 +8,6 @@ import { getUsers } from "services";
 import { getEvents, getMembers } from "services";
 import GoogleAnalytics from "analytics";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-
 const CLIENT_ID = process.env.REACT_APP_GA_CLIENT_ID;
 
 export default function HeaderStats () {
