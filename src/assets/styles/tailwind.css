@@ -1877,14 +1877,6 @@ video {
 .bg-yellow-500 {
   --tw-bg-opacity: 1;
   background-color: rgb(234 179 8 / var(--tw-bg-opacity, 1));
-<<<<<<< HEAD
-}
-
-.bg-green-700 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(21 128 61 / var(--tw-bg-opacity, 1));
-=======
->>>>>>> 4f455f3 (style: update tailwind.css with new utility classes and improve variable handling for consistent styling)
 }
 
 .bg-green-700 {
