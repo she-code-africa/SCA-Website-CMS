@@ -498,11 +498,10 @@ export async function editChapterCategory({ id, data }) {
 	return await api.put(`${baseUrl}/chapters/categories/${id}`, data);
 }
 
-export async function getChapters(page) {
+export async function getChapters(page, limit = 8) {
 	const chapters = await axios.get(
-		`${baseUrl}/chapters/member-chapters?page=${page}&limit=8)`
+		`${baseUrl}/chapters/member-chapters?page=${page}&limit=${limit}`
 	);
-
 	return chapters.data;
 }
 
@@ -521,6 +520,55 @@ export async function getChapter(id) {
 
 export async function editChapter({ id, categoryId, data }) {
 	return await api.put(`${baseUrl}/chapters/member-chapters/${id}`, data);
+}
+
+export async function getChapterEvents(chapterId) {
+	// console.log({ chapterId });
+	return await api.get(`${baseUrl}/chapters/events/${chapterId}`);
+}
+
+export async function getAChapterEvent(id) {
+	return await api.get(`${baseUrl}/chapters/event/${id}`);
+}
+
+export async function getChapterLeads(chapterId) {
+	// console.log({ chapterId });
+	return await api.get(`${baseUrl}/chapters/chapterLeads/${chapterId}`);
+}
+
+export async function getAChapterLead(id) {
+	// console.log({ chapterId });
+	return await api.get(`${baseUrl}/chapters/chapterLeads/${id}`);
+}
+
+export async function updateChapterLead({ id, data }) {
+	const chapter = await api.put(`${baseUrl}/chapters/chapterLeads/${id}`, data);
+	return chapter;
+}
+
+export async function createChapterEvent(data) {
+	const chapter = await api.post(`${baseUrl}/chapters/events`, data);
+	return chapter;
+}
+
+export async function updateChapterEvent({ id, data }) {
+	const chapter = await api.put(`${baseUrl}/chapters/event/${id}`, data);
+	return chapter;
+}
+
+export async function deleteChapterEvent(id) {
+	const chapter = await api.delete(`${baseUrl}/chapters/event/${id}`);
+	return chapter;
+}
+
+export async function deleteChapterLead(id) {
+	const chapter = await api.delete(`${baseUrl}/chapters/chapterLeads/${id}`);
+	return chapter;
+}
+
+export async function createChapterLead(data) {
+	const chapter = await api.post(`${baseUrl}/chapters/chapterLeads`, data);
+	return chapter;
 }
 
 export async function getReports() {

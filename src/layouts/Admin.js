@@ -47,6 +47,8 @@ import SAGActivities from "views/admin/Stem-a-girl/activities";
 import SAGEvents from "views/admin/Stem-a-girl/events";
 import SAGImpactStories from "views/admin/Stem-a-girl/impact-stories";
 import SAGTestimonials from "views/admin/Stem-a-girl/testimonials";
+import ChapterEvents from "views/admin/Chapters/events";
+import ChapterLeads from "views/admin/Chapters/leads";
 
 export default function Admin() {
 	return (
@@ -76,6 +78,8 @@ export default function Admin() {
 						<Route path={paths.events} exact component={Events} />
 						<Route path={paths.initiatives} exact component={Initiatives} />
 						<Route path={paths.chapter} exact component={Chapters} />
+						<Route path={paths.chapterEvents} exact component={ChapterEvents} />
+						<Route path={paths.chapterLeads} exact component={ChapterLeads} />
 						<Route path={paths.programs} exact component={Programs} />
 						<Route path={paths.enquiries} exact component={Enquiries} />
 						<Route path={paths.testimonials} exact component={Testimonials} />

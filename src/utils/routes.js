@@ -52,12 +52,12 @@ export const routes = [
 		icon: faComment,
 		path: "/admin/testimonials",
 	},
-	{
-		name: "chapters",
-		label: "Chapters",
-		icon: faPeopleRoof,
-		path: "/admin/chapters",
-	},
+	// {
+	// 	name: "chapters",
+	// 	label: "Chapters",
+	// 	icon: faPeopleRoof,
+	// 	path: "/admin/chapters",
+	// },
 	{
 		name: "reports",
 		label: "Reports",
@@ -75,6 +75,24 @@ export const routes = [
 		label: "Events",
 		icon: faCalendar,
 		path: "/admin/events",
+	},
+	{
+		name: "chapters",
+		label: "Chapters",
+		icon: faPeopleRoof,
+		path: "/admin/chapters",
+		items: [
+			{
+				name: "chapter-events",
+				label: "Chapter Events",
+				path: "/admin/chapter-events",
+			},
+			{
+				name: "chapter-leads",
+				label: "Chapter Leads",
+				path: "/admin/chapter-leads",
+			},
+		],
 	},
 	{
 		name: "stem-a-girl",
