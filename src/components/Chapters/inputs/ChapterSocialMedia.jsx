@@ -83,10 +83,11 @@ const ChapterSocialMedia = ({
 					className={`${inputClass} mt-3 overflow-y-auto`}
 					style={{ height: "100px" }}>
 					{Object.keys(socialLinks).length !== 0 ? (
-						Object.entries(socialLinks).map(([key, value]) => (
+						Object.entries(socialLinks).map(([key, value], i) => (
 							<li
 								className="my-2 text-sm p-2 rounded-full flex items-center gap-2"
-								style={{ backgroundColor: "#f3f4f6", maxWidth: "230px" }}>
+								style={{ backgroundColor: "#f3f4f6", maxWidth: "230px" }}
+								key={i}>
 								<span className="text-slate-600">{key}:</span>
 								<span className="text-slate-600">{value}</span>
 								{(edit || newItem) && (

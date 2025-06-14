@@ -68,6 +68,7 @@ const ChapterEvents = () => {
 	const handleOpenAddEventModal = () => {
 		setCreateEventModalOpen(true);
 		setNewItem(true);
+		setSelectedId("");
 	};
 
 	const handleCloseModal = () => {

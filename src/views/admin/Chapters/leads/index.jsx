@@ -69,6 +69,7 @@ const ChapterLeads = () => {
 	const handleOpenAddLeadModal = () => {
 		setCreateLeadModalOpen(true);
 		setNewItem(true);
+		setSelectedId("");
 	};
 
 	const handleCloseModal = () => {

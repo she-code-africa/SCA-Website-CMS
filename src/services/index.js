@@ -538,11 +538,11 @@ export async function getChapterLeads(chapterId) {
 
 export async function getAChapterLead(id) {
 	// console.log({ chapterId });
-	return await api.get(`${baseUrl}/chapters/chapterLeads/${id}`);
+	return await api.get(`${baseUrl}/chapters/lead/${id}`);
 }
 
 export async function updateChapterLead({ id, data }) {
-	const chapter = await api.put(`${baseUrl}/chapters/chapterLeads/${id}`, data);
+	const chapter = await api.put(`${baseUrl}/chapters/lead/${id}`, data);
 	return chapter;
 }
 
@@ -562,7 +562,7 @@ export async function deleteChapterEvent(id) {
 }
 
 export async function deleteChapterLead(id) {
-	const chapter = await api.delete(`${baseUrl}/chapters/chapterLeads/${id}`);
+	const chapter = await api.delete(`${baseUrl}/chapters/lead/${id}`);
 	return chapter;
 }
 

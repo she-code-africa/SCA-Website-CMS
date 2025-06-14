@@ -110,13 +110,14 @@ const ChapterLeadsModal = ({
 	const { mutate: updateLead, isLoading: updating } = useMutation(
 		updateChapterLead,
 		{
-			onSuccess: () => {
+			onSuccess: (data) => {
+				console.log("Updated Lead Data:", data);
 				toast.success("Lead updated Successfully");
 				queryClient.invalidateQueries(["chapter-leads"]);
 				handleCloseModal();
 			},
 			onError: () => {
-				toast.error("Could not create Lead");
+				toast.error("Could not update Lead");
 			},
 		}
 	);
@@ -124,7 +125,7 @@ const ChapterLeadsModal = ({
 	const updateChapterLeadDetails = async () => {
 		const updatedChapter = {
 			...newLead,
-			socialMediaLinks: newLead.socialLinks,
+			socialMediaLinks: socialLinks,
 		};
 
 		const updatedFields = new FormData();
@@ -133,6 +134,7 @@ const ChapterLeadsModal = ({
 			if (key === "socialMediaLinks" && typeof value === "object") {
 				updatedFields.append(key, JSON.stringify(value));
 				// updatedFields.append(key, value);
+				console.log("Social Links:", key, value);
 			} else if (updatedChapter[key] !== chapterLead[key]) {
 				updatedFields.append(key, value);
 			}
@@ -153,7 +155,7 @@ const ChapterLeadsModal = ({
 		formData.append("chapterId", chapterId);
 		formData.append("role", role);
 
-		newItem ? createNewLead(formData) : await updateChapterLeadDetails();
+		newItem ? createNewLead(formData) : updateChapterLeadDetails();
 	};
 	return (
 		<>
