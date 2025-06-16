@@ -22,6 +22,7 @@ const VolunteerList = () => {
 	const [currentPage, setCurrentPage] = useState(1);
 	const [isVolunteerModalOpen, setIsVolunteerModalOpen] = useState(false);
 	const itemsPerPage = 10;
+
 	const { isLoading } = useQuery("volunteers", getVolunteerRequests, {
 		onSuccess: (data) => {
 			setVolunteers(data);
@@ -30,9 +31,12 @@ const VolunteerList = () => {
 			toast.error("Error Fetching Volunteers");
 		},
 	});
+
 	const handleVolunteerModal = () => {
 		setIsVolunteerModalOpen(!isVolunteerModalOpen);
 	};
+
+
 	return (
 		<>
 			<div className="flex w-full px-4">
@@ -71,32 +75,29 @@ const VolunteerList = () => {
 											purpose,
 											volunteerRole,
 											updatedAt,
-											createdAt,
-											_id,
+											status,
+											_id
 										},
 										index
 									) => {
 										return (
 											<TableDataRow
 												onClick={() => {
-													// setSelectedId(_id);
-													// handleVolunteerModal();
+													setSelectedId(_id);
+													handleVolunteerModal();
 												}}
 												key={index}
 												className="grid grid-cols-7 px-4 py-3 gap-x-4 bg-white">
-												<TableData>
-													<span>{fullname}</span>
-												</TableData>
+												<TableData>{fullname}</TableData>
 												<TableData>{email}</TableData>
 												<TableData>{currentRole}</TableData>
 												<TableData>{purpose}</TableData>
 												<TableData>{volunteerRole}</TableData>
+												<TableData><span className={`p-1 rounded-md ${status === "Approved" ? 'bg-green-700 text-white' : status === 'Rejected' ? 'bg-red-500 text-white' : 'bg-gray-300'}`}>{status}</span></TableData>
 												<TableData>
 													{moment(updatedAt).format("DD MMM, YYYY")}
 												</TableData>
-												<TableData>
-													{moment(createdAt).format("DD MMM, YYYY")}
-												</TableData>
+
 											</TableDataRow>
 										);
 									}
@@ -117,6 +118,7 @@ const VolunteerList = () => {
 					id={selectedId}
 					isOpen={isVolunteerModalOpen}
 					handleModal={handleVolunteerModal}
+					setVolunteers={setVolunteers}
 				/>
 			)}
 		</>
