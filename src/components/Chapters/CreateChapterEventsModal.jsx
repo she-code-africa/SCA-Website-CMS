@@ -26,6 +26,7 @@ const CreateChapterEventsModal = ({
 }) => {
 	const queryClient = useQueryClient();
 	const [edit, setEdit] = useState(false);
+	const [eventId, setEventId] = useState("");
 
 	const [newEvent, setNewEvent] = useState({
 		name: "",
@@ -33,7 +34,7 @@ const CreateChapterEventsModal = ({
 		link: "",
 		eventDate: new Date(),
 		image: "",
-		eventState: "draft", // default state
+		eventState: "draft",
 	});
 	const [loading, setLoading] = useState(false);
 
@@ -44,6 +45,7 @@ const CreateChapterEventsModal = ({
 		{
 			onSuccess: (data) => {
 				console.log("Chapter Event Data:", data);
+				setEventId(data._id);
 				setNewEvent({
 					name: data.title,
 					description: data.description,
@@ -134,8 +136,8 @@ const CreateChapterEventsModal = ({
 	const handleState = async () => {
 		setLoading(true);
 		newEvent?.eventState === "published"
-			? await archiveEvent(selectedId)
-			: await publishEvent(selectedId);
+			? await archiveEvent(eventId)
+			: await publishEvent(eventId);
 	};
 
 	const handleSubmit = async (e) => {
