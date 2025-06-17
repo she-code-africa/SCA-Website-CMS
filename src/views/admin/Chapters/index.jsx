@@ -24,6 +24,7 @@ import "react-toastify/dist/ReactToastify.css";
 import ChapterModal from "components/Chapters/ChapterModal";
 import Category from "components/Categories";
 import ChapterPagination from "components/Chapters/ChapterPagination";
+import ChapterSearchBar from "components/Chapters/inputs/SearchBar";
 
 const Chapters = () => {
 	const [selectedId, setSelectedId] = useState();
@@ -37,11 +38,20 @@ const Chapters = () => {
 	const [page, setPage] = useState(1);
 	const [totalPages, setTotalPages] = useState(0);
 	const [currentPage, setCurrentPage] = useState(1);
+	const [searchTerm, setSearchTerm] = useState("");
+	const [fullChapters, setFullChapters] = useState([]);
 
 	useQuery("chapter-categories", getChapterCategories, {
 		onSuccess: (data) => {
 			setCatgeories(data);
 		},
+	});
+
+	useQuery("chapters-full", () => getChapters(1, 1000), {
+		onSuccess: (data) => {
+			setFullChapters(data.data);
+		},
+		enabled: true, // always run once on mount
 	});
 
 	const { mutate: addCategory } = useMutation(createChapterCategory, {
@@ -100,22 +110,43 @@ const Chapters = () => {
 		setPage(page);
 	};
 
+	const handleSearchItem = (e) => {
+		const { value } = e.target;
+		setSearchTerm(value);
+		if (value.length > 0) {
+			const filteredChapters = fullChapters.filter((chapter) =>
+				chapter.name.toLowerCase().includes(value.toLowerCase())
+			);
+			setChapters(filteredChapters);
+		} else {
+			queryClient.invalidateQueries(["chapters", page]);
+		}
+	};
+
 	return (
 		<>
 			<div className="w-full grid grid-cols-12 z-40 gap-4">
 				<div className="col-span-9 bg-white rounded-md h-fit">
 					<div className="flex items-center justify-between px-4 mt-3">
 						<h5 className="font-medium text-xl">Chapters</h5>
-						<button
-							className="rounded-md bg-pink-500 text-white text-xs  px-4 py-2"
-							onClick={() => {
-								setNewItem(true);
-								setSelectedId("");
-								setCategoryId("");
-								handleChapterModal();
-							}}>
-							Add
-						</button>
+
+						<div className="flex items-center gap-4">
+							<ChapterSearchBar
+								placeholder="Search Chapters..."
+								value={searchTerm}
+								onChange={handleSearchItem}
+							/>
+							<button
+								className="rounded-md bg-pink-500 text-white text-xs  px-4 py-2"
+								onClick={() => {
+									setNewItem(true);
+									setSelectedId("");
+									setCategoryId("");
+									handleChapterModal();
+								}}>
+								Add
+							</button>
+						</div>
 					</div>
 					<Table width="full">
 						<TableHeaderRow className="grid grid-cols-9">
@@ -125,56 +156,62 @@ const Chapters = () => {
 							<TableHeader></TableHeader>
 						</TableHeaderRow>
 						<TableBody loading={isLoading}>
-							{chapters?.map(
-								(
-									{
-										_id,
-										name,
-										city,
-										country,
-										category,
-										leader,
-										state,
-										link,
-										publishDate,
-										updateAt,
-										createdAt,
-									},
-									index
-								) => {
-									return (
-										<TableDataRow
-											onClick={() => {
-												setCategoryId(category._id);
-												setSelectedId(_id);
-												handleChapterModal();
-												setNewItem(false);
-											}}
-											key={index}
-											className="grid grid-cols-9 px-4 py-3 bg-white group relative">
-											<TableData>{name}</TableData>
-											<TableData>
-												{city}, {""}
-												{country}
-											</TableData>
-											<TableData>{category.name}</TableData>
-											<TableData>{link}</TableData>
+							{chapters.length === 0 ? (
+								<TableData className="col-span-9 text-center py-4">
+									<div className="text-center w-full">No Chapters found.</div>
+								</TableData>
+							) : (
+								chapters?.map(
+									(
+										{
+											_id,
+											name,
+											city,
+											country,
+											category,
+											leader,
+											state,
+											link,
+											publishDate,
+											updateAt,
+											createdAt,
+										},
+										index
+									) => {
+										return (
+											<TableDataRow
+												onClick={() => {
+													setCategoryId(category._id);
+													setSelectedId(_id);
+													handleChapterModal();
+													setNewItem(false);
+												}}
+												key={index}
+												className="grid grid-cols-9 px-4 py-3 bg-white group relative">
+												<TableData>{name}</TableData>
+												<TableData>
+													{city}, {""}
+													{country}
+												</TableData>
+												<TableData>{category.name}</TableData>
+												<TableData>{link}</TableData>
 
-											<TableData>{leader}</TableData>
+												<TableData>{leader}</TableData>
 
-											<TableData>{state}</TableData>
-											<TableData>
-												{moment(publishDate).format("DD MMM, YYYY")}
-											</TableData>
-											<TableData>
-												{moment(updateAt).format("DD MMM, YYYY")}
-											</TableData>
-											<TableData>
-												{moment(createdAt).format("DD MMM, YYYY")}
-											</TableData>
-										</TableDataRow>
-									);
-								}
+												<TableData>{state}</TableData>
+												<TableData>
+													{moment(publishDate).format("DD MMM, YYYY")}
+												</TableData>
+												<TableData>
+													{moment(updateAt).format("DD MMM, YYYY")}
+												</TableData>
+												<TableData>
+													{moment(createdAt).format("DD MMM, YYYY")}
+												</TableData>
+											</TableDataRow>
+										);
+									}
+								)
 							)}
 						</TableBody>
 					</Table>
