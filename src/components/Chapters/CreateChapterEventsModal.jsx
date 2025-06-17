@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { MdOutlineModeEditOutline } from "react-icons/md";
 import { GrView } from "react-icons/gr";
 import Tooltip from "components/Tooltip";
-import { BiSolidImageAdd } from "react-icons/bi";
+import { BiSolidImageAdd, BiArchiveIn, BiArchiveOut } from "react-icons/bi";
 import PrimaryInput from "./inputs/PrimaryInput";
 import Placeholder from "components/Placeholder";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
@@ -12,6 +12,8 @@ import {
 	createChapterEvent,
 	getAChapterEvent,
 	updateChapterEvent,
+	publishChapterEvent,
+	archiveChapterEvent,
 } from "services";
 
 const CreateChapterEventsModal = ({
@@ -24,37 +26,16 @@ const CreateChapterEventsModal = ({
 }) => {
 	const queryClient = useQueryClient();
 	const [edit, setEdit] = useState(false);
-	const header = () => {
-		return (
-			<div className="flex justify-between items-center w-full mr-5 px-2">
-				<h2 className="font-semibold">
-					{!newItem ? "Update Chapter Event" : "Create Chapter Event"}
-				</h2>
-				{!newItem && (
-					<div className="flex items-center gap-3 hover:cursor-pointer">
-						<div onClick={() => setEdit(!edit)}>
-							{edit ? (
-								<Tooltip content="View">
-									<GrView size="1.25rem" />
-								</Tooltip>
-							) : (
-								<Tooltip content="Edit">
-									<MdOutlineModeEditOutline size="1.125rem" />
-								</Tooltip>
-							)}
-						</div>
-					</div>
-				)}
-			</div>
-		);
-	};
+
 	const [newEvent, setNewEvent] = useState({
 		name: "",
 		description: "",
 		link: "",
 		eventDate: new Date(),
 		image: "",
+		eventState: "draft", // default state
 	});
+	const [loading, setLoading] = useState(false);
 
 	const { data: chapterEvent } = useQuery(
 		["chapter-event", selectedId],
@@ -62,12 +43,14 @@ const CreateChapterEventsModal = ({
 
 		{
 			onSuccess: (data) => {
+				console.log("Chapter Event Data:", data);
 				setNewEvent({
 					name: data.title,
 					description: data.description,
 					link: data.link,
 					eventDate: new Date(data.eventDate),
 					image: data.images[0] || "",
+					eventState: data.eventState || "draft", // default to draft if not set
 				});
 			},
 			enabled: !!selectedId,
@@ -110,6 +93,7 @@ const CreateChapterEventsModal = ({
 					link: "",
 					eventDate: new Date(),
 					image: "",
+					eventState: "draft",
 				});
 				toast.success("Event Updated Successfully");
 				queryClient.invalidateQueries(["chapter-events"]);
@@ -120,6 +104,39 @@ const CreateChapterEventsModal = ({
 			},
 		}
 	);
+
+	const { mutateAsync: publishEvent } = useMutation(publishChapterEvent, {
+		onSuccess: () => {
+			setLoading(false);
+			toast.success("Chapter Event Published Successfully");
+			queryClient.invalidateQueries({ queryKey: ["chapter-events"] });
+			queryClient.invalidateQueries({ queryKey: ["chapter-event"] });
+		},
+		onError: () => {
+			setLoading(false);
+			toast.error("Error Publishing Chapter Event");
+		},
+	});
+
+	const { mutateAsync: archiveEvent } = useMutation(archiveChapterEvent, {
+		onSuccess: () => {
+			setLoading(false);
+			toast.success("Chapter Event Archived Successfully");
+			queryClient.invalidateQueries({ queryKey: ["chapter-events"] });
+			queryClient.invalidateQueries({ queryKey: ["chapter-event"] });
+		},
+		onError: () => {
+			setLoading(false);
+			toast.error("Error Archiving Chapter Event");
+		},
+	});
+
+	const handleState = async () => {
+		setLoading(true);
+		newEvent?.eventState === "published"
+			? await archiveEvent(selectedId)
+			: await publishEvent(selectedId);
+	};
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
@@ -140,6 +157,48 @@ const CreateChapterEventsModal = ({
 			? createNewEvent(formData)
 			: updateEvent({ id: selectedId, data: formData });
 	};
+
+	const header = () => {
+		return (
+			<div className="flex justify-between items-center w-full mr-5 px-2">
+				<h2 className="font-semibold">
+					{!newItem ? "Update Chapter Event" : "Create Chapter Event"}
+				</h2>
+				{!newItem && (
+					<div className="flex items-center gap-3">
+						<div onClick={handleState} className="hover:cursor-pointer">
+							{newEvent?.eventState &&
+								(loading ? (
+									<AiOutlineLoading3Quarters className="animate-spin" />
+								) : newEvent?.eventState === "published" ? (
+									<Tooltip content="Archive">
+										<BiArchiveIn size="1.25rem" />
+									</Tooltip>
+								) : (
+									<Tooltip content="Publish">
+										<BiArchiveOut size="1.25rem" />
+									</Tooltip>
+								))}
+						</div>
+						<div
+							onClick={() => setEdit(!edit)}
+							className="hover:cursor-pointer">
+							{edit ? (
+								<Tooltip content="View">
+									<GrView size="1.25rem" />
+								</Tooltip>
+							) : (
+								<Tooltip content="Edit">
+									<MdOutlineModeEditOutline size="1.125rem" />
+								</Tooltip>
+							)}
+						</div>
+					</div>
+				)}
+			</div>
+		);
+	};
+
 	return (
 		<>
 			<Modal

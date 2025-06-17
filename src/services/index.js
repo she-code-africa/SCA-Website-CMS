@@ -510,6 +510,16 @@ export async function createChapter(data) {
 	return chapter;
 }
 
+export async function publishChapterEvent(id) {
+	const event = await api.patch(`${baseUrl}/chapters/events/${id}/publish`);
+	return event;
+}
+
+export async function archiveChapterEvent(id) {
+	const event = await api.patch(`${baseUrl}/chapters/events/${id}/archive`);
+	return event;
+}
+
 export async function deleteChapter({ id, categoryId }) {
 	return await api.delete(`${baseUrl}/chapters/member-chapters/${id}`);
 }
