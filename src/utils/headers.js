@@ -272,12 +272,10 @@ export const volunteer = [
 		value: "volunteerRole",
 		label: "Volunteer Role",
 	},
-	{ value: "updatedAt", label: "Updated at" },
-
 	{
-		value: "createdAt",
-		label: "Created At",
+		value: "status", label: "Status"
 	},
+	{ value: "updatedAt", label: "Updated at" },
 ];
 
 export const talentRequest = [
