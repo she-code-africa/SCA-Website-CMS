@@ -20,7 +20,7 @@ export const Table = ({ width, children }) => {
 
 export const TableHeaderRow = ({ className, children }) => {
 	return (
-		<thead className="px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left  bg-slate-50 text-slate-500 border-slate-100">
+		<thead className="px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left  bg-slate-50 text-slate-500 border-slate-100 ">
 			<tr className={className}>{children}</tr>
 		</thead>
 	);
@@ -28,7 +28,7 @@ export const TableHeaderRow = ({ className, children }) => {
 
 export const TableHeader = ({ className, children }) => {
 	return (
-		<th className={className} scope="col">
+		<th className={`${className} truncate`} scope="col">
 			{children}
 		</th>
 	);
@@ -48,7 +48,7 @@ export const TableDataRow = ({ className, children, onClick }) => {
 	);
 };
 
-export const TableData = ({ children, className = '', noTruncate }) => {
+export const TableData = ({ children, className = "", noTruncate }) => {
 	return (
 		<td
 			className={`${!noTruncate && "truncate"} text-xs relative ${className}`}>

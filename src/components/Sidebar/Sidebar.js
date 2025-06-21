@@ -3,7 +3,8 @@ import React, { useState } from "react";
 import { Link, NavLink, useHistory } from "react-router-dom";
 import NotificationDropdown from "components/Dropdowns/NotificationDropdown.js";
 import UserDropdown from "components/Dropdowns/UserDropdown.js";
-const logo = require("../../assets/img/she-code-africa-logo.png").default;
+// const logo = require("../../assets/img/she-code-africa-logo.png").default;
+import logo from "../../assets/img/new-logo/new-logo-header.png";
 import Cookies from "js-cookie";
 import { AiOutlineLogout } from "react-icons/ai";
 import Modal from "components/Modal";
@@ -51,7 +52,11 @@ export default function Sidebar() {
 					<Link
 						className="md:block text-left md:py-2 text-slate-600 mr-0 inline-block whitespace-nowrap text-sm uppercase font-bold py-4 px-0"
 						to="/">
-						<img className="logo !w-6" src={logo} alt="" />
+						<img
+							className="logo object-contain w-full max-w-[80px] h-[80px]"
+							src={logo}
+							alt=""
+						/>
 					</Link>{" "}
 					{/* User */}{" "}
 					<ul className="md:hidden items-center flex flex-wrap list-none">
