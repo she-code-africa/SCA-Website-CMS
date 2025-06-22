@@ -149,9 +149,13 @@ const Chapters = () => {
 						</div>
 					</div>
 					<Table width="full">
-						<TableHeaderRow className="grid grid-cols-9">
+						<TableHeaderRow className="grid grid-cols-9 w-full">
 							{header.map(({ label }, index) => {
-								return <TableHeader key={index}>{label}</TableHeader>;
+								return (
+									<TableHeader key={index} className="w-full">
+										{label}
+									</TableHeader>
+								);
 							})}
 							<TableHeader></TableHeader>
 						</TableHeaderRow>
