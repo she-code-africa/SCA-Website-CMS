@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { useQuery } from "react-query";
-import { getVolunteerRequest } from "services";
+import { useQuery, useMutation } from "react-query";
+import { getVolunteerRequest, updateVolunteerStatus, getVolunteerRequests } from "services";
 import Modal from "components/Modal";
 import Loader from "components/Loader";
 import "react-datepicker/dist/react-datepicker.css";
+import { toast } from "react-toastify";
 
-const VolunteerModal = ({ isOpen, handleModal, id }) => {
+const VolunteerModal = ({ isOpen, handleModal, id, setVolunteers }) => {
 	const initialValues = {
 		fullName: "",
 		purpose: "",
@@ -14,7 +15,10 @@ const VolunteerModal = ({ isOpen, handleModal, id }) => {
 		currentRole: "",
 	};
 	const [volunteer, setVolunteer] = useState(initialValues);
-	const { fullName, purpose, email, volunteerRole, currentRole } = volunteer;
+	const { fullname, purpose, email, volunteerRole, currentRole, status, _id } = volunteer;
+	const [statusValue, setStatusValue] = useState(status);
+	const [showBtn, setShowBtn] = useState(false)
+
 	const inputClass = `border-0 px-3 py-0 placeholder-slate-300 text-slate-600 bg-white rounded text-sm w-full ease-linear transition-all duration-150 basis-9/12`;
 
 	const { isLoading } = useQuery(
@@ -23,9 +27,28 @@ const VolunteerModal = ({ isOpen, handleModal, id }) => {
 		{
 			onSuccess: (data) => {
 				setVolunteer(data);
+				setStatusValue(data.status);
 			},
 		}
 	);
+
+	const mutation = useMutation({
+		mutationFn: () => {
+			return updateVolunteerStatus({ id: _id, status: statusValue });
+		},
+		onSuccess: async () => {
+			toast.success("Volunteer status updated successfully");
+			handleModal();
+			const _data = await getVolunteerRequests();
+			setVolunteers(_data);
+		},
+		onError: () => {
+			toast.error("Error updating volunteer status");
+		},
+	})
+
+
+
 
 	const header = () => {
 		return (
@@ -58,7 +81,7 @@ const VolunteerModal = ({ isOpen, handleModal, id }) => {
 									type="text"
 									className={`${inputClass}`}
 									name="fullName"
-									value={fullName}
+									value={fullname}
 									disabled
 								/>
 							</div>
@@ -86,10 +109,9 @@ const VolunteerModal = ({ isOpen, handleModal, id }) => {
 									Current Role
 								</label>
 								<input
-									className={`${inputClass}`}
+									className={`${inputClass} `}
 									name="currentRole"
 									value={currentRole}
-									rows={8}
 									disabled
 								/>
 							</div>
@@ -104,25 +126,64 @@ const VolunteerModal = ({ isOpen, handleModal, id }) => {
 									className={`${inputClass}`}
 									name="volunteerRole"
 									value={volunteerRole}
-									rows={8}
 									disabled
 								/>
 							</div>
-
 							<div className="relative w-full mb-3 flex items-center ">
 								<label
 									className="block uppercase text-slate-600 text-xs font-bold basis-3/12 self-start"
+									htmlFor="status">
+									Status
+								</label>
+								<select
+									type="text"
+									className={`w-5/12 px-3 py-0 block text-slate-600 text-sm basis-7/12`}
+									name="status"
+									value={statusValue}
+									autoFocus
+									onChange={(e) => {
+										setStatusValue(e.target.value);
+										setShowBtn(status === e.target.value ? false : true);
+									}}
+								>
+									<option value="Pending">Pending</option>
+									<option value="Approved">Approved</option>
+									<option value="Rejected">Rejected</option>
+								</select>
+							</div>
+
+							<div className="relative w-full mb-3 flex items-center ">
+								<p
+									className="block uppercase text-slate-600 text-xs font-bold basis-3/12 self-start"
 									htmlFor="purpose">
 									Purpose
-								</label>
-								<textarea
-									className={`${inputClass}`}
-									name="purpose"
-									value={purpose}
-									rows={8}
-									disabled
-								/>
+								</p>
+								<div
+									className={`${inputClass} resize-none`}>{purpose}</div>
 							</div>
+						</div>
+
+						<div className="flex justify-end mt-4">
+							<button
+								type="button"
+								className="bg-gray-500 text-white active:bg-blue-600 font-bold uppercase text-xs px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
+								onClick={() => {
+									handleModal();
+								}}>
+								Close
+							</button>
+							{showBtn ?
+								<button
+									type="submit"
+									className="bg-pink-500 text-white active:bg-pink-600 font-bold uppercase text-xs px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
+									onClick={(e) => {
+										e.preventDefault();
+										mutation.mutate();
+									}}>
+									Update Status
+								</button>
+								: null}
+
 						</div>
 					</form>
 				)}

@@ -14,6 +14,7 @@ import { BiSolidImageAdd } from "react-icons/bi";
 import Loader from "components/Loader";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { getChapterCategories } from "services";
+import ChapterSocialMedia from "./inputs/ChapterSocialMedia";
 
 const ChapterModal = ({
 	isOpen,
@@ -33,19 +34,32 @@ const ChapterModal = ({
 		image: "",
 		description: "",
 		link: "",
+		linkKey: "",
+		linkUrl: "",
 	};
 	const [chapter, setChapter] = useState(intial);
-	const { name, city, country, category, image, description, link } = chapter;
+	const {
+		name,
+		city,
+		country,
+		category,
+		image,
+		description,
+		link,
+		linkKey,
+		linkUrl,
+	} = chapter;
 	const [edit, setEdit] = useState(false);
 	const [categories, setCategories] = useState([]);
+	const [socialLinks, setSocialLinks] = useState({});
 	const inputClass = `border-0 px-3 py-0 placeholder-slate-300 text-slate-600 bg-white rounded text-sm ${
 		edit || newItem ? "shadow focus:outline-none focus:ring !py-3" : ""
 	} w-full ease-linear transition-all duration-150 basis-9/12`;
-	console.log("hello", categoryId, id);
+
 	const { data, isLoading } = useQuery(["chapter", id], () => getChapter(id), {
 		onSuccess: (data) => {
-			console.log(data);
 			setChapter(data);
+			setSocialLinks(data.socialMediaLinks || {});
 		},
 	});
 
@@ -95,18 +109,25 @@ const ChapterModal = ({
 	);
 
 	const updateChapterDetails = async () => {
+		const updatedChapter = {
+			...chapter,
+			socialMediaLinks: socialLinks,
+		};
+
 		const updatedFields = new FormData();
 
-		for (const [key, value] of Object.entries(chapter)) {
+		for (const [key, value] of Object.entries(updatedChapter)) {
 			if (key === "category" && typeof value === "object") {
 				updatedFields.append(key, value._id);
-			} else if (chapter[key] !== data[key]) {
+			} else if (key === "socialMediaLinks" && typeof value === "object") {
+				updatedFields.append(key, JSON.stringify(value));
+				// updatedFields.append(key, value);
+			} else if (updatedChapter[key] !== data[key]) {
 				updatedFields.append(key, value);
 			}
 		}
 
 		await updateChapter({ categoryId, id, data: updatedFields });
-		console.log(chapter);
 	};
 
 	const handleInputChange = useCallback(
@@ -130,6 +151,7 @@ const ChapterModal = ({
 		formData.append("link", link);
 		formData.append("description", description);
 		formData.append("image", image);
+		formData.append("socialMediaLinks", JSON.stringify(socialLinks));
 		newItem ? addChapter(formData) : await updateChapterDetails();
 	};
 
@@ -173,12 +195,13 @@ const ChapterModal = ({
 				isOpen={isOpen}
 				onClose={handleModal}
 				header={header}
+				customHeight={true}
 				className="!max-w-3xl">
 				{isLoading && !newItem ? (
 					<Loader />
 				) : (
 					<form className="w-full px-4 md:px-8 ">
-						<div className="flex flex-col  w-full gap-y-2  ">
+						<div className="flex flex-col  w-full gap-y-2">
 							<div className="self-center relative">
 								<input
 									required
@@ -264,6 +287,7 @@ const ChapterModal = ({
 									disabled={!edit && !newItem}
 								/>
 							</div>
+
 							<div className="relative w-full mb-3 flex items-center">
 								<label
 									className="block uppercase text-slate-600 text-xs font-bold basis-3/12"
@@ -308,7 +332,7 @@ const ChapterModal = ({
 								{edit || newItem ? (
 									<select
 										className={`${inputClass}`}
-										value={category._id ? category._id : category}
+										value={category && category._id ? category._id : category}
 										name="category"
 										onChange={handleCategoryChange}>
 										<option value="">Select Category</option>
@@ -326,6 +350,16 @@ const ChapterModal = ({
 									<span className={`${inputClass}`}>{category?.name}</span>
 								)}
 							</div>
+							<ChapterSocialMedia
+								inputClass={inputClass}
+								setSocialLinks={setSocialLinks}
+								linkKey={linkKey}
+								linkUrl={linkUrl}
+								socialLinks={socialLinks}
+								handleInputChange={handleInputChange}
+								edit={edit}
+								newItem={newItem}
+							/>
 							<div className="relative w-full mb-3 flex items-center ">
 								<label
 									className="block uppercase text-slate-600 text-xs font-bold basis-3/12 self-start"

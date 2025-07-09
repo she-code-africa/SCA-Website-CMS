@@ -39,4 +39,6 @@ export const paths = {
 	sagEvents: "/admin/stem-a-girl/events",
 	sagImpactStories: "/admin/stem-a-girl/impact-stories",
 	sagTestimonials: "/admin/stem-a-girl/testimonials",
+	chapterEvents: "/admin/chapter-events",
+	chapterLeads: "/admin/chapter-leads",
 };

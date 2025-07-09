@@ -796,6 +796,11 @@ video {
   margin-right: auto;
 }
 
+.my-10 {
+  margin-top: 2.5rem;
+  margin-bottom: 2.5rem;
+}
+
 .my-2 {
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;
@@ -1111,6 +1116,7 @@ video {
 }
 
 .h-fit {
+  height: -webkit-fit-content;
   height: fit-content;
 }
 
@@ -1202,6 +1208,10 @@ video {
   width: 1.25rem;
 }
 
+.w-5\/12 {
+  width: 41.666667%;
+}
+
 .w-6 {
   width: 1.5rem;
 }
@@ -1220,6 +1230,10 @@ video {
 
 .w-full {
   width: 100%;
+}
+
+.w-7\/12 {
+  width: 58.333333%;
 }
 
 .min-w-0 {
@@ -1314,6 +1328,10 @@ video {
   flex-basis: 25%;
 }
 
+.basis-7\/12 {
+  flex-basis: 58.333333%;
+}
+
 .basis-9\/12 {
   flex-basis: 75%;
 }
@@ -1342,6 +1360,10 @@ video {
 
 .cursor-pointer {
   cursor: pointer;
+}
+
+.resize-none {
+  resize: none;
 }
 
 .list-disc {
@@ -1456,6 +1478,10 @@ video {
   column-gap: 1rem;
 }
 
+.gap-y-10 {
+  row-gap: 2.5rem;
+}
+
 .gap-y-2 {
   row-gap: 0.5rem;
 }
@@ -1550,6 +1576,10 @@ video {
 
 .rounded-xl {
   border-radius: 0.75rem;
+}
+
+.rounded-sm {
+  border-radius: 0.125rem;
 }
 
 .rounded-t {
@@ -1710,6 +1740,11 @@ video {
   background-color: rgb(251 207 232 / var(--tw-bg-opacity, 1));
 }
 
+.bg-pink-300 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(249 168 212 / var(--tw-bg-opacity, 1));
+}
+
 .bg-pink-500 {
   --tw-bg-opacity: 1;
   background-color: rgb(236 72 153 / var(--tw-bg-opacity, 1));
@@ -1844,6 +1879,11 @@ video {
   background-color: rgb(234 179 8 / var(--tw-bg-opacity, 1));
 }
 
+.bg-green-700 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(21 128 61 / var(--tw-bg-opacity, 1));
+}
+
 .bg-cover {
   background-size: cover;
 }
@@ -1886,6 +1926,10 @@ video {
 
 .p-8 {
   padding: 2rem;
+}
+
+.p-1 {
+  padding: 0.25rem;
 }
 
 .\!py-3 {
@@ -2211,6 +2255,11 @@ video {
   color: rgb(16 185 129 / var(--tw-text-opacity, 1));
 }
 
+.text-gray-500 {
+  --tw-text-opacity: 1;
+  color: rgb(107 114 128 / var(--tw-text-opacity, 1));
+}
+
 .text-gray-700 {
   --tw-text-opacity: 1;
   color: rgb(55 65 81 / var(--tw-text-opacity, 1));
@@ -2482,6 +2531,18 @@ video {
   width: 100%;
 }
 
+.googlecard {
+  margin-top: 10px;
+  color: rgb(236 72 153);
+  background-color: rgb(255 255 255);
+  border: 1px solid rgb(236 72 153);
+}
+
+.googlecard:hover {
+  color: rgb(255 255 255);
+  background-color: rgb(236 72 153);
+}
+
 @media (min-width: 600px) {
   .job-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -2586,6 +2647,11 @@ video {
 .focus\:ring-blue-400:focus {
   --tw-ring-opacity: 1;
   --tw-ring-color: rgb(96 165 250 / var(--tw-ring-opacity, 1));
+}
+
+.active\:bg-blue-600:active {
+  --tw-bg-opacity: 1;
+  background-color: rgb(37 99 235 / var(--tw-bg-opacity, 1));
 }
 
 .active\:bg-indigo-600:active {
@@ -2990,26 +3056,9 @@ video {
 
   .xl\:w-3\/12 {
     width: 25%;
-    margin-bottom: 10px;
-  }
-
-  .xl\:w-4\/12 {
-    width: 33.333333%;
   }
 
   .xl\:w-6\/12 {
     width: 50%;
   }
-}
-
-.googlecard {
-  margin-top: 10px;
-  color: rgb(236 72 153);
-  background-color: rgb(255 255 255);
-  border: 1px solid rgb(236 72 153);
-}
-
-.googlecard:hover {
-  color: rgb(255 255 255);
-  background-color: rgb(236 72 153);
 }

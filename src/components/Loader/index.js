@@ -10,7 +10,7 @@ const override = {
 
 const Loader = () => {
 	return (
-		<span className="min-h-[30vh] flex justify-center items-center w-full">
+		<div className="min-h-[30vh] flex justify-center items-center w-full">
 			<ClipLoader
 				color="#"
 				cssOverride={override}
@@ -19,7 +19,7 @@ const Loader = () => {
 				data-testid="loader"
 				className=""
 			/>
-		</span>
+		</div>
 	);
 };
 
