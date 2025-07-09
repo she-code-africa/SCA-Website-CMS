@@ -163,7 +163,21 @@ const SchoolProgramModal = ({
 				updatedFields[key] = schoolProgram[key];
 			}
 		}
-		await updateSchool({ id, data: updatedFields });
+
+		// If image is being updated and is a File, use FormData
+		if (
+			updatedFields.image &&
+			typeof updatedFields.image !== "string" &&
+			updatedFields.image instanceof File
+		) {
+			const formData = new FormData();
+			for (const [key, value] of Object.entries(updatedFields)) {
+				formData.append(key, value);
+			}
+			await updateSchool({ id, data: formData });
+		} else {
+			await updateSchool({ id, data: updatedFields });
+		}
 	};
 
 	const { mutateAsync: publish } = useMutation(publishSchoolProgram, {
