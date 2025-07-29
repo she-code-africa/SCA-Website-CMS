@@ -273,7 +273,8 @@ export const volunteer = [
 		label: "Volunteer Role",
 	},
 	{
-		value: "status", label: "Status"
+		value: "status",
+		label: "Status",
 	},
 	{ value: "updatedAt", label: "Updated at" },
 ];
@@ -383,7 +384,7 @@ export const chapters = [
 	},
 	{
 		value: "publishDate",
-		label: "Publish Date",
+		label: "Published At",
 	},
 	{
 		value: "updatedAt",
@@ -456,6 +457,37 @@ export const activityloglist = [
 	},
 	{
 		value: "updatedAt",
-		label: "Updated At"
-	}
+		label: "Updated At",
+	},
+];
+
+export const chapterEventsHeaders = [
+	{
+		value: "name",
+		label: "Name",
+	},
+	{
+		value: "description",
+		label: "Description",
+	},
+	{
+		value: "link",
+		label: "Link",
+	},
+	{
+		value: "eventState",
+		label: "Status",
+	},
+	{
+		value: "eventDate",
+		label: "Event Date",
+	},
+	{
+		value: "createdAt",
+		label: "Created At",
+	},
+	{
+		value: "actions",
+		label: "Actions",
+	},
 ];

@@ -3,182 +3,182 @@ import axios from "axios";
 const baseUrl = process.env.REACT_APP_BASE_URL;
 const sagBaseUrl = process.env.REACT_APP_STEM_A_GIRL_BASE_URL;
 
-export async function getEvents () {
+export async function getEvents() {
 	const events = await api.get(`${baseUrl}/events`);
 	return events;
 }
 
-export async function getEvent (id) {
+export async function getEvent(id) {
 	const event = await api.get(`${baseUrl}/events/${id}`);
 	return event;
 }
 
-export async function deleteEvent (id) {
+export async function deleteEvent(id) {
 	await api.delete(`${baseUrl}/events/${id}`);
 }
 
-export async function editEvent ({ id, data }) {
+export async function editEvent({ id, data }) {
 	const event = await api.put(`${baseUrl}/events/${id}`, data);
 	return event;
 }
 
-export async function publishEvent (id) {
+export async function publishEvent(id) {
 	const event = await api.patch(`${baseUrl}/events/${id}/publish`);
 	return event;
 }
 
-export async function archiveEvent (id) {
+export async function archiveEvent(id) {
 	const event = await api.patch(`${baseUrl}/events/${id}/archive`);
 	return event;
 }
 
-export async function getPartners () {
+export async function getPartners() {
 	const partners = await api.get(`${baseUrl}/partners`);
 	return partners;
 }
 
-export async function getPartner (id) {
+export async function getPartner(id) {
 	return await api.get(`${baseUrl}/partners/${id}`);
 }
 
-export async function createPartner (data) {
+export async function createPartner(data) {
 	await api.post(`${baseUrl}/partners`, data);
 }
 
-export async function editPartner ({ id, data }) {
+export async function editPartner({ id, data }) {
 	await api.put(`${baseUrl}/partners/${id}`, data);
 }
 
-export async function deletePartner (id) {
+export async function deletePartner(id) {
 	await api.delete(`${baseUrl}/partners/${id}`);
 }
 
-export async function getTeams () {
+export async function getTeams() {
 	const teams = await api.get(`${baseUrl}/teams/members`);
 	return teams;
 }
 
-export async function getTeamCategories () {
+export async function getTeamCategories() {
 	const teamCategories = await api.get(`${baseUrl}/teams/categories`);
 	return teamCategories;
 }
 
-export async function mutateEnquires (enquiryData) {
+export async function mutateEnquires(enquiryData) {
 	const enquiresResponse = await api.post(`${baseUrl}/enquiry`, enquiryData);
 	return enquiresResponse;
 }
 
-export async function login (data) {
+export async function login(data) {
 	const auth = await api.post(`${baseUrl}/auth/login`, data);
 	return auth;
 }
 
-export async function getEnquiries () {
+export async function getEnquiries() {
 	const enquiresResponse = await api.get(`${baseUrl}/enquiry`);
 	return enquiresResponse;
 }
 
-export async function getEnquiry (id) {
+export async function getEnquiry(id) {
 	const enquiresResponse = await api.get(`${baseUrl}/enquiry/${id}`);
 	return enquiresResponse;
 }
 
-export async function editEnquiry ({ id, data }) {
+export async function editEnquiry({ id, data }) {
 	return await api.put(`${baseUrl}/enquiry/${id}`, data);
 }
 
-export async function getJobs () {
+export async function getJobs() {
 	const jobsResponse = await api.get(`${baseUrl}/job/postings`);
 	return jobsResponse;
 }
 
-export async function getJob (id) {
+export async function getJob(id) {
 	const job = await api.get(`${baseUrl}/job/postings/${id}`);
 	return job;
 }
 
-export async function deleteJob (id) {
+export async function deleteJob(id) {
 	return await api.delete(`${baseUrl}/job/postings/${id}`);
 }
 
-export async function createJob (data) {
+export async function createJob(data) {
 	return await api.post(`${baseUrl}/job/postings`, data);
 }
 
-export async function editJob ({ id, data }) {
+export async function editJob({ id, data }) {
 	return await api.put(`${baseUrl}/job/postings/${id}`, data);
 }
 
-export async function publishJob ({ id }) {
+export async function publishJob({ id }) {
 	const job = await api.patch(`${baseUrl}/job/postings/${id}/publish`);
 	return job;
 }
 
-export async function archiveJob ({ id }) {
+export async function archiveJob({ id }) {
 	const job = await api.patch(`${baseUrl}/job/postings/${id}/archive`);
 	return job;
 }
 
-export async function getJobCategories () {
+export async function getJobCategories() {
 	const jobCategories = await api.get(`${baseUrl}/job/category`);
 	return jobCategories;
 }
 
-export async function createJobCategories (data) {
+export async function createJobCategories(data) {
 	return await api.post(`${baseUrl}/job/category`, data);
 }
 
-export async function deleteJobCategory (id) {
+export async function deleteJobCategory(id) {
 	return await api.delete(`${baseUrl}/job/category/${id}`);
 }
 
-export async function editJobCategory ({ id, data }) {
+export async function editJobCategory({ id, data }) {
 	return await api.put(`${baseUrl}/job/category/${id}`, data);
 }
 
-export async function getJobTypes () {
+export async function getJobTypes() {
 	const jobTypes = await api.get(`${baseUrl}/job/types`);
 	return jobTypes;
 }
 
-export async function createJobType (data) {
+export async function createJobType(data) {
 	return await api.post(`${baseUrl}/job/types`, data);
 }
 
-export async function deleteJobType (id) {
+export async function deleteJobType(id) {
 	return await api.delete(`${baseUrl}/job/types/${id}`);
 }
 
-export async function editJobType ({ id, data }) {
+export async function editJobType({ id, data }) {
 	return await api.put(`${baseUrl}/job/types/${id}`, data);
 }
 
-export async function getCompanies () {
+export async function getCompanies() {
 	const companies = await api.get(`${baseUrl}/company`);
 	return companies;
 }
 
-export async function getCompany (id) {
+export async function getCompany(id) {
 	return await api.get(`${baseUrl}/company/${id}`);
 }
 
-export async function editCompany ({ id, data }) {
+export async function editCompany({ id, data }) {
 	return await api.put(`${baseUrl}/company/${id}`, data);
 }
 
-export async function archiveCompany (id) {
+export async function archiveCompany(id) {
 	return await api.patch(`${baseUrl}/company/${id}/archive`);
 }
 
-export async function unarchiveCompany (id) {
+export async function unarchiveCompany(id) {
 	return await api.patch(`${baseUrl}/company/${id}/unarchive`);
 }
 
-export async function addTeamMember (data) {
+export async function addTeamMember(data) {
 	const member = await api.post(`${baseUrl}/teams/members`, data);
 	return member;
 }
-export async function editTeamMember ({ id, catId, data }) {
+export async function editTeamMember({ id, catId, data }) {
 	const member = await api.put(
 		`${baseUrl}/teams/categories/${catId}/members/${id}`,
 		data
@@ -186,19 +186,19 @@ export async function editTeamMember ({ id, catId, data }) {
 	return member;
 }
 
-export async function addTeamCategory (data) {
+export async function addTeamCategory(data) {
 	const category = await api.post(`${baseUrl}/teams/categories`, data);
 	return category;
 }
 
-export async function getTeamMember (catId, id) {
+export async function getTeamMember(catId, id) {
 	const member = await api.get(
 		`${baseUrl}/teams/categories/${catId}/members/${id}`
 	);
 	return member;
 }
 
-export async function getMembers () {
+export async function getMembers() {
 	const totalMembers = await api.get(`${baseUrl}/teams/members`);
 	return totalMembers;
 }
@@ -215,33 +215,33 @@ export async function getActivityLog (page, limit, startDate = null, endDate = n
 	return allActivities;
 }
 
-export async function createEvent (data) {
+export async function createEvent(data) {
 	const event = await api.post(`${baseUrl}/events`, data);
 	return event;
 }
 
-export async function publishTeamMember ({ catId, id }) {
+export async function publishTeamMember({ catId, id }) {
 	const member = await api.patch(
 		`${baseUrl}/teams/categories/${catId}/members/${id}/publish`
 	);
 	return member;
 }
 
-export async function archiveTeamMember ({ catId, id }) {
+export async function archiveTeamMember({ catId, id }) {
 	const member = await api.patch(
 		`${baseUrl}/teams/categories/${catId}/members/${id}/archive`
 	);
 	return member;
 }
 
-export async function deleteTeamMember ({ catId, id }) {
+export async function deleteTeamMember({ catId, id }) {
 	const member = await api.delete(
 		`${baseUrl}/teams/categories/${catId}/members/${id}`
 	);
 	return member;
 }
 
-export async function editTeamCategories ({ catId, name: data }) {
+export async function editTeamCategories({ catId, name: data }) {
 	const categories = await api.put(
 		`${baseUrl}/teams/categories/${catId}`,
 		data
@@ -249,427 +249,487 @@ export async function editTeamCategories ({ catId, name: data }) {
 	return categories;
 }
 
-export async function deleteTeamCategory (id) {
+export async function deleteTeamCategory(id) {
 	const categories = await api.delete(`${baseUrl}/teams/categories/${id}`);
 	return categories;
 }
 
-export async function getTestimonials () {
+export async function getTestimonials() {
 	return await api.get(`${baseUrl}/testimonials`);
 }
 
-export async function getTestimonial (id) {
+export async function getTestimonial(id) {
 	return await api.get(`${baseUrl}/testimonials/${id}`);
 }
 
-export async function deleteTestimonial (id) {
+export async function deleteTestimonial(id) {
 	return await api.delete(`${baseUrl}/testimonials/${id}`);
 }
 
-export async function createTestimonial (data) {
+export async function createTestimonial(data) {
 	return await api.post(`${baseUrl}/testimonials`, data);
 }
 
-export async function editTestimonial ({ id, data }) {
+export async function editTestimonial({ id, data }) {
 	return await api.put(`${baseUrl}/testimonials/${id}`, data);
 }
 
-export async function updateTestimonialStatus ({ id, data }) {
+export async function updateTestimonialStatus({ id, data }) {
 	return await api.post(`${baseUrl}/testimonials/change-state/${id}`, data);
 }
 
-export async function getUsers () {
+export async function getUsers() {
 	return await api.get(`${baseUrl}/users`);
 }
 
-export async function getInitiatives () {
+export async function getInitiatives() {
 	return await api.get(`${baseUrl}/initiatives`);
 }
 
-export async function getInitiative (id) {
+export async function getInitiative(id) {
 	return await api.get(`${baseUrl}/initiatives/${id}`);
 }
 
-export async function createInitiative (data) {
+export async function createInitiative(data) {
 	return await api.post(`${baseUrl}/initiatives`, data);
 }
 
-export async function editInitiative ({ id, data }) {
+export async function editInitiative({ id, data }) {
 	return await api.put(`${baseUrl}/initiatives/${id}`, data);
 }
 
-export async function deleteInitiative (id) {
+export async function deleteInitiative(id) {
 	return await api.delete(`${baseUrl}/initiatives/${id}`);
 }
 
-export async function getSchoolPrograms () {
+export async function getSchoolPrograms() {
 	return await api.get(`${baseUrl}/school-programs`);
 }
 
-export async function createSchoolProgram (data) {
+export async function createSchoolProgram(data) {
 	return await api.post(`${baseUrl}/school-programs`, data);
 }
 
-export async function editSchoolProgram ({ id, data }) {
+export async function editSchoolProgram({ id, data }) {
 	return await api.put(`${baseUrl}/school-programs/${id}`, data);
 }
 
-export async function getSchoolProgram (id) {
+export async function getSchoolProgram(id) {
 	return await api.get(`${baseUrl}/school-programs/${id}`);
 }
 
-export async function publishSchoolProgram (id) {
+export async function publishSchoolProgram(id) {
 	return await api.put(`${baseUrl}/school-programs/${id}/publish`);
 }
 
-export async function unpublishSchoolProgram (id) {
+export async function unpublishSchoolProgram(id) {
 	return await api.put(`${baseUrl}/school-programs/${id}/unpublish`);
 }
 
-export async function getSchool (id) {
+export async function getSchool(id) {
 	return await api.get(`${baseUrl}/schools/${id}`);
 }
 
-export async function getSchools () {
+export async function getSchools() {
 	return await api.get(`${baseUrl}/schools`);
 }
 
-export async function createSchool (data) {
+export async function createSchool(data) {
 	return await api.post(`${baseUrl}/schools`, data);
 }
 
-export async function editSchool ({ id, data }) {
+export async function editSchool({ id, data }) {
 	return await api.put(`${baseUrl}/schools/${id}`, data);
 }
 
-export async function deleteSchool (id) {
+export async function deleteSchool(id) {
 	return await api.delete(`${baseUrl}/schools/${id}`);
 }
 
-export async function getCourse (id) {
+export async function getCourse(id) {
 	return await api.get(`${baseUrl}/courses/${id}`);
 }
 
-export async function getCourses () {
+export async function getCourses() {
 	return await api.get(`${baseUrl}/courses`);
 }
 
-export async function createCourse (data) {
+export async function createCourse(data) {
 	return await api.post(`${baseUrl}/courses`, data);
 }
 
-export async function editCourse ({ id, data }) {
+export async function editCourse({ id, data }) {
 	return await api.put(`${baseUrl}/courses/${id}`, data);
 }
 
-export async function deleteCourse (id) {
+export async function deleteCourse(id) {
 	return await api.delete(`${baseUrl}/courses/${id}`);
 }
 
-export async function getVolunteerRequests () {
+export async function getVolunteerRequests() {
 	return await api.get(`${baseUrl}/volunteer-request/`);
 }
 
-export async function getVolunteerRequest (id) {
+export async function getVolunteerRequest(id) {
 	return await api.get(`${baseUrl}/volunteer-request/${id}`);
 }
 
-export async function updateVolunteerStatus ({ id, status }) {
-	return await api.patch(`${baseUrl}/volunteer-request/${id}/status`, { status });
+export async function updateVolunteerStatus({ id, status }) {
+	return await api.patch(`${baseUrl}/volunteer-request/${id}/status`, {
+		status,
+	});
 }
 
-export async function getOurReach () {
+export async function getOurReach() {
 	return await api.get(`${baseUrl}/reach`);
 }
 
-export async function getReach (id) {
+export async function getReach(id) {
 	return await api.get(`${baseUrl}/reach/${id}`);
 }
 
-export async function createOurReach (data) {
+export async function createOurReach(data) {
 	return await api.post(`${baseUrl}/reach`, data);
 }
 
-export async function editOurReach ({ id, data }) {
+export async function editOurReach({ id, data }) {
 	return await api.put(`${baseUrl}/reach/${id}`, data);
 }
 
-export async function deleteOurReach (id) {
+export async function deleteOurReach(id) {
 	return await api.delete(`${baseUrl}/reach/${id}`);
 }
 
-export async function getTalentRequests () {
+export async function getTalentRequests() {
 	return await api.get(`${baseUrl}/talent-request`);
 }
 
-export async function getTalentRequest (id) {
+export async function getTalentRequest(id) {
 	return await api.get(`${baseUrl}/talent-request/${id}`);
 }
 
-export async function createTalentRequest (data) {
+export async function createTalentRequest(data) {
 	return await api.post(`${baseUrl}/talent-request`, data);
 }
 
-export async function editTalentRequest ({ id, data }) {
+export async function editTalentRequest({ id, data }) {
 	return await api.put(`${baseUrl}/talent-request/${id}`, data);
 }
 
-export async function getSuccessStories () {
+export async function getSuccessStories() {
 	return await api.get(`${baseUrl}/program-success`);
 }
 
-export async function getSuccessStory (id) {
+export async function getSuccessStory(id) {
 	return await api.get(`${baseUrl}/program-success/${id}`);
 }
 
-export async function createSuccessStory (data) {
+export async function createSuccessStory(data) {
 	return await api.post(`${baseUrl}/program-success`, data);
 }
 
-export async function editSuccessStory ({ id, data }) {
+export async function editSuccessStory({ id, data }) {
 	return await api.put(`${baseUrl}/program-success/${id}`, data);
 }
 
-export async function publishSuccessStory (id) {
+export async function publishSuccessStory(id) {
 	return await api.patch(`${baseUrl}/program-success/${id}/publish`);
 }
 
-export async function archiveSuccessStory (id) {
+export async function archiveSuccessStory(id) {
 	return await api.patch(`${baseUrl}/program-success/${id}/publish`);
 }
 
-export async function getPrograms () {
+export async function getPrograms() {
 	return await api.get(`${baseUrl}/programs/member-programs`);
 }
 
-export async function createProgram (data) {
+export async function createProgram(data) {
 	return await api.post(`${baseUrl}/programs/member-programs`, data);
 }
 
-export async function getProgram (catId, id) {
+export async function getProgram(catId, id) {
 	return await api.get(
 		`${baseUrl}/programs/categories/${catId}/member-programs/${id}`
 	);
 }
 
-export async function deleteProgram ({ id, categoryId }) {
+export async function deleteProgram({ id, categoryId }) {
 	return await api.delete(
 		`${baseUrl}/programs/categories/${categoryId}/member-programs/${id}`
 	);
 }
 
-export async function editProgram ({ id, categoryId, data }) {
+export async function editProgram({ id, categoryId, data }) {
 	return await api.put(
 		`${baseUrl}/programs/categories/${categoryId}/member-programs/${id}`,
 		data
 	);
 }
 
-export async function publishProgram ({ id, categoryId }) {
+export async function publishProgram({ id, categoryId }) {
 	return await api.patch(
 		`${baseUrl}/programs/categories/${categoryId}/member-programs/${id}/publish`
 	);
 }
 
-export async function archiveProgram ({ id, categoryId }) {
+export async function archiveProgram({ id, categoryId }) {
 	return await api.patch(
 		`${baseUrl}/programs/categories/${categoryId}/member-programs/${id}/archive`
 	);
 }
 
-export async function getProgramCategories () {
+export async function getProgramCategories() {
 	return await api.get(`${baseUrl}/programs/categories`);
 }
 
-export async function createProgramCategory (data) {
+export async function createProgramCategory(data) {
 	return await api.post(`${baseUrl}/programs/category`, data);
 }
 
-export async function deleteProgramCategory (id) {
+export async function deleteProgramCategory(id) {
 	return await api.delete(`${baseUrl}/programs/category/${id}`);
 }
 
-export async function editProgramCategory ({ id, data }) {
+export async function editProgramCategory({ id, data }) {
 	return await api.delete(`${baseUrl}/programs/category/${id}`, data);
 }
 
-export async function getChapterCategories () {
+export async function getChapterCategories() {
 	return await api.get(`${baseUrl}/chapters/categories`);
 }
 
-export async function createChapterCategory (data) {
+export async function createChapterCategory(data) {
 	return await api.post(`${baseUrl}/chapters/categories`, data);
 }
 
-export async function deleteChapterCategory (id) {
+export async function deleteChapterCategory(id) {
 	return await api.delete(`${baseUrl}/chapters/categories/${id}`);
 }
 
-export async function editChapterCategory ({ id, data }) {
+export async function editChapterCategory({ id, data }) {
 	return await api.put(`${baseUrl}/chapters/categories/${id}`, data);
 }
 
-export async function getChapters (page) {
+export async function getChapters(page, limit = 8) {
 	const chapters = await axios.get(
-		`${baseUrl}/chapters/member-chapters?page=${page}&limit=8)`
+		`${baseUrl}/chapters/member-chapters?page=${page}&limit=${limit}`
 	);
-
 	return chapters.data;
 }
 
-export async function createChapter (data) {
+export async function createChapter(data) {
 	const chapter = await api.post(`${baseUrl}/chapters/member-chapters`, data);
 	return chapter;
 }
 
-export async function deleteChapter ({ id, categoryId }) {
+export async function publishChapterEvent(id) {
+	const event = await api.patch(`${baseUrl}/chapters/event/${id}/publish`);
+	return event;
+}
+
+export async function archiveChapterEvent(id) {
+	const event = await api.patch(`${baseUrl}/chapters/event/${id}/archive`);
+	return event;
+}
+
+export async function deleteChapter({ id, categoryId }) {
 	return await api.delete(`${baseUrl}/chapters/member-chapters/${id}`);
 }
 
-export async function getChapter (id) {
+export async function getChapter(id) {
 	return await api.get(`${baseUrl}/chapters/member-chapters/${id}`);
 }
 
-export async function editChapter ({ id, categoryId, data }) {
+export async function editChapter({ id, categoryId, data }) {
 	return await api.put(`${baseUrl}/chapters/member-chapters/${id}`, data);
 }
 
-export async function getReports () {
+export async function getChapterEvents(chapterId) {
+	// console.log({ chapterId });
+	return await api.get(`${baseUrl}/chapters/events/${chapterId}`);
+}
+
+export async function getAChapterEvent(id) {
+	return await api.get(`${baseUrl}/chapters/event/${id}`);
+}
+
+export async function getChapterLeads(chapterId) {
+	// console.log({ chapterId });
+	return await api.get(`${baseUrl}/chapters/chapterLeads/${chapterId}`);
+}
+
+export async function getAChapterLead(id) {
+	// console.log({ chapterId });
+	return await api.get(`${baseUrl}/chapters/lead/${id}`);
+}
+
+export async function updateChapterLead({ id, data }) {
+	const chapter = await api.put(`${baseUrl}/chapters/lead/${id}`, data);
+	return chapter;
+}
+
+export async function createChapterEvent(data) {
+	const chapter = await api.post(`${baseUrl}/chapters/events`, data);
+	return chapter;
+}
+
+export async function updateChapterEvent({ id, data }) {
+	const chapter = await api.put(`${baseUrl}/chapters/event/${id}`, data);
+	return chapter;
+}
+
+export async function deleteChapterEvent(id) {
+	const chapter = await api.delete(`${baseUrl}/chapters/event/${id}`);
+	return chapter;
+}
+
+export async function deleteChapterLead(id) {
+	const chapter = await api.delete(`${baseUrl}/chapters/lead/${id}`);
+	return chapter;
+}
+
+export async function createChapterLead(data) {
+	const chapter = await api.post(`${baseUrl}/chapters/chapterLeads`, data);
+	return chapter;
+}
+
+export async function getReports() {
 	return await api.get(`${baseUrl}/reports`);
 }
 
-export async function getReport (id) {
+export async function getReport(id) {
 	return await api.get(`${baseUrl}/reports/${id}`);
 }
 
-export async function createReport (data) {
+export async function createReport(data) {
 	return await api.post(`${baseUrl}/reports`, data);
 }
 
-export async function editReport ({ id, data }) {
+export async function editReport({ id, data }) {
 	return await api.put(`${baseUrl}/reports/${id}`, data);
 }
 
-export async function deleteReport (id) {
+export async function deleteReport(id) {
 	return await api.delete(`${baseUrl}/reports/${id}`);
 }
 
-export async function getSAGSchools () {
+export async function getSAGSchools() {
 	return await axios.get(`${sagBaseUrl}/school`);
 }
 
-export async function createSAGSchool (data) {
+export async function createSAGSchool(data) {
 	return await axios.post(`${sagBaseUrl}/school`, data);
 }
 
-export async function getSAGSchool (id) {
+export async function getSAGSchool(id) {
 	return await axios.get(`${sagBaseUrl}/school/${id}`);
 }
 
-export async function editSAGSchool ({ id, data }) {
+export async function editSAGSchool({ id, data }) {
 	return await axios.put(`${sagBaseUrl}/school/${id}`, data);
 }
 
-export async function deleteSAGSchool (id) {
+export async function deleteSAGSchool(id) {
 	return await axios.delete(`${sagBaseUrl}/school/${id}`);
 }
 
-export async function getSAGCourses () {
+export async function getSAGCourses() {
 	return await axios.get(`${sagBaseUrl}/course`);
 }
 
-export async function createSAGCourse (data) {
+export async function createSAGCourse(data) {
 	return await axios.post(`${sagBaseUrl}/course`, data);
 }
 
-export async function getSAGCourse (id) {
+export async function getSAGCourse(id) {
 	return await axios.get(`${sagBaseUrl}/course/${id}`);
 }
 
-export async function editSAGCourse ({ id, data }) {
+export async function editSAGCourse({ id, data }) {
 	return await axios.put(`${sagBaseUrl}/course/${id}`, data);
 }
 
-export async function deleteSAGCourse (id) {
+export async function deleteSAGCourse(id) {
 	return await axios.delete(`${sagBaseUrl}/course/${id}`);
 }
 
-export async function getSAGActivities () {
+export async function getSAGActivities() {
 	return await axios.get(`${sagBaseUrl}/activity`);
 }
 
-export async function createSAGActivity (data) {
+export async function createSAGActivity(data) {
 	return await axios.post(`${sagBaseUrl}/activity`, data);
 }
 
-export async function getSAGActivity (id) {
+export async function getSAGActivity(id) {
 	return await axios.get(`${sagBaseUrl}/activity/${id}`);
 }
 
-export async function editSAGActivity ({ id, data }) {
+export async function editSAGActivity({ id, data }) {
 	return await axios.put(`${sagBaseUrl}/activity/${id}`, data);
 }
 
-export async function deleteSAGActivity (id) {
+export async function deleteSAGActivity(id) {
 	return await axios.delete(`${sagBaseUrl}/activity/${id}`);
 }
 
-export async function getSAGEnquiries () {
+export async function getSAGEnquiries() {
 	return await axios.get(`${sagBaseUrl}/enquiry`);
 }
 
-export async function createSAGEnquiry (data) {
+export async function createSAGEnquiry(data) {
 	return await axios.post(`${sagBaseUrl}/enquiry`, data);
 }
 
-export async function getSAGEnquiry (id) {
+export async function getSAGEnquiry(id) {
 	return await axios.get(`${sagBaseUrl}/enquiry/${id}`);
 }
 
-export async function editSAGEnquiry ({ id, data }) {
+export async function editSAGEnquiry({ id, data }) {
 	return await axios.put(`${sagBaseUrl}/enquiry/${id}`, data);
 }
 
-export async function deleteSAGEnquiry (id) {
+export async function deleteSAGEnquiry(id) {
 	return await axios.delete(`${sagBaseUrl}/enquiry/${id}`);
 }
 
-export async function getSAGEvents () {
+export async function getSAGEvents() {
 	return await axios.get(`${sagBaseUrl}/event`);
 }
 
-export async function createSAGEvent (data) {
+export async function createSAGEvent(data) {
 	return await axios.post(`${sagBaseUrl}/event`, data);
 }
 
-export async function getSAGEvent (id) {
+export async function getSAGEvent(id) {
 	return await axios.get(`${sagBaseUrl}/event/${id}`);
 }
 
-export async function editSAGEvent ({ id, data }) {
+export async function editSAGEvent({ id, data }) {
 	return await axios.put(`${sagBaseUrl}/event/${id}`, data);
 }
 
-export async function deleteSAGEvent (id) {
+export async function deleteSAGEvent(id) {
 	return await axios.delete(`${sagBaseUrl}/event/${id}`);
 }
 
-export async function getSAGImpactStories () {
+export async function getSAGImpactStories() {
 	return await axios.get(`${sagBaseUrl}/impactStory`);
 }
 
-export async function createSAGImpactStory (data) {
+export async function createSAGImpactStory(data) {
 	return await axios.post(`${sagBaseUrl}/impactStory`, data);
 }
 
-export async function editSAGImpactStory ({ id, data }) {
+export async function editSAGImpactStory({ id, data }) {
 	return await axios.put(`${sagBaseUrl}/impactStory/${id}`, data);
 }
 
-export async function getSAGTestimonials () {
+export async function getSAGTestimonials() {
 	return await axios.get(`${sagBaseUrl}/testimonials`);
 }
 
-export async function createSAGTestimonial (data) {
+export async function createSAGTestimonial(data) {
 	return await axios.post(`${sagBaseUrl}/testimonials`, data);
 }
