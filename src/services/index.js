@@ -203,8 +203,15 @@ export async function getMembers () {
 	return totalMembers;
 }
 
-export async function getActivityLog () {
-	const allActivities = await api.get(`${baseUrl}/logs`);
+export async function getActivityLog (page, limit, startDate = null, endDate = null) {
+	let url = `${baseUrl}/logs?page=${page}&limit=${limit}`;
+	if (startDate) {
+		url += `&startDate=${startDate.toISOString()}`;
+	}
+	if (endDate) {
+		url += `&endDate=${endDate.toISOString()}`;
+	}
+	const allActivities = await api.get(url);
 	return allActivities;
 }
 
