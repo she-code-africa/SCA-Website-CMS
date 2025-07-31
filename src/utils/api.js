@@ -24,6 +24,11 @@ api.interceptors.request.use(
 api.interceptors.response.use(
 	function (response) {
 		// hide loader
+		// activity logs response is different from other responses
+		// to effectively paginate through the data, we need to return the full payload
+		if (response.config.url && response.config.url.includes('/logs')) {
+			return response.data; // Return full payload data for activity logs
+		}
 		return response.data?.data ?? response.data;
 	},
 	function (err) {

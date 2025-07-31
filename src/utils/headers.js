@@ -432,6 +432,10 @@ export const activityloglist = [
 		label: "User",
 	},
 	{
+		value: "role",
+		label: "Role",
+	},
+	{
 		value: "action",
 		label: "Action",
 	},
