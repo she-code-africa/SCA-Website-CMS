@@ -49,6 +49,7 @@ import SAGImpactStories from "views/admin/Stem-a-girl/impact-stories";
 import SAGTestimonials from "views/admin/Stem-a-girl/testimonials";
 import ChapterEvents from "views/admin/Chapters/events";
 import ChapterLeads from "views/admin/Chapters/leads";
+import { Redirect } from "react-router-dom/cjs/react-router-dom";
 
 export default function Admin() {
 	return (
@@ -157,8 +158,9 @@ export default function Admin() {
 							component={SAGTestimonials}
 						/>
 
-						{/* <Redirect from = "/admin"
-        to = "/admin/dashboard" /> */}
+						<Redirect from = "/admin"
+        to = "/admin/dashboard" />
+
 					</Switch>
 				</div>
 				<FooterAdmin />
