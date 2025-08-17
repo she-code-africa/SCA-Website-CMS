@@ -63,6 +63,13 @@ const ActivityList = () => {
                     break;
                 }
             }
+
+            if (allData.length === 0) {
+                toast.success("No data found for the selected date range");
+                setIsExporting(false);
+                setShowDownloadModal(false);
+                return;
+            }
             
             const filename = `activity_log_${moment(startDate).format('DD-MM-YYYY')}_to_${moment(endDate).format('DD-MM-YYYY')}.csv`;
             exportDataToCSV(allData, filename);
@@ -106,7 +113,7 @@ const ActivityList = () => {
         const csvString = csvRows.join("\n");
         const blob = new Blob([csvString], { type: "text/csv" });
         const url = window.URL.createObjectURL(blob);
-        // create download linkk for data blob
+        // create download link for data blob
         const a = document.createElement("a");
         a.setAttribute("hidden", "");
         a.setAttribute("href", url);
@@ -128,6 +135,15 @@ const ActivityList = () => {
         
         if (startDate > endDate) {
             toast.error("Start date cannot be after end date");
+            setIsExporting(false);
+            return;
+        }
+
+        // chekc if supplied dates are fututre dates
+        const today = new Date();
+        today.setHours(23, 59, 59, 999)
+        if (startDate > today || endDate > today ) {
+            toast.error("Cannot export data for future dates");
             setIsExporting(false);
             return;
         }
