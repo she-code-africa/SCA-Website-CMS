@@ -136,14 +136,14 @@ const InitiativeModal = ({
 							<div className="relative w-full mb-3 flex items-center">
 								<label
 									className="block uppercase text-slate-600 text-xs font-bold basis-3/12"
-									htmlFor="name">
+									htmlFor="title">
 									Name
 								</label>
 								<input
 									required
 									type="text"
 									className={`${inputClass}`}
-									name="name"
+									name="title"
 									value={title}
 									onChange={handleInputChange}
 									disabled={!edit && !newItem}
