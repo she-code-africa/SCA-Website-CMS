@@ -80,7 +80,7 @@ const Initiatives = () => {
 				</TableHeaderRow>
 				<TableBody loading={isLoading}>
 					{initiatives?.map(
-						({ _id, name, description, link, createdAt }, index) => {
+						({ _id, title, description, link, createdAt }, index) => {
 							return (
 								<TableDataRow
 									onClick={() => {
@@ -90,7 +90,7 @@ const Initiatives = () => {
 									}}
 									key={index}
 									className="grid grid-cols-4 px-4 py-3 bg-white">
-									<TableData>{name}</TableData>
+									<TableData>{title}</TableData>
 									<TableData>{description}</TableData>
 									<TableData>{link}</TableData>
 									<TableData>
