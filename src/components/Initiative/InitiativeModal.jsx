@@ -19,13 +19,13 @@ const InitiativeModal = ({
 }) => {
 	const queryClient = useQueryClient();
 	const intial = {
-		name: "",
+		title: "",
 		link: "",
 		description: "",
 		isAvailable: false,
 	};
 	const [initiative, setInitiative] = useState(intial);
-	const { name, description, link, isAvailable } = initiative;
+	const { title, description, link, isAvailable } = initiative;
 	const [edit, setEdit] = useState(false);
 	const inputClass = `border-0 px-3 py-0 placeholder-slate-300 text-slate-600 bg-white rounded text-sm ${
 		edit || newItem ? "shadow focus:outline-none focus:ring !py-3" : ""
@@ -95,7 +95,7 @@ const InitiativeModal = ({
 		e.preventDefault();
 		console.log(initiative);
 		newItem
-			? addInitiative({ name, description, link, isAvailable })
+			? addInitiative({ title, description, link, isAvailable })
 			: await updateInitiativeDetails();
 	};
 	const header = () => {
@@ -144,7 +144,7 @@ const InitiativeModal = ({
 									type="text"
 									className={`${inputClass}`}
 									name="name"
-									value={name}
+									value={title}
 									onChange={handleInputChange}
 									disabled={!edit && !newItem}
 								/>
