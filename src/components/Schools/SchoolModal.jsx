@@ -66,11 +66,13 @@ const SchoolModal = ({
 		if (name === "" || description === "") {
 			toast.error("Please fill all fields");
 		} else {
-			newItem ? addSchool({ name, description }) : await updateSchoolDetails();
+			// newItem ? addSchool({ name, description }) : await updateSchoolDetails();
+
+			newItem && addSchool({ name, description });
 		}
 	};
 
-	const { mutateAsync: updateSchool, isLoading: updating } = useMutation(
+	const { mutate: updateSchool, isLoading: updating } = useMutation(
 		editSchool,
 		{
 			onSuccess: () => {
@@ -94,7 +96,9 @@ const SchoolModal = ({
 				updatedFields[key] = school[key];
 			}
 		}
-		await updateSchool({ id, data: updatedFields });
+
+		console.log(id, updatedFields);
+		updateSchool({ schoolId: id, data: updatedFields });
 	};
 
 	const header = () => {

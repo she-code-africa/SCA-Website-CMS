@@ -203,7 +203,12 @@ export async function getMembers() {
 	return totalMembers;
 }
 
-export async function getActivityLog (page, limit, startDate = null, endDate = null) {
+export async function getActivityLog(
+	page,
+	limit,
+	startDate = null,
+	endDate = null
+) {
 	let url = `${baseUrl}/logs?page=${page}&limit=${limit}`;
 	if (startDate) {
 		url += `&startDate=${startDate.toISOString()}`;
@@ -338,8 +343,8 @@ export async function createSchool(data) {
 	return await api.post(`${baseUrl}/schools`, data);
 }
 
-export async function editSchool({ id, data }) {
-	return await api.put(`${baseUrl}/schools/${id}`, data);
+export async function editSchool({ schoolId, data }) {
+	return await api.put(`${baseUrl}/schools/${schoolId}`, data);
 }
 
 export async function deleteSchool(id) {
