@@ -187,30 +187,18 @@ const TeamList = () => {
 							<TableHeader></TableHeader>
 						</TableHeaderRow>
 						<TableBody loading={isLoading}>
-							{team
-								?.slice(
-									(currentPage - 1) * itemsPerPage,
-									currentPage * itemsPerPage
-								)
-								.map(
-									(
-										{
-											_id,
-											image,
-											name,
-											isLeader,
-											state,
-											team,
-											updatedAt,
-											createdAt,
-										},
-										index
-									) => {
-										return (
+								{team
+									?.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+									.map(
+										(
+											{ _id, image, name, role, isLeader, state, team, teamCategory, updatedAt, createdAt },
+											index
+										) => {
+											return (
 											<TableDataRow
 												onClick={() => {
 													setSelectedId(_id);
-													setTeamId(team._id);
+													setTeamId(teamCategory?._id || team || "");
 													handleTeamModal();
 													setNewItem(false);
 												}}
@@ -229,7 +217,7 @@ const TeamList = () => {
 												<TableData className="ml-3">
 													{isLeader ? "Yes" : "No"}
 												</TableData>
-												<TableData>{team.name}</TableData>
+												<TableData>{teamCategory?.name || team || "—"}</TableData>
 												<TableData>{state}</TableData>
 												<TableData>
 													{moment(updatedAt).format("DD MMM, YYYY")}

@@ -30,14 +30,12 @@ const TeamModal = ({
 	const intial = {
 		name: "",
 		role: "",
-		team: "",
+		teamCategory: "",
 		image: "",
-		bio: "",
-		isLeader: false,
 	};
 	const [member, setMember] = useState(intial);
 	const queryClient = useQueryClient();
-	const { name, role, image, bio, team, state, isLeader } = member;
+	const { name, role, image, bio, teamCategory, state, isLeader } = member;
 	const [categories, setCategories] = useState([]);
 	const [edit, setEdit] = useState(false);
 	const [loading, setLoading] = useState(false);
@@ -99,16 +97,14 @@ const TeamModal = ({
 
 	const addMember = (e) => {
 		e.preventDefault();
-		if (name === "" || bio === "" || team === "" || image === "") {
-			toast.error("Please fill all fields");
+		if (name === "" || teamCategory === "" || role === "") {
+			toast.error("Please fill all required fields");
 		} else {
 			const formData = new FormData();
 			formData.append("name", name);
-			formData.append("bio", bio);
-			formData.append("team", team);
+			formData.append("teamCategory", teamCategory);
 			formData.append("role", role);
 			formData.append("image", image);
-			formData.append("isLeader", isLeader);
 			newItem ? createTeamMember(formData) : updateTeamMember();
 		}
 	};
@@ -178,7 +174,7 @@ const TeamModal = ({
 		const categoryId = event.target.value;
 		setMember((prevMember) => ({
 			...prevMember,
-			team: categoryId,
+			teamCategory: categoryId,
 		}));
 	};
 	const header = () => {
@@ -292,8 +288,8 @@ const TeamModal = ({
 								{edit || newItem ? (
 									<select
 										className={`${inputClass}`}
-										value={team._id ? team._id : team}
-										name="team"
+										value={teamCategory._id ? teamCategory._id : teamCategory}
+										name="teamCategory"
 										onChange={handleCategoryChange}>
 										<option value="">Select Team</option>
 										{categories.map((category, index) => (
@@ -307,7 +303,7 @@ const TeamModal = ({
 										))}
 									</select>
 								) : (
-									<span className={`${inputClass}`}>{team?.name}</span>
+									<span className={`${inputClass}`}>{teamCategory?.name}</span>
 								)}
 							</div>
 
