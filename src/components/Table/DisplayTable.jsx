@@ -2,6 +2,7 @@ import Loader from "components/Loader";
 import React, { useEffect, useRef, useState } from "react";
 import { HiEllipsisVertical } from "react-icons/hi2";
 import "react-placeholder/lib/reactPlaceholder.css";
+import { useLocation } from "react-router-dom";
 
 const DisplayTable = () => {
 	return <div>DisplayTable</div>;
@@ -40,9 +41,15 @@ export const TableBody = ({ loading, children }) => {
 	);
 };
 
-export const TableDataRow = ({ className, children, onClick }) => {
+export const TableDataRow = ({ className, children, onClick, ...props }) => {
+	const { pathname } = useLocation();
+
 	return (
-		<tr className={`${className} hover:cursor-pointer`} onClick={onClick}>
+		<tr
+			className={`${className} hover:cursor-pointer`}
+			onClick={onClick}
+			draggable={pathname.includes("team")}
+			{...props}>
 			{children}
 		</tr>
 	);

@@ -478,6 +478,10 @@ export async function publishProgram({ id, categoryId }) {
 	);
 }
 
+export async function updateTeamPositions(payload) {
+	return await api.patch(`${baseUrl}/teams/members/positions`, payload);
+}
+
 export async function archiveProgram({ id, categoryId }) {
 	return await api.patch(
 		`${baseUrl}/programs/categories/${categoryId}/member-programs/${id}/archive`
