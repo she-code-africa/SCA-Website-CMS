@@ -21,6 +21,7 @@ import Pagination from "components/Pagination";
 import SearchInput from "components/Inputs/SearchInput";
 import FilterDropdown from "components/Inputs/FilterDropdown"; // Updated import
 import { LuListFilter } from "react-icons/lu";
+import { updateTeamPositions } from "services";
 
 const TeamList = () => {
 	const [selectedId, setSelectedId] = useState();
@@ -44,35 +45,35 @@ const TeamList = () => {
 	// Configuration for team members filters
 	const teamFilterConfig = [
 		{
-			key: 'isLeader',
-			label: 'Team Lead',
-			type: 'select',
+			key: "isLeader",
+			label: "Team Lead",
+			type: "select",
 			options: [
-				{ value: 'true', label: 'Yes' },
-				{ value: 'false', label: 'No' }
-			]
+				{ value: "true", label: "Yes" },
+				{ value: "false", label: "No" },
+			],
 		},
 		{
-			key: 'state',
-			label: 'State',
-			type: 'select',
+			key: "state",
+			label: "State",
+			type: "select",
 			options: [
-				{ value: 'draft', label: 'Draft' },
-				{ value: 'archived', label: 'Archived' },
-				{ value: 'published', label: 'Published' }
-			]
+				{ value: "draft", label: "Draft" },
+				{ value: "archived", label: "Archived" },
+				{ value: "published", label: "Published" },
+			],
 		},
 		{
-			key: 'team',
-			label: 'Team',
-			type: 'select',
+			key: "team",
+			label: "Team",
+			type: "select",
 			options: [
-				{ value: 'Dev team', label: 'Dev team' },
-				{ value: 'Support Team', label: 'Support Team' },
-				{ value: 'Advisors', label: 'Advisors' },
-				{ value: 'Full Time', label: 'Full Time' }
-			]
-		}
+				{ value: "Dev team", label: "Dev team" },
+				{ value: "Support Team", label: "Support Team" },
+				{ value: "Advisors", label: "Advisors" },
+				{ value: "Full Time", label: "Full Time" },
+			],
+		},
 	];
 
 	const buildQueryParams = (filters) => {
@@ -84,21 +85,25 @@ const TeamList = () => {
 		return params.toString();
 	};
 
-	const { isLoading } = useQuery(["team", filters], async () => {
-		const query = buildQueryParams(filters);
-		const res = await fetch(
-			`https://sca-v3-backend-staging.herokuapp.com/api/teams/members?${query}`
-		);
-		const data = await res.json();
-		return data.data;
-	}, {
-		onSuccess: (data) => {
-			setTeam(data);
+	const { isLoading } = useQuery(
+		["team", filters],
+		async () => {
+			const query = buildQueryParams(filters);
+			const res = await fetch(
+				`https://sca-v3-backend-staging.herokuapp.com/api/teams/members?${query}`
+			);
+			const data = await res.json();
+			return data.data;
 		},
-		onError: (err) => {
-			toast.error("Could not fetch team members");
-		},
-	});
+		{
+			onSuccess: (data) => {
+				setTeam(data);
+			},
+			onError: (err) => {
+				toast.error("Could not fetch team members");
+			},
+		}
+	);
 
 	const handleModal = () => {
 		setIsDeleteModalOpen(!isDeleteModalOpen);
@@ -120,8 +125,46 @@ const TeamList = () => {
 		},
 	});
 
+	const { mutate: updateTeamPosition } = useMutation(updateTeamPositions, {
+		onSuccess: () => {
+			queryClient.invalidateQueries(["team"]);
+			console.log("SUCCESS");
+			toast.success("Team member position updated successfully!");
+		},
+		onError: () => {
+			console.log("SUCCESS NOT");
+			toast.error("Could not update team member position");
+		},
+	});
+
 	const handleDelete = () => {
 		deleteMember({ catId: teamId, id: selectedId });
+	};
+
+	// drag and drop implementation
+	const [draggedIndex, setDraggedIndex] = useState(null);
+
+	const handleDragStart = (index) => {
+		console.log(index);
+		setDraggedIndex(index);
+	};
+
+	const handleDragOver = (e) => {
+		e.preventDefault();
+	};
+
+	const handleDrop = async (index) => {
+		try {
+			if (draggedIndex === null) return;
+
+			const updatedTeam = [...team];
+			const [draggedItem] = updatedTeam.splice(draggedIndex, 1); // remove
+			updatedTeam.splice(index, 0, draggedItem); // insert
+			setTeam(updatedTeam);
+			setDraggedIndex(null);
+
+			await updateTeamPosition({ members: updatedTeam });
+		} catch (error) {}
 	};
 
 	return (
@@ -146,10 +189,10 @@ const TeamList = () => {
 							<button
 								onClick={() => setShowFilter((prev) => !prev)}
 								className="bg-pink-100 text-pink-500 px-2 py-1 rounded-md">
-									<LuListFilter className="text-pink-500 text-xl" />
+								<LuListFilter className="text-pink-500 text-xl" />
 							</button>
 
-							<FilterDropdown 
+							<FilterDropdown
 								showFilter={showFilter}
 								setShowFilter={setShowFilter}
 								filters={filters}
@@ -187,14 +230,28 @@ const TeamList = () => {
 							<TableHeader></TableHeader>
 						</TableHeaderRow>
 						<TableBody loading={isLoading}>
-								{team
-									?.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-									.map(
-										(
-											{ _id, image, name, role, isLeader, state, team, teamCategory, updatedAt, createdAt },
-											index
-										) => {
-											return (
+							{team
+								?.slice(
+									(currentPage - 1) * itemsPerPage,
+									currentPage * itemsPerPage
+								)
+								.map(
+									(
+										{
+											_id,
+											image,
+											name,
+											role,
+											isLeader,
+											state,
+											team,
+											teamCategory,
+											updatedAt,
+											createdAt,
+										},
+										index
+									) => {
+										return (
 											<TableDataRow
 												onClick={() => {
 													setSelectedId(_id);
@@ -203,7 +260,10 @@ const TeamList = () => {
 													setNewItem(false);
 												}}
 												key={index}
-												className="grid grid-cols-7 px-4 py-3 bg-white group relative">
+												className="grid grid-cols-7 px-4 py-3 bg-white group relative"
+												onDragStart={() => handleDragStart(index)}
+												onDragOver={handleDragOver}
+												onDrop={() => handleDrop(index)}>
 												<TableData className="flex gap-2 items-center col-span-2">
 													{image && (
 														<img
@@ -217,7 +277,9 @@ const TeamList = () => {
 												<TableData className="ml-3">
 													{isLeader ? "Yes" : "No"}
 												</TableData>
-												<TableData>{teamCategory?.name || team || "—"}</TableData>
+												<TableData>
+													{teamCategory?.name || team || "—"}
+												</TableData>
 												<TableData>{state}</TableData>
 												<TableData>
 													{moment(updatedAt).format("DD MMM, YYYY")}
