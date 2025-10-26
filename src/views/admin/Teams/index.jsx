@@ -125,46 +125,8 @@ const TeamList = () => {
 		},
 	});
 
-	const { mutate: updateTeamPosition } = useMutation(updateTeamPositions, {
-		onSuccess: () => {
-			queryClient.invalidateQueries(["team"]);
-			console.log("SUCCESS");
-			toast.success("Team member position updated successfully!");
-		},
-		onError: () => {
-			console.log("SUCCESS NOT");
-			toast.error("Could not update team member position");
-		},
-	});
-
 	const handleDelete = () => {
 		deleteMember({ catId: teamId, id: selectedId });
-	};
-
-	// drag and drop implementation
-	const [draggedIndex, setDraggedIndex] = useState(null);
-
-	const handleDragStart = (index) => {
-		console.log(index);
-		setDraggedIndex(index);
-	};
-
-	const handleDragOver = (e) => {
-		e.preventDefault();
-	};
-
-	const handleDrop = async (index) => {
-		try {
-			if (draggedIndex === null) return;
-
-			const updatedTeam = [...team];
-			const [draggedItem] = updatedTeam.splice(draggedIndex, 1); // remove
-			updatedTeam.splice(index, 0, draggedItem); // insert
-			setTeam(updatedTeam);
-			setDraggedIndex(null);
-
-			await updateTeamPosition({ members: updatedTeam });
-		} catch (error) {}
 	};
 
 	return (
@@ -260,10 +222,7 @@ const TeamList = () => {
 													setNewItem(false);
 												}}
 												key={index}
-												className="grid grid-cols-7 px-4 py-3 bg-white group relative"
-												onDragStart={() => handleDragStart(index)}
-												onDragOver={handleDragOver}
-												onDrop={() => handleDrop(index)}>
+												className="grid grid-cols-7 px-4 py-3 bg-white group relative">
 												<TableData className="flex gap-2 items-center col-span-2">
 													{image && (
 														<img
