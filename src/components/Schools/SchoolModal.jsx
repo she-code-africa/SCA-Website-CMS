@@ -66,9 +66,7 @@ const SchoolModal = ({
 		if (name === "" || description === "") {
 			toast.error("Please fill all fields");
 		} else {
-			// newItem ? addSchool({ name, description }) : await updateSchoolDetails();
-
-			newItem && addSchool({ name, description });
+			newItem ? addSchool({ name, description }) : await updateSchoolDetails();
 		}
 	};
 
