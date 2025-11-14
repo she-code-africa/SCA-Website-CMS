@@ -28,7 +28,7 @@ const Modal = ({
 			document.body.style.overflow = "auto";
 		};
 	}, [isOpen]);
-	console.log("modal height", customHeight);
+
 	return (
 		<div
 			className={`${
