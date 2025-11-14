@@ -491,3 +491,27 @@ export const chapterEventsHeaders = [
 		label: "Actions",
 	},
 ];
+
+export const mediaHeaders = [
+	{
+		value: "image",
+		label: "Cover Image",
+	},
+	{
+		value: "description",
+		label: "Description",
+	},
+	{
+		value: "title",
+		label: "Title",
+	},
+
+	{
+		value: "type",
+		label: "Type",
+	},
+	{
+		value: "actions",
+		label: "Actions",
+	},
+];

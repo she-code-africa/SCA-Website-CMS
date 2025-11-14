@@ -50,8 +50,6 @@ const EventModal = ({
 		setEvent(data);
 	});
 
-	console.log(data, isLoading);
-
 	const { mutate: addEvent, isLoading: creating } = useMutation(createEvent, {
 		onSuccess: () => {
 			toast.success("Event added successfully");
@@ -85,7 +83,6 @@ const EventModal = ({
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
-		console.log(!!eventDate);
 		if (
 			title === "" ||
 			description === "" ||
