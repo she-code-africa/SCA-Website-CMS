@@ -13,33 +13,53 @@ import { BarrLoader } from "components/Loader";
 import { FaPencilAlt, FaTrashAlt } from "react-icons/fa";
 import DeleteModal from "components/Modal/DeleteModal";
 import MediaModal from "components/Media/MediaModal";
+import { useMutation, useQuery, useQueryClient } from "react-query";
+import { getAllMedia } from "services/media";
+import { ToastContainer, toast } from "react-toastify";
+import { deleteMedia } from "services/media";
 
 const MediaPage = () => {
-	const [isLoading, setIsLoading] = useState(false);
-	const data = [
-		{
-			_id: "iii",
-			title: "A table",
-			coverImage: "",
-			description: "lorem ipsum",
-			type: "blog",
-		},
-		{
-			_id: "iii",
-			title: "A table",
-			coverImage: "",
-			description: "lorem ipsum",
-			type: "blog",
-		},
-	];
-
-	const [openModal, setOpenModal] = useState(true);
+	const [openModal, setOpenModal] = useState(false);
 	const [openDeleteModal, setOpenDeleteModal] = useState(false);
 	const [newItem, setNewItem] = useState();
 	const [selectedId, setSelectedId] = useState();
 
 	const handleDelete = () => {
 		setOpenDeleteModal(false);
+	};
+
+	const handleOpenDeleteModal = (id) => {
+		setSelectedId(id);
+		setOpenDeleteModal(true);
+	};
+
+	const queryClient = useQueryClient();
+
+	// get all media
+	const { isLoading: loading, data: mediaData } = useQuery(
+		"media",
+		getAllMedia,
+		{
+			onError: () => {
+				toast.error("Could not fetch media data.");
+			},
+		}
+	);
+
+	// delete media mutation
+	const { mutate, isLoading: deleting } = useMutation(deleteMedia, {
+		onSuccess: () => {
+			toast.success("Media deleted successfully.");
+			queryClient.invalidateQueries(["media"]);
+		},
+		onError: () => {
+			toast.error("Could not delete media.");
+		},
+	});
+
+	const handleDeleteMedia = () => {
+		mutate(selectedId);
+		handleDelete();
 	};
 
 	return (
@@ -58,7 +78,7 @@ const MediaPage = () => {
 					</button>
 				</div>
 
-				{isLoading ? (
+				{loading || deleting ? (
 					<Loader />
 				) : (
 					<>
@@ -69,31 +89,33 @@ const MediaPage = () => {
 								})}
 							</TableHeaderRow>
 
-							<TableBody loading={isLoading}>
+							<TableBody loading={loading}>
 								<>
-									{isLoading ? (
+									{loading ? (
 										<div className="min-h-[200px] flex items-center">
 											<BarrLoader />
 										</div>
 									) : (
 										<>
-											{data.map(
+											{mediaData.map(
 												(
 													{ coverImage, description, type, title, _id },
 													idx
 												) => (
 													<TableDataRow
 														key={idx}
-														onClick={() => {
-															// setSelectedId(_id);
-															// handleEventModal();
-															// setNewItem(false);
-														}}
-														className="grid grid-cols-[150px_1fr_200px_100px_80px_80px] px-4 py-3 bg-white text-base">
+														className="grid grid-cols-[150px_1fr_200px_100px_80px_80px] px-4 py-3 bg-white text-base items-center">
 														<TableData>
 															<figure className="m-0 w-12 h-12 rounded-full border-2 overflow-hidden ">
 																<img
-																	src={coverImage}
+																	// src={coverImage}
+																	src={
+																		coverImage
+																			? typeof coverImage === "string"
+																				? coverImage
+																				: URL.createObjectURL(coverImage)
+																			: ""
+																	}
 																	alt={title}
 																	className="w-full h-full object-cover"
 																/>
@@ -105,19 +127,18 @@ const MediaPage = () => {
 														<TableData>{title}</TableData>
 														<TableData>{type}</TableData>
 														<TableData>
-															<span
-																className="flex items-center gap-3"
-																onClick={() => {
-																	setNewItem(false);
-																	setSelectedId(_id);
-																	setOpenModal(true);
-																}}>
-																<button>
+															<span className="flex items-center gap-3">
+																<button
+																	onClick={() => {
+																		setNewItem(false);
+																		setSelectedId(_id);
+																		setOpenModal(true);
+																	}}>
 																	<FaPencilAlt />
 																</button>
 																<button
 																	className="text-red-500"
-																	onClick={() => setOpenDeleteModal(true)}>
+																	onClick={() => handleOpenDeleteModal(_id)}>
 																	<FaTrashAlt />
 																</button>
 															</span>
@@ -143,9 +164,9 @@ const MediaPage = () => {
 
 			{openDeleteModal && (
 				<DeleteModal
-					handleDelete={handleDelete}
+					handleDelete={handleDeleteMedia}
 					isOpen={openDeleteModal}
-					handleModal={() => setOpenDeleteModal(false)}
+					handleModal={handleDelete}
 				/>
 			)}
 
@@ -157,6 +178,7 @@ const MediaPage = () => {
 					id={selectedId}
 				/>
 			)}
+			<ToastContainer />
 		</>
 	);
 };

@@ -74,7 +74,7 @@ const Events = () => {
 		},
 	});
 
-	const { mutate, isLoading: deleting } = useMutation(deleteSAGEvent, {
+	const { mutate } = useMutation(deleteSAGEvent, {
 		onSuccess: () => {
 			toast.success("Event Deleted Successfully");
 			queryClient.invalidateQueries(["stem-a-girl-events"]);

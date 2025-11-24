@@ -5,6 +5,11 @@ import { GrView } from "react-icons/gr";
 import { MdOutlineModeEditOutline } from "react-icons/md";
 import Loader from "components/Loader";
 import SubContentComponent from "./SubContentComponent";
+import { useQuery, useMutation, useQueryClient } from "react-query";
+import { createMedia } from "services/media";
+import { ToastContainer, toast } from "react-toastify";
+import { getAMedia } from "services/media";
+import { editMedia } from "services/media";
 
 const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 	const [edit, setEdit] = useState(true);
@@ -35,30 +40,256 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 		);
 	};
 
-	const isLoading = false;
+	// const inputClass = `border-0 px-3 py-0 placeholder-slate-300 text-slate-600 bg-white rounded text-sm ${
+	// 	edit || newItem ? "shadow focus:outline-none focus:ring !py-3" : ""
+	// } w-full ease-linear transition-all duration-150 basis-9/12`;
+
+	// // --------------------------
+	// // MAIN FORM STATE
+	// // --------------------------
+
+	// const [mediaData, setMediaData] = useState({
+	// 	title: "",
+	// 	description: "",
+	// 	type: "",
+	// 	author: "",
+	// 	tag: "",
+	// 	link: "",
+	// 	date: "",
+	// 	coverImage: null,
+	// 	images: [],
+	// 	imageUrls: [],
+	// 	subcontent: [],
+	// });
+
+	// const { data, isLoading } = useQuery(["media", id], () => getAMedia(id), {
+	// 	enabled: !newItem && !!id,
+	// 	onSuccess: (data) => {
+	// 		setMediaData({
+	// 			title: data.title,
+	// 			description: data.description,
+	// 			type: data.type,
+	// 			author: data.author,
+	// 			tag: data.tag,
+	// 			link: data.link || data.videoLink || data.blogLink || "",
+	// 			date: data.dateCreated ? data.dateCreated.split("T")[0] : "",
+	// 			coverImage: data.coverImage,
+	// 			images: data.images || [],
+	// 			subcontent: data.subcontent || [],
+	// 		});
+	// 	},
+	// });
+
+	// // --------------------------
+	// // HANDLE MAIN FORM INPUT
+	// // --------------------------
+	// const handleInputChange = (e) => {
+	// 	const { name, value } = e.target;
+	// 	setMediaData((prev) => ({ ...prev, [name]: value }));
+	// };
+
+	// // --------------------------
+	// // HANDLE COVER IMAGE (SINGLE)
+	// // --------------------------
+	// const handleCoverImageUpload = (e) => {
+	// 	const file = e.target.files[0];
+	// 	setMediaData((prev) => ({ ...prev, coverImage: file }));
+	// };
+
+	// // --------------------------
+	// // HANDLE MULTIPLE IMAGES
+	// // --------------------------
+	// const handleImagesUpload = (e) => {
+	// 	const files = [...e.target.files];
+	// 	setMediaData((prev) => ({ ...prev, images: files }));
+	// };
+
+	// // --------------------------
+	// // SUBCONTENT
+	// // --------------------------
+	// const [addSubContent, setAddSubContent] = useState(false);
+
+	// const addNewSubcontent = (item) => {
+	// 	setMediaData((prev) => ({
+	// 		...prev,
+	// 		subcontent: [...prev.subcontent, item],
+	// 	}));
+	// };
+	// const queryClient = useQueryClient();
+
+	// const { mutate: createNewMedia, isLoading: creating } = useMutation(
+	// 	createMedia,
+	// 	{
+	// 		onSuccess: () => {
+	// 			toast.success("Media created successfully");
+	// 			setMediaData({
+	// 				title: "",
+	// 				description: "",
+	// 				type: "",
+	// 				author: "",
+	// 				tag: "",
+	// 				link: "",
+	// 				date: "",
+	// 				coverImage: null,
+	// 				images: [],
+	// 				subcontent: [],
+	// 			});
+	// 			queryClient.invalidateQueries({ queryKey: ["media"] });
+	// 			handleModal();
+	// 		},
+	// 		onError: () => {
+	// 			toast.error("Error Adding Data");
+	// 			handleModal();
+	// 		},
+	// 	}
+	// );
+
+	// const { mutateAsync: updateMedia, isLoading: updating } = useMutation(
+	// 	editMedia,
+	// 	{
+	// 		onSuccess: () => {
+	// 			queryClient.invalidateQueries({ queryKey: ["media"] });
+	// 			queryClient.invalidateQueries({ queryKey: ["media"] });
+	// 			toast.success("Updated media successfully");
+	// 			handleModal();
+	// 		},
+	// 		onError: () => {
+	// 			toast.error("Error updating media");
+	// 			handleModal();
+	// 		},
+	// 	}
+	// );
+
+	// const updateMediaDetails = () => {
+	// 	const updatedFields = new FormData();
+
+	// 	for (const [key, value] of Object.entries(mediaData)) {
+	// 		const oldValue = data[key];
+
+	// 		// Cover image: only append if it's a new File
+	// 		if (key === "coverImage") {
+	// 			if (value instanceof File) {
+	// 				updatedFields.append("coverImage", value);
+	// 			}
+	// 			continue;
+	// 		}
+
+	// 		// Multiple images: only append new files
+	// 		if (key === "images") {
+	// 			const newFiles = value.filter((v) => v instanceof File);
+	// 			newFiles.forEach((file) => updatedFields.append("images", file));
+	// 			continue;
+	// 		}
+
+	// 		// Subcontent (must be JSON)
+	// 		if (key === "subcontent") {
+	// 			if (JSON.stringify(value) !== JSON.stringify(oldValue)) {
+	// 				updatedFields.append("subcontent", JSON.stringify(value));
+	// 			}
+	// 			continue;
+	// 		}
+
+	// 		// Normal fields
+	// 		if (value !== oldValue) {
+	// 			updatedFields.append(key, value);
+	// 		}
+	// 	}
+
+	// 	updateMedia({ id, data: updatedFields });
+	// };
+
+	// const handleSubmit = (e) => {
+	// 	e.preventDefault();
+
+	// 	if (!mediaData.title || !mediaData.description || !mediaData.type) {
+	// 		toast.error("Please fill all fields");
+	// 		return;
+	// 	}
+
+	// 	const {
+	// 		title,
+	// 		description,
+	// 		type,
+	// 		link,
+	// 		author,
+	// 		tag,
+	// 		date,
+	// 		images,
+	// 		coverImage,
+	// 		subcontent,
+	// 	} = mediaData;
+
+	// 	// Convert date safely
+	// 	let formattedDate = "";
+	// 	if (date) {
+	// 		formattedDate = new Date(date).toISOString().split("T")[0];
+	// 	}
+
+	// 	const formData = new FormData();
+	// 	formData.append("title", title);
+	// 	formData.append("description", description);
+	// 	formData.append("type", type);
+	// 	formData.append("link", link);
+	// 	formData.append("author", author);
+	// 	formData.append("tag", tag);
+	// 	formData.append("dateCreated", formattedDate);
+
+	// 	// Append single cover image
+	// 	if (coverImage) {
+	// 		formData.append("coverImage", coverImage);
+	// 	}
+
+	// 	// Append multiple images
+	// 	images.forEach((img) => {
+	// 		formData.append("images", img);
+	// 	});
+
+	// 	// Append subcontent
+	// 	// formData.append("subcontent", subcontent || []);
+
+	// 	newItem ? createNewMedia(formData) : updateMediaDetails();
+	// };
 
 	const inputClass = `border-0 px-3 py-0 placeholder-slate-300 text-slate-600 bg-white rounded text-sm ${
 		edit || newItem ? "shadow focus:outline-none focus:ring !py-3" : ""
 	} w-full ease-linear transition-all duration-150 basis-9/12`;
 
-	// --------------------------
+	// ----------------------------------------------------
 	// MAIN FORM STATE
-	// --------------------------
+	// ----------------------------------------------------
 	const [mediaData, setMediaData] = useState({
 		title: "",
 		description: "",
 		type: "",
 		author: "",
 		tag: "",
-		url: "",
+		link: "",
 		date: "",
 		coverImage: null,
-		images: [],
-		subcontents: [],
+		images: [], // mix of old urls + new Files
+		subcontent: [],
+	});
+
+	const { data, isLoading } = useQuery(["media", id], () => getAMedia(id), {
+		enabled: !newItem && !!id,
+		onSuccess: (data) => {
+			setMediaData({
+				title: data.title,
+				description: data.description,
+				type: data.type,
+				author: data.author,
+				tag: data.tag,
+				link: data.link || data.videoLink || data.blogLink || "",
+				date: data.dateCreated ? data.dateCreated.split("T")[0] : "",
+				coverImage: data.coverImage,
+				images: data.images || [],
+				subcontent: data.subcontent || [],
+			});
+		},
 	});
 
 	// --------------------------
-	// HANDLE MAIN FORM INPUT
+	// HANDLE MAIN INPUTS
 	// --------------------------
 	const handleInputChange = (e) => {
 		const { name, value } = e.target;
@@ -66,19 +297,23 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 	};
 
 	// --------------------------
-	// HANDLE COVER IMAGE (SINGLE)
+	// HANDLE COVER IMAGE
 	// --------------------------
 	const handleCoverImageUpload = (e) => {
 		const file = e.target.files[0];
 		setMediaData((prev) => ({ ...prev, coverImage: file }));
 	};
 
-	// --------------------------
-	// HANDLE MULTIPLE IMAGES
-	// --------------------------
+	// ----------------------------------------------------
+	// FIXED: HANDLE MULTIPLE IMAGES (RETAIN OLD + ADD NEW FILES)
+	// ----------------------------------------------------
 	const handleImagesUpload = (e) => {
-		const files = [...e.target.files];
-		setMediaData((prev) => ({ ...prev, images: files }));
+		const uploadedFiles = [...e.target.files];
+
+		setMediaData((prev) => ({
+			...prev,
+			images: [...prev.images, ...uploadedFiles], // keep old urls and add new Files
+		}));
 	};
 
 	// --------------------------
@@ -89,8 +324,159 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 	const addNewSubcontent = (item) => {
 		setMediaData((prev) => ({
 			...prev,
-			subcontents: [...prev.subcontents, item],
+			subcontent: [...prev.subcontent, item],
 		}));
+	};
+
+	const queryClient = useQueryClient();
+
+	// --------------------------
+	// CREATE MEDIA MUTATION
+	// --------------------------
+	const { mutate: createNewMedia, isLoading: creating } = useMutation(
+		createMedia,
+		{
+			onSuccess: () => {
+				toast.success("Media created successfully");
+				setMediaData({
+					title: "",
+					description: "",
+					type: "",
+					author: "",
+					tag: "",
+					link: "",
+					date: "",
+					coverImage: null,
+					images: [],
+					subcontent: [],
+				});
+				queryClient.invalidateQueries({ queryKey: ["media"] });
+				handleModal();
+			},
+			onError: () => {
+				toast.error("Error Adding Data");
+				handleModal();
+			},
+		}
+	);
+
+	// --------------------------
+	// UPDATE MEDIA MUTATION
+	// --------------------------
+	const { mutateAsync: updateMedia, isLoading: updating } = useMutation(
+		editMedia,
+		{
+			onSuccess: () => {
+				queryClient.invalidateQueries({ queryKey: ["media"] });
+				toast.success("Updated media successfully");
+				handleModal();
+			},
+			onError: () => {
+				toast.error("Error updating media");
+				handleModal();
+			},
+		}
+	);
+
+	// ---------------------------------------------------------------
+	// FIXED: UPDATE MEDIA — SEND BOTH OLD IMAGE URLs + NEW FILES
+	// ---------------------------------------------------------------
+	const updateMediaDetails = () => {
+		const updatedFields = new FormData();
+
+		for (const [key, value] of Object.entries(mediaData)) {
+			const oldValue = data[key];
+
+			// COVER IMAGE
+			if (key === "coverImage") {
+				if (value instanceof File) {
+					updatedFields.append("coverImage", value);
+				}
+				continue;
+			}
+
+			// IMAGES: separate old URLs from new Files
+			if (key === "images") {
+				const newFiles = [];
+				const existingUrls = [];
+
+				value.forEach((item) => {
+					if (item instanceof File) newFiles.push(item);
+					else existingUrls.push(item);
+				});
+
+				// append new files
+				newFiles.forEach((file) => updatedFields.append("images", file));
+
+				// append existing URLs for backend to keep them
+				updatedFields.append("existingImages", JSON.stringify(existingUrls));
+				continue;
+			}
+
+			// SUBCONTENT
+			if (key === "subcontent") {
+				if (JSON.stringify(value) !== JSON.stringify(oldValue)) {
+					updatedFields.append("subcontent", JSON.stringify(value));
+				}
+				continue;
+			}
+
+			// BASIC FIELDS
+			if (value !== oldValue) {
+				updatedFields.append(key, value);
+			}
+		}
+
+		updateMedia({ id, data: updatedFields });
+	};
+
+	// --------------------------
+	// HANDLE FORM SUBMIT
+	// --------------------------
+	const handleSubmit = (e) => {
+		e.preventDefault();
+
+		if (!mediaData.title || !mediaData.description || !mediaData.type) {
+			toast.error("Please fill all fields");
+			return;
+		}
+
+		const {
+			title,
+			description,
+			type,
+			link,
+			author,
+			tag,
+			date,
+			images,
+			coverImage,
+		} = mediaData;
+
+		let formattedDate = "";
+		if (date) {
+			formattedDate = new Date(date).toISOString().split("T")[0];
+		}
+
+		const formData = new FormData();
+
+		formData.append("title", title);
+		formData.append("description", description);
+		formData.append("type", type);
+		formData.append("link", link);
+		formData.append("author", author);
+		formData.append("tag", tag);
+		formData.append("dateCreated", formattedDate);
+
+		if (coverImage) {
+			formData.append("coverImage", coverImage);
+		}
+
+		images.forEach((img) => {
+			if (img instanceof File) formData.append("images", img);
+		});
+
+		newItem ? createNewMedia(formData) : updateMediaDetails();
 	};
 
 	return (
@@ -106,7 +492,7 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 					{isLoading && !newItem ? (
 						<Loader />
 					) : (
-						<form className="w-full px-3">
+						<form className="w-full px-3" onSubmit={handleSubmit}>
 							<section
 								className="w-full flex items-center"
 								style={{ gap: "40px" }}>
@@ -173,14 +559,14 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 
 								<div className="w-full mt-3">
 									<label className="text-base font-medium text-slate-600">
-										Label
+										Tag
 									</label>
 									<input
 										required
 										type="text"
 										className={`${inputClass} mt-3`}
 										name="tag" // FIXED
-										placeholder="Enter media label"
+										placeholder="Enter media tag"
 										value={mediaData.tag}
 										onChange={handleInputChange}
 										disabled={!edit && !newItem}
@@ -214,9 +600,9 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 										required
 										type="text"
 										className={`${inputClass} mt-3`}
-										name="url"
-										placeholder="Enter a valid url"
-										value={mediaData.url}
+										name="link"
+										placeholder="Enter a valid link"
+										value={mediaData.link}
 										onChange={handleInputChange}
 										disabled={!edit && !newItem}
 									/>
@@ -247,27 +633,28 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 
 							{/* MULTIPLE IMAGES */}
 							{mediaData.type.toLowerCase() === "image" && (
-								<div className="w-full mt-5 flex items-center gap-3">
-									<label className="text-base font-medium text-slate-600">
-										Upload images
-									</label>
-									<input type="file" multiple onChange={handleImagesUpload} />
-								</div>
+								<>
+									<div className="w-full mt-5 flex items-center gap-3">
+										<label className="text-base font-medium text-slate-600">
+											Upload images
+										</label>
+										<input type="file" multiple onChange={handleImagesUpload} />
+									</div>
+									{/* SUB CONTENT CHECKBOX */}
+									<div className="w-full mt-5 flex items-center gap-3">
+										<input
+											type="checkbox"
+											onChange={(e) => setAddSubContent(e.target.checked)}
+										/>
+										<label className="text-sm text-slate-600">
+											Add Sub-content
+										</label>
+									</div>
+								</>
 							)}
 
-							{/* SUB CONTENT CHECKBOX */}
-							<div className="w-full mt-5 flex items-center gap-3">
-								<input
-									type="checkbox"
-									onChange={(e) => setAddSubContent(e.target.checked)}
-								/>
-								<label className="text-sm text-slate-600">
-									Add Sub-content
-								</label>
-							</div>
-
 							{/* SUB CONTENT COMPONENT */}
-							{addSubContent && (
+							{mediaData.type.toLowerCase() === "image" && addSubContent && (
 								<SubContentComponent
 									edit={edit}
 									newItem={newItem}
@@ -277,14 +664,14 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 							)}
 
 							{/* RENDER SUBCONTENTS */}
-							{mediaData.subcontents.length > 0 && (
+							{mediaData.subcontent.length > 0 && (
 								<div className="w-full mt-6 border p-4 rounded-md bg-slate-50">
 									<h2 className="text-slate-700 font-semibold mb-3">
 										Sub-contents
 									</h2>
 
 									<div className="flex flex-col gap-3">
-										{mediaData.subcontents.map((item, idx) => (
+										{mediaData.subcontent.map((item, idx) => (
 											<div
 												key={idx}
 												className="p-3 rounded-md border bg-white text-sm">
@@ -310,6 +697,8 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 					)}
 				</div>
 			</Modal>
+
+			<ToastContainer />
 		</>
 	);
 };

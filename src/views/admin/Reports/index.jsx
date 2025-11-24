@@ -14,7 +14,7 @@ import { getReports } from "services";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ReportModal from "components/Reports/ReportModal";
-import { deleteReport, editReport } from "services";
+import { deleteReport } from "services";
 import DeleteModal from "components/Modal/DeleteModal";
 import SearchInput from "components/Inputs/SearchInput";
 import FilterDropdown from "components/Inputs/FilterDropdown";
@@ -31,7 +31,7 @@ const Reports = () => {
 	const [filters, setFilters] = useState({
 		search: "",
 		year: "",
-		sortBy: ""
+		sortBy: "",
 	});
 
 	const handleReportModal = () => {
@@ -70,8 +70,13 @@ const Reports = () => {
 	// Generate unique years from reports data for filter options
 	const yearOptions = useMemo(() => {
 		if (!reports) return [];
-		const years = [...new Set(reports.map(report => report.year))].sort((a, b) => b - a);
-		return years.map(year => ({ value: year.toString(), label: year.toString() }));
+		const years = [...new Set(reports.map((report) => report.year))].sort(
+			(a, b) => b - a
+		);
+		return years.map((year) => ({
+			value: year.toString(),
+			label: year.toString(),
+		}));
 	}, [reports]);
 
 	// Filter configuration for the FilterDropdown component
@@ -80,7 +85,7 @@ const Reports = () => {
 			key: "year",
 			label: "Year",
 			type: "select",
-			options: yearOptions
+			options: yearOptions,
 		},
 		{
 			key: "sortBy",
@@ -89,29 +94,32 @@ const Reports = () => {
 			options: [
 				{ value: "year", label: "Year" },
 				{ value: "createdAt", label: "Date Created" },
-				{ value: "updatedAt", label: "Date Updated" }
-			]
-		}
+				{ value: "updatedAt", label: "Date Updated" },
+			],
+		},
 	];
 
 	// Filtered and sorted reports
 	const filteredReports = useMemo(() => {
 		if (!reports) return [];
-		
+
 		let filtered = [...reports];
 
 		// Apply search filter
 		if (filters.search) {
 			const searchTerm = filters.search.toLowerCase();
-			filtered = filtered.filter(report =>
-				report.year?.toString().includes(searchTerm) ||
-				report.link?.toLowerCase().includes(searchTerm)
+			filtered = filtered.filter(
+				(report) =>
+					report.year?.toString().includes(searchTerm) ||
+					report.link?.toLowerCase().includes(searchTerm)
 			);
 		}
 
 		// Apply year filter
 		if (filters.year) {
-			filtered = filtered.filter(report => report.year?.toString() === filters.year);
+			filtered = filtered.filter(
+				(report) => report.year?.toString() === filters.year
+			);
 		}
 
 		// Apply sorting
@@ -119,15 +127,15 @@ const Reports = () => {
 			filtered.sort((a, b) => {
 				const aValue = a[filters.sortBy];
 				const bValue = b[filters.sortBy];
-				
+
 				if (filters.sortBy === "year") {
 					return bValue - aValue; // Newest year first
 				}
-				
+
 				if (filters.sortBy === "createdAt" || filters.sortBy === "updatedAt") {
 					return new Date(bValue) - new Date(aValue); // Newest first
 				}
-				
+
 				return 0;
 			});
 		} else {
@@ -139,7 +147,7 @@ const Reports = () => {
 	}, [reports, filters]);
 
 	const handleSearchChange = (e) => {
-		setFilters(prev => ({ ...prev, search: e.target.value }));
+		setFilters((prev) => ({ ...prev, search: e.target.value }));
 	};
 
 	const toggleFilter = () => {
@@ -156,7 +164,7 @@ const Reports = () => {
 		<div className="w-full z-40 bg-white rounded-md shadow-lg">
 			<div className="flex items-center justify-between px-4 pt-6 pb-2">
 				<h5 className="font-medium text-xl text-slate-700">Annual Reports</h5>
-				
+
 				<div className="flex items-center gap-3">
 					{/* Search and Filter Controls */}
 					<SearchInput
@@ -164,15 +172,16 @@ const Reports = () => {
 						value={filters.search}
 						onChange={handleSearchChange}
 					/>
-					
+
 					<div className="relative">
 						<button
 							onClick={toggleFilter}
-							className={`p-2 rounded-md border ${showFilter ? 'bg-pink-500 text-white' : 'bg-white text-pink-500'} border-pink-500 hover:bg-pink-50 transition-colors`}
-						>
+							className={`p-2 rounded-md border ${
+								showFilter ? "bg-pink-500 text-white" : "bg-white text-pink-500"
+							} border-pink-500 hover:bg-pink-50 transition-colors`}>
 							<LuListFilter size={18} />
 						</button>
-						
+
 						<FilterDropdown
 							showFilter={showFilter}
 							setShowFilter={setShowFilter}
@@ -213,42 +222,45 @@ const Reports = () => {
 				</TableHeaderRow>
 				<TableBody loading={isLoading}>
 					{filteredReports.length > 0 ? (
-						filteredReports.map(({ _id, link, year, createdAt, updatedAt }, index) => {
-							return (
-								<TableDataRow
-									onClick={() => {
-										setSelectedId(_id);
-										handleReportModal();
-										setNewItem(false);
-									}}
-									key={index}
-									className="grid grid-cols-4 px-4 py-3 bg-white hover:bg-gray-50 cursor-pointer">
-									<TableData>
-										<span className="flex items-center gap-2 font-medium text-pink-600">
-											{year}
-										</span>
-									</TableData>
-									<TableData>
-										<span 
-											className="text-blue-600 hover:text-blue-800 underline truncate block max-w-xs" 
-											title={link}
-										>
-											{link}
-										</span>
-									</TableData>
-									<TableData>
-										{moment(updatedAt).format("DD MMM, YYYY")}
-									</TableData>
-									<TableData>
-										{moment(createdAt).format("DD MMM, YYYY")}
-									</TableData>
-								</TableDataRow>
-							);
-						})
+						filteredReports.map(
+							({ _id, link, year, createdAt, updatedAt }, index) => {
+								return (
+									<TableDataRow
+										onClick={() => {
+											setSelectedId(_id);
+											handleReportModal();
+											setNewItem(false);
+										}}
+										key={index}
+										className="grid grid-cols-4 px-4 py-3 bg-white hover:bg-gray-50 cursor-pointer">
+										<TableData>
+											<span className="flex items-center gap-2 font-medium text-pink-600">
+												{year}
+											</span>
+										</TableData>
+										<TableData>
+											<span
+												className="text-blue-600 hover:text-blue-800 underline truncate block max-w-xs"
+												title={link}>
+												{link}
+											</span>
+										</TableData>
+										<TableData>
+											{moment(updatedAt).format("DD MMM, YYYY")}
+										</TableData>
+										<TableData>
+											{moment(createdAt).format("DD MMM, YYYY")}
+										</TableData>
+									</TableDataRow>
+								);
+							}
+						)
 					) : (
 						<TableDataRow className="grid grid-cols-4 px-4 py-8 bg-white">
 							<TableData className="col-span-4 text-center text-gray-500">
-								{isLoading ? "Loading..." : "No reports found matching your criteria"}
+								{isLoading
+									? "Loading..."
+									: "No reports found matching your criteria"}
 							</TableData>
 						</TableDataRow>
 					)}

@@ -48,7 +48,17 @@ const EventModal = ({
 	useEffect(() => {
 		if (!data) return;
 		setEvent(data);
-	});
+	}, [data]);
+
+	useEffect(() => {
+		if (!data) return;
+
+		setEvent((prev) => ({
+			...data,
+			eventDate: data.eventDate ? new Date(data.eventDate) : new Date(),
+		}));
+	}, [data]);
+
 
 	const { mutate: addEvent, isLoading: creating } = useMutation(createEvent, {
 		onSuccess: () => {
