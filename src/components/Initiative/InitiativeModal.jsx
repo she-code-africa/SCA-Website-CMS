@@ -152,7 +152,7 @@ const InitiativeModal = ({
 		[setInitiative]
 	);
 
-	// Handle description change from Quill editor
+	// Handle description change from Quill editorr
 	const handleDescriptionChange = (content) => {
 		setInitiative((prev) => ({
 			...prev,
