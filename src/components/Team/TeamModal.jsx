@@ -31,11 +31,13 @@ const TeamModal = ({
 		name: "",
 		role: "",
 		teamCategory: "",
-		image: "", 
+		image: "",
+		position: "",
 	};
 	const [member, setMember] = useState(intial);
 	const queryClient = useQueryClient();
-	const { name, role, image, bio, teamCategory, state, isLeader } = member;
+	const { name, role, image, bio, teamCategory, state, isLeader, position } =
+		member;
 	const [categories, setCategories] = useState([]);
 	const [edit, setEdit] = useState(false);
 	const [loading, setLoading] = useState(false);
@@ -105,6 +107,7 @@ const TeamModal = ({
 			formData.append("teamCategory", teamCategory);
 			formData.append("role", role);
 			formData.append("image", image);
+			formData.append("position", Number(position));
 			newItem ? createTeamMember(formData) : updateTeamMember();
 		}
 	};
@@ -319,6 +322,22 @@ const TeamModal = ({
 									className={`${inputClass}`}
 									name="role"
 									value={role}
+									onChange={handleInputChange}
+									disabled={!edit && !newItem}
+								/>
+							</div>
+							<div className="relative w-full mb-3 flex items-center">
+								<label
+									className="block text-slate-600 text-base font-semibold basis-2/12"
+									htmlFor="role">
+									Position *
+								</label>
+								<input
+									required
+									type="number"
+									className={`${inputClass}`}
+									name="position"
+									value={position}
 									onChange={handleInputChange}
 									disabled={!edit && !newItem}
 								/>

@@ -48,9 +48,17 @@ const EventModal = ({
 	useEffect(() => {
 		if (!data) return;
 		setEvent(data);
-	});
+	}, [data]);
 
-	console.log(data, isLoading);
+	useEffect(() => {
+		if (!data) return;
+
+		setEvent((prev) => ({
+			...data,
+			eventDate: data.eventDate ? new Date(data.eventDate) : new Date(),
+		}));
+	}, [data]);
+
 
 	const { mutate: addEvent, isLoading: creating } = useMutation(createEvent, {
 		onSuccess: () => {
@@ -85,7 +93,6 @@ const EventModal = ({
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
-		console.log(!!eventDate);
 		if (
 			title === "" ||
 			description === "" ||

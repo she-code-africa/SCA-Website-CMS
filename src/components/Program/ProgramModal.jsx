@@ -50,11 +50,11 @@ const ProgramModal = ({
 	const {
 		name,
 		cohort,
-		author,
+		// author,
 		category,
 		title,
 		banner,
-		images,
+		// images,
 		endDate,
 		startDate,
 		briefContent,

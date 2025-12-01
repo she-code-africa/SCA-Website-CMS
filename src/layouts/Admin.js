@@ -49,6 +49,8 @@ import SAGImpactStories from "views/admin/Stem-a-girl/impact-stories";
 import SAGTestimonials from "views/admin/Stem-a-girl/testimonials";
 import ChapterEvents from "views/admin/Chapters/events";
 import ChapterLeads from "views/admin/Chapters/leads";
+import { Redirect } from "react-router-dom/cjs/react-router-dom";
+import MediaPage from "views/admin/Media";
 
 export default function Admin() {
 	return (
@@ -142,6 +144,8 @@ export default function Admin() {
 							component={EditVolunteerCategory}
 						/>
 
+						<Route path={"/admin/media"} exact component={MediaPage} />
+
 						<Route path={paths.sagSchools} exact component={Schools} />
 						<Route path={paths.sagCourses} exact component={SAGCourses} />
 						<Route path={paths.sagActivities} exact component={SAGActivities} />
@@ -157,8 +161,7 @@ export default function Admin() {
 							component={SAGTestimonials}
 						/>
 
-						{/* <Redirect from = "/admin"
-        to = "/admin/dashboard" /> */}
+						<Redirect from="/admin" to="/admin/dashboard" />
 					</Switch>
 				</div>
 				<FooterAdmin />

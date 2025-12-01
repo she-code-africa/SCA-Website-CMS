@@ -48,8 +48,8 @@ const JobForm = ({ newJob }) => {
 		salaryRange,
 		location,
 		guestPostMetaData,
-		jobType,
-		jobCategory,
+		// jobType,
+		// jobCategory,
 		company,
 	} = job;
 	const [categories, setCategories] = useState([]);

@@ -22,13 +22,13 @@ const TestimonialModal = ({
 	id,
 }) => {
 	const intialTestimonialValue = {
-		firstName: "",
-		testimony: "",
+		name: "",
+		testimonial: "",
 		image: "",
-		lastName: "",
+		role: "",
 	};
 	const [testimonial, setTestimonial] = useState(intialTestimonialValue);
-	const { firstName, testimony, lastName, image, state } = testimonial;
+	const { name, testimonial: testimony, image, state, role } = testimonial;
 	const queryClient = useQueryClient();
 	const [edit, setEdit] = useState(false);
 	const [loading, setLoading] = useState(false);
@@ -62,6 +62,22 @@ const TestimonialModal = ({
 		}
 	);
 
+	const { mutateAsync: updateTestimonial, isLoading: updating } = useMutation(
+		editTestimonial,
+		{
+			onSuccess: () => {
+				queryClient.invalidateQueries({ queryKey: ["testimonials"] });
+				queryClient.invalidateQueries({ queryKey: ["testimonial"] });
+				toast.success("Updated Testimonial successfully");
+				handleModal();
+			},
+			onError: () => {
+				toast.error("Error updating Testimonial");
+				handleModal();
+			},
+		}
+	);
+
 	const handleOnChange = (e) => {
 		setTestimonial((prev) => ({
 			...prev,
@@ -80,50 +96,31 @@ const TestimonialModal = ({
 		[setTestimonial]
 	);
 
-	const handleSubmit = (e) => {
-		e.preventDefault();
-		if (
-			firstName === "" ||
-			testimony === "" ||
-			image === "" ||
-			lastName === ""
-		) {
-			toast.error("Please fill all fields");
-		} else {
-			const formData = new FormData();
-			formData.append("firstName", firstName);
-			formData.append("testimony", testimony);
-			formData.append("lastName", lastName);
-			formData.append("image", image);
-			newItem ? addTestimonial(formData) : updateTestimonialDetails();
-		}
-	};
-
-	const { mutateAsync: updateTestimonial, isLoading: updating } = useMutation(
-		editTestimonial,
-		{
-			onSuccess: () => {
-				queryClient.invalidateQueries({ queryKey: ["testimonials"] });
-				queryClient.invalidateQueries({ queryKey: ["testimonial"] });
-				toast.success("Updated Testimonial successfully");
-				handleModal();
-			},
-			onError: () => {
-				toast.error("Error updating Testimonial");
-				handleModal();
-			},
-		}
-	);
-
 	const updateTestimonialDetails = async () => {
-		// Compare the current testimonial state with the fetched data to identify updated fields
-		const updatedFields = new FormData();
+		const updatedFields = {};
+
 		for (const [key, value] of Object.entries(testimonial)) {
 			if (testimonial[key] !== data[key]) {
-				updatedFields.append(key, value);
+				updatedFields[key] = value;
 			}
 		}
+
 		await updateTestimonial({ id, data: updatedFields });
+	};
+
+	const handleSubmit = (e) => {
+		e.preventDefault();
+		if (name === "" || testimony === "") {
+			toast.error("Please fill all fields");
+		} else {
+			const payload = {
+				name,
+				testimonial: testimony,
+				role,
+			};
+
+			newItem ? addTestimonial(payload) : updateTestimonialDetails();
+		}
 	};
 
 	const { mutateAsync: updateState } = useMutation(updateTestimonialStatus, {
@@ -217,7 +214,7 @@ const TestimonialModal = ({
 														: URL.createObjectURL(image)
 													: ""
 											}
-											alt={firstName}
+											alt={name}
 										/>
 									) : (
 										<Placeholder name="image" />
@@ -235,14 +232,14 @@ const TestimonialModal = ({
 								<label
 									className="block uppercase text-slate-600 text-xs font-bold basis-3/12"
 									htmlFor="firstName">
-									First Name
+									Name
 								</label>
 								<input
 									required
 									type="text"
 									className={`${inputClass}`}
-									name="firstName"
-									value={firstName}
+									name="name"
+									value={name}
 									onChange={handleInputChange}
 									disabled={!edit && !newItem}
 								/>
@@ -252,14 +249,14 @@ const TestimonialModal = ({
 								<label
 									className="block uppercase text-slate-600 text-xs font-bold basis-3/12"
 									htmlFor="lastName">
-									Last Name
+									role
 								</label>
 								<input
 									required
 									type="text"
 									className={`${inputClass}`}
-									name="lastName"
-									value={lastName}
+									name="role"
+									value={role}
 									onChange={handleInputChange}
 									disabled={!edit && !newItem}
 								/>
@@ -273,8 +270,8 @@ const TestimonialModal = ({
 								</label>
 								<textarea
 									className={`${inputClass}`}
-									name="testimony"
-									value={testimony}
+									name="testimonial"
+									value={testimonial.testimonial}
 									onChange={handleInputChange}
 									rows={8}
 									disabled={!edit && !newItem}

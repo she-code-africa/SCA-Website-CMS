@@ -25,6 +25,7 @@ const Events = () => {
 			toast.error("Could not fetch Events");
 		},
 	});
+
 	const [selectedId, setSelectedId] = useState();
 	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 	const [isEventModalOpen, setIsEventModalOpen] = useState(false);

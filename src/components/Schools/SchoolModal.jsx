@@ -70,7 +70,7 @@ const SchoolModal = ({
 		}
 	};
 
-	const { mutateAsync: updateSchool, isLoading: updating } = useMutation(
+	const { mutate: updateSchool, isLoading: updating } = useMutation(
 		editSchool,
 		{
 			onSuccess: () => {
@@ -94,7 +94,9 @@ const SchoolModal = ({
 				updatedFields[key] = school[key];
 			}
 		}
-		await updateSchool({ id, data: updatedFields });
+
+		console.log(id, updatedFields);
+		updateSchool({ schoolId: id, data: updatedFields });
 	};
 
 	const header = () => {

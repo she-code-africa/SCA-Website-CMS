@@ -58,7 +58,7 @@ const Schools = () => {
 		},
 	});
 
-	const { mutate, isLoading: deleting } = useMutation(deleteSAGSchool, {
+	const { mutate } = useMutation(deleteSAGSchool, {
 		onSuccess: () => {
 			toast.success("School Deleted Successfully");
 			queryClient.invalidateQueries(["stem-a-girl-schools"]);
