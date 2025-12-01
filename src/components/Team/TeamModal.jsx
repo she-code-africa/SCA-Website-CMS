@@ -31,7 +31,7 @@ const TeamModal = ({
 		name: "",
 		role: "",
 		teamCategory: "",
-		image: "",
+		image: "", 
 	};
 	const [member, setMember] = useState(intial);
 	const queryClient = useQueryClient();
