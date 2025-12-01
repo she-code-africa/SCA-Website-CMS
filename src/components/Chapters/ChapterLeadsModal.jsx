@@ -107,20 +107,17 @@ const ChapterLeadsModal = ({
 		}
 	);
 
-	const { mutate: updateLead, isLoading: updating } = useMutation(
-		updateChapterLead,
-		{
-			onSuccess: (data) => {
-				console.log("Updated Lead Data:", data);
-				toast.success("Lead updated Successfully");
-				queryClient.invalidateQueries(["chapter-leads"]);
-				handleCloseModal();
-			},
-			onError: () => {
-				toast.error("Could not update Lead");
-			},
-		}
-	);
+	const { mutate: updateLead } = useMutation(updateChapterLead, {
+		onSuccess: (data) => {
+			console.log("Updated Lead Data:", data);
+			toast.success("Lead updated Successfully");
+			queryClient.invalidateQueries(["chapter-leads"]);
+			handleCloseModal();
+		},
+		onError: () => {
+			toast.error("Could not update Lead");
+		},
+	});
 
 	const updateChapterLeadDetails = async () => {
 		const updatedChapter = {

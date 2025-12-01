@@ -24,12 +24,12 @@ const Enquiries = () => {
 	const [selectedId, setSelectedId] = useState();
 	const [currentPage, setCurrentPage] = useState(1);
 	const [isEnquiryModalOpen, setIsEnquiryModalOpen] = useState(false);
-	const [deleteEnquiry, setDeleteEnquiry] = useState(false);
+
 	const [showFilter, setShowFilter] = useState(false);
 	const [filters, setFilters] = useState({
 		search: "",
 		status: "",
-		sortBy: ""
+		sortBy: "",
 	});
 	const itemsPerPage = 10;
 
@@ -54,7 +54,7 @@ const Enquiries = () => {
 				{ value: "closed", label: "Closed" },
 				// { value: "pending", label: "Pending" },
 				// { value: "resolved", label: "Resolved" }
-			]
+			],
 		},
 		{
 			key: "sortBy",
@@ -64,31 +64,34 @@ const Enquiries = () => {
 				{ value: "createdAt", label: "Date Created" },
 				{ value: "updatedAt", label: "Date Updated" },
 				{ value: "fullName", label: "Name" },
-				{ value: "email", label: "Email" }
-			]
-		}
+				{ value: "email", label: "Email" },
+			],
+		},
 	];
 
 	// Filtered and sorted enquiries
 	const filteredEnquiries = useMemo(() => {
 		if (!enquiries) return [];
-		
+
 		let filtered = [...enquiries];
 
 		// Apply search filter
 		if (filters.search) {
 			const searchTerm = filters.search.toLowerCase();
-			filtered = filtered.filter(enquiry =>
-				enquiry.fullName?.toLowerCase().includes(searchTerm) ||
-				enquiry.email?.toLowerCase().includes(searchTerm) ||
-				enquiry.description?.toLowerCase().includes(searchTerm) ||
-				enquiry.status?.toLowerCase().includes(searchTerm)
+			filtered = filtered.filter(
+				(enquiry) =>
+					enquiry.fullName?.toLowerCase().includes(searchTerm) ||
+					enquiry.email?.toLowerCase().includes(searchTerm) ||
+					enquiry.description?.toLowerCase().includes(searchTerm) ||
+					enquiry.status?.toLowerCase().includes(searchTerm)
 			);
 		}
 
 		// Apply status filter
 		if (filters.status) {
-			filtered = filtered.filter(enquiry => enquiry.status === filters.status);
+			filtered = filtered.filter(
+				(enquiry) => enquiry.status === filters.status
+			);
 		}
 
 		// Apply sorting
@@ -96,15 +99,15 @@ const Enquiries = () => {
 			filtered.sort((a, b) => {
 				const aValue = a[filters.sortBy];
 				const bValue = b[filters.sortBy];
-				
+
 				if (filters.sortBy === "createdAt" || filters.sortBy === "updatedAt") {
 					return new Date(bValue) - new Date(aValue); // Newest first
 				}
-				
+
 				if (typeof aValue === "string" && typeof bValue === "string") {
 					return aValue.localeCompare(bValue);
 				}
-				
+
 				return 0;
 			});
 		}
@@ -122,7 +125,7 @@ const Enquiries = () => {
 	};
 
 	const handleSearchChange = (e) => {
-		setFilters(prev => ({ ...prev, search: e.target.value }));
+		setFilters((prev) => ({ ...prev, search: e.target.value }));
 	};
 
 	const toggleFilter = () => {
@@ -140,7 +143,7 @@ const Enquiries = () => {
 			<div className="w-full z-40 bg-white rounded-md shadow-lg">
 				<div className="flex justify-between items-center px-4 py-6 pb-2">
 					<h5 className="font-medium text-xl text-slate-700">Enquiries</h5>
-					
+
 					{/* Search and Filter Controls */}
 					<div className="flex items-center justify-center gap-3">
 						<SearchInput
@@ -148,15 +151,18 @@ const Enquiries = () => {
 							value={filters.search}
 							onChange={handleSearchChange}
 						/>
-						
+
 						<div className="relative">
 							<button
 								onClick={toggleFilter}
-								className={`p-2 rounded-md border ${showFilter ? 'bg-pink-500 text-white' : 'bg-white text-pink-500'} border-pink-500 hover:bg-pink-50 transition-colors`}
-							>
+								className={`p-2 rounded-md border ${
+									showFilter
+										? "bg-pink-500 text-white"
+										: "bg-white text-pink-500"
+								} border-pink-500 hover:bg-pink-50 transition-colors`}>
 								<LuListFilter size={18} />
 							</button>
-							
+
 							<FilterDropdown
 								showFilter={showFilter}
 								setShowFilter={setShowFilter}
@@ -171,7 +177,8 @@ const Enquiries = () => {
 				{/* Filter Summary */}
 				{(filters.search || filters.status || filters.sortBy) && (
 					<div className="px-4 pb-2 text-sm text-gray-600 w-64">
-						Showing {filteredEnquiries.length} of {enquiries?.length || 0} enquiries
+						Showing {filteredEnquiries.length} of {enquiries?.length || 0}{" "}
+						enquiries
 						{filters.search && ` matching "${filters.search}"`}
 						{filters.status && ` with status "${filters.status}"`}
 						{filters.sortBy && ` sorted by ${filters.sortBy}`}
@@ -210,23 +217,23 @@ const Enquiries = () => {
 											</TableData>
 											<TableData>{email}</TableData>
 											<TableData noTruncate>
-												<span 
-													className="block truncate max-w-xs" 
-													title={description}
-												>
+												<span
+													className="block truncate max-w-xs"
+													title={description}>
 													{description}
 												</span>
 											</TableData>
 											<TableData noTruncate>
-												<span className={`px-2 py-1 rounded-full text-xs font-medium ${
-													status === "open" 
-														? 'bg-blue-100 text-blue-800' 
-														: status === 'closed' 
-														? 'bg-gray-100 text-gray-800'
-														: status === 'resolved'
-														? 'bg-green-100 text-green-800'
-														: 'bg-yellow-100 text-yellow-800'
-												}`}>
+												<span
+													className={`px-2 py-1 rounded-full text-xs font-medium ${
+														status === "open"
+															? "bg-blue-100 text-blue-800"
+															: status === "closed"
+															? "bg-gray-100 text-gray-800"
+															: status === "resolved"
+															? "bg-green-100 text-green-800"
+															: "bg-yellow-100 text-yellow-800"
+													}`}>
 													{status}
 												</span>
 											</TableData>
@@ -243,12 +250,14 @@ const Enquiries = () => {
 						) : (
 							<TableDataRow className="grid grid-cols-6 px-4 py-8 gap-x-4 bg-white">
 								<TableData className="col-span-6 text-center text-gray-500">
-									{isLoading ? "Loading..." : "No enquiries found matching your criteria"}
+									{isLoading
+										? "Loading..."
+										: "No enquiries found matching your criteria"}
 								</TableData>
 							</TableDataRow>
 						)}
 					</TableBody>
-					
+
 					{filteredEnquiries.length > 0 && (
 						<Pagination
 							totalItems={filteredEnquiries.length}

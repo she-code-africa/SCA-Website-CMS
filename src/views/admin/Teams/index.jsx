@@ -21,7 +21,6 @@ import Pagination from "components/Pagination";
 import SearchInput from "components/Inputs/SearchInput";
 import FilterDropdown from "components/Inputs/FilterDropdown"; // Updated import
 import { LuListFilter } from "react-icons/lu";
-import { updateTeamPositions } from "services";
 
 const TeamList = () => {
 	const [selectedId, setSelectedId] = useState();

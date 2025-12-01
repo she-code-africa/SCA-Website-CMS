@@ -70,7 +70,7 @@ const Courses = () => {
 		},
 	});
 
-	const { mutate, isLoading: deleting } = useMutation(deleteSAGCourse, {
+	const { mutate } = useMutation(deleteSAGCourse, {
 		onSuccess: () => {
 			toast.success("Course Deleted Successfully");
 			queryClient.invalidateQueries(["stem-a-girl-courses"]);

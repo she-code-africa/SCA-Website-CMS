@@ -28,7 +28,7 @@ const ReportModal = ({
 	const inputClass = `border-0 px-3 py-0 placeholder-slate-300 text-slate-600 bg-white rounded text-sm ${
 		edit || newItem ? "shadow focus:outline-none focus:ring !py-3" : ""
 	} w-full ease-linear transition-all duration-150 basis-9/12`;
-	const { isLoading, data } = useQuery(["report", id], () => getReport(id), {
+	const { isLoading } = useQuery(["report", id], () => getReport(id), {
 		onSuccess: (data) => {
 			!newItem && setReport(data);
 		},
