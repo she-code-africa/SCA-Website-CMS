@@ -373,7 +373,7 @@ const SchoolProgramModal = ({
 									value={school}
 									name="school"
 									onChange={handleSchoolChange}
-									disabled={edit}>
+									disabled={!edit && !newItem}>
 									<option value="">Select School</option>
 									{schools.map((school, index) => (
 										<option

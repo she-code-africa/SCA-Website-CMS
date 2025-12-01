@@ -39,7 +39,6 @@ const SubContentComponent = ({
 			<div className="w-full mt-3">
 				<label className="text-base font-medium text-slate-600">Title</label>
 				<input
-					required
 					type="text"
 					className={`${inputClass} mt-3`}
 					name="title"
