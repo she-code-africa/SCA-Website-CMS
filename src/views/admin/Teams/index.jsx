@@ -89,7 +89,7 @@ const TeamList = () => {
 		async () => {
 			const query = buildQueryParams(filters);
 			const res = await fetch(
-				`https://sca-v3-backend-staging.herokuapp.com/api/teams/members?${query}`
+				`${process.env.REACT_APP_BASE_URL}/teams/members?${query}`
 			);
 			const data = await res.json();
 			return data.data;
