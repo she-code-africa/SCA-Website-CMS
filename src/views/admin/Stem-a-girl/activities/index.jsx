@@ -58,7 +58,7 @@ const Activities = () => {
 		},
 	});
 
-	const { mutate, isLoading: deleting } = useMutation(deleteSAGActivity, {
+	const { mutate } = useMutation(deleteSAGActivity, {
 		onSuccess: () => {
 			toast.success("Activity Deleted Successfully");
 			queryClient.invalidateQueries(["stem-a-girl-activities"]);

@@ -107,7 +107,7 @@ const SchoolPrograms = () => {
 										<TableData>{title}</TableData>
 										<TableData>{cohort}</TableData>
 										<TableData>{briefContent}</TableData>
-										<TableData>{school.name}</TableData>
+										<TableData>{school?.name || "N/A"}</TableData>
 										<TableData>{state}</TableData>
 										<TableData>
 											{publishDate

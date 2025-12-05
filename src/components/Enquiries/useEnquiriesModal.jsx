@@ -16,7 +16,7 @@ const useEnquiriesModal = ({ id, handleModal }) => {
 	const [enquiry, setEnquiry] = useState(initial);
 	const [edit, setEdit] = useState(false);
 
-	const { isLoading, data } = useQuery(["enquiry", id], () => getEnquiry(id), {
+	const { isLoading } = useQuery(["enquiry", id], () => getEnquiry(id), {
 		onSuccess: (data) => {
 			setEnquiry(data);
 		},

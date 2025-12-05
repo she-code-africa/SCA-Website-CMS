@@ -96,7 +96,6 @@ const Jobs = () => {
 																description,
 																location,
 																deadline,
-
 																updatedAt,
 																createdAt,
 															},

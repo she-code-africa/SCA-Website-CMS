@@ -14,6 +14,7 @@ import {
 	faHandshake,
 	faSchoolFlag,
 	faClipboard,
+	faFolderOpen,
 } from "@fortawesome/free-solid-svg-icons";
 export const routes = [
 	{
@@ -191,4 +192,10 @@ export const routes = [
 		icon: faBuilding,
 		path: "/admin/companies",
 	},
+	// {
+	// 	name: "media",
+	// 	label: "Media",
+	// 	icon: faFolderOpen,
+	// 	path: "/admin/media",
+	// },
 ];

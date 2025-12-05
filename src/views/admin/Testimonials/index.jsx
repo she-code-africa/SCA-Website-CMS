@@ -83,11 +83,10 @@ const Testimonials = () => {
 							(
 								{
 									_id,
-									firstName,
-									lastName,
+									name,
 									image,
 									state,
-									testimony,
+									testimonial,
 									createdAt,
 									updatedAt,
 									publishDate,
@@ -106,15 +105,15 @@ const Testimonials = () => {
 										<TableData>
 											<span className="flex items-center gap-2">
 												<img
-													className="w-4 h-4 rounded-full"
+													className="w-4 h-4 rounded-full hidden"
 													src={image}
-													alt={`${firstName} ${lastName}`}
+													alt={name}
 												/>
-												{`${firstName} ${lastName}`}
+												{name}
 											</span>
 										</TableData>
 
-										<TableData noTruncate>{testimony}</TableData>
+										<TableData>{testimonial}</TableData>
 										<TableData>{state}</TableData>
 										<TableData>
 											{moment(publishDate).format("DD MMM, YYYY")}

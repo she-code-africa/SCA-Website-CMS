@@ -59,6 +59,8 @@ const CreateChapterEventsModal = ({
 		}
 	);
 
+	console.log(chapterEvent);
+
 	const handleChange = (e) => {
 		const { name, value, files } = e.target;
 		setNewEvent((prev) => ({ ...prev, [name]: files ? files[0] : value }));

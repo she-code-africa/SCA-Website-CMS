@@ -432,6 +432,10 @@ export const activityloglist = [
 		label: "User",
 	},
 	{
+		value: "role",
+		label: "Role",
+	},
+	{
 		value: "action",
 		label: "Action",
 	},
@@ -481,6 +485,30 @@ export const chapterEventsHeaders = [
 	{
 		value: "createdAt",
 		label: "Created At",
+	},
+	{
+		value: "actions",
+		label: "Actions",
+	},
+];
+
+export const mediaHeaders = [
+	{
+		value: "image",
+		label: "Cover Image",
+	},
+	{
+		value: "description",
+		label: "Description",
+	},
+	{
+		value: "title",
+		label: "Title",
+	},
+
+	{
+		value: "type",
+		label: "Type",
 	},
 	{
 		value: "actions",

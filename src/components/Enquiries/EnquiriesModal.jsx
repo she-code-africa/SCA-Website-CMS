@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import Modal from "components/Modal";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -21,7 +21,7 @@ const EnquiriesModal = ({ isOpen, handleModal, id, canDelete }) => {
 		handleInputChange,
 		handleStatusSelect,
 	} = useEnquiriesModal({ id, handleModal });
-	const { fullName, email, description, link, isAvailable, status } = enquiry;
+	const { fullName, email, description, status } = enquiry;
 
 	const header = () => {
 		return (

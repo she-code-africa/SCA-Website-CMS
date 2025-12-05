@@ -203,8 +203,20 @@ export async function getMembers() {
 	return totalMembers;
 }
 
-export async function getActivityLog() {
-	const allActivities = await api.get(`${baseUrl}/logs`);
+export async function getActivityLog(
+	page,
+	limit,
+	startDate = null,
+	endDate = null
+) {
+	let url = `${baseUrl}/logs?page=${page}&limit=${limit}`;
+	if (startDate) {
+		url += `&startDate=${startDate.toISOString()}`;
+	}
+	if (endDate) {
+		url += `&endDate=${endDate.toISOString()}`;
+	}
+	const allActivities = await api.get(url);
 	return allActivities;
 }
 
@@ -331,8 +343,8 @@ export async function createSchool(data) {
 	return await api.post(`${baseUrl}/schools`, data);
 }
 
-export async function editSchool({ id, data }) {
-	return await api.put(`${baseUrl}/schools/${id}`, data);
+export async function editSchool({ schoolId, data }) {
+	return await api.put(`${baseUrl}/schools/${schoolId}`, data);
 }
 
 export async function deleteSchool(id) {
@@ -464,6 +476,10 @@ export async function publishProgram({ id, categoryId }) {
 	return await api.patch(
 		`${baseUrl}/programs/categories/${categoryId}/member-programs/${id}/publish`
 	);
+}
+
+export async function updateTeamPositions(payload) {
+	return await api.patch(`${baseUrl}/teams/members/positions`, payload);
 }
 
 export async function archiveProgram({ id, categoryId }) {
