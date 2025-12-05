@@ -192,10 +192,10 @@ export const routes = [
 		icon: faBuilding,
 		path: "/admin/companies",
 	},
-	{
-		name: "media",
-		label: "Media",
-		icon: faFolderOpen,
-		path: "/admin/media",
-	},
+	// {
+	// 	name: "media",
+	// 	label: "Media",
+	// 	icon: faFolderOpen,
+	// 	path: "/admin/media",
+	// },
 ];
