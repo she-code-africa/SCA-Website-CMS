@@ -14,8 +14,8 @@ export const team = [
 		label: "Team",
 	},
 	{
-		value: "state",
-		label: "State",
+		value: "role",
+		label: "role",
 	},
 	{ value: "updatedAt", label: "Updated at" },
 

@@ -127,7 +127,7 @@ const TeamList = () => {
 	const handleDelete = () => {
 		deleteMember({ catId: teamId, id: selectedId });
 	};
-
+	console.log(team);
 	return (
 		<>
 			<div className="w-full grid grid-cols-12 z-40 gap-4">
@@ -204,7 +204,7 @@ const TeamList = () => {
 											name,
 											role,
 											isLeader,
-											state,
+
 											team,
 											teamCategory,
 											updatedAt,
@@ -216,7 +216,7 @@ const TeamList = () => {
 											<TableDataRow
 												onClick={() => {
 													setSelectedId(_id);
-													setTeamId(teamCategory?._id || team || "");
+													setTeamId(teamCategory?._id || team?._id || "");
 													handleTeamModal();
 													setNewItem(false);
 												}}
@@ -235,10 +235,8 @@ const TeamList = () => {
 												<TableData className="ml-3">
 													{isLeader ? "Yes" : "No"}
 												</TableData>
-												<TableData>
-													{teamCategory?.name || team || "—"}
-												</TableData>
-												<TableData>{state}</TableData>
+												<TableData>{teamCategory?.name || "—"}</TableData>
+												<TableData>{role}</TableData>
 												<TableData>
 													{moment(updatedAt).format("DD MMM, YYYY")}
 												</TableData>
