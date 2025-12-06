@@ -27,17 +27,28 @@ const TeamModal = ({
 	id,
 	catId,
 }) => {
+	console.log(id);
 	const intial = {
 		name: "",
 		role: "",
 		teamCategory: "",
+		team: "",
 		image: "",
 		position: "",
 	};
 	const [member, setMember] = useState(intial);
 	const queryClient = useQueryClient();
-	const { name, role, image, bio, teamCategory, state, isLeader, position } =
-		member;
+	const {
+		name,
+		role,
+		image,
+		bio,
+		teamCategory,
+		state,
+		isLeader,
+		position,
+		team,
+	} = member;
 	const [categories, setCategories] = useState([]);
 	const [edit, setEdit] = useState(false);
 	const [loading, setLoading] = useState(false);
@@ -291,7 +302,7 @@ const TeamModal = ({
 								{edit || newItem ? (
 									<select
 										className={`${inputClass}`}
-										value={teamCategory._id ? teamCategory._id : teamCategory}
+										value={teamCategory?._id || team?._id || ""}
 										name="teamCategory"
 										onChange={handleCategoryChange}>
 										<option value="">Select Team</option>
