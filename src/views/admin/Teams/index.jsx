@@ -125,9 +125,10 @@ const TeamList = () => {
 	});
 
 	const handleDelete = () => {
+		// deleteMember({ catId: teamId, id: selectedId });
 		deleteMember({ catId: teamId, id: selectedId });
 	};
-	console.log(team);
+
 	return (
 		<>
 			<div className="w-full grid grid-cols-12 z-40 gap-4">
@@ -216,7 +217,11 @@ const TeamList = () => {
 											<TableDataRow
 												onClick={() => {
 													setSelectedId(_id);
-													setTeamId(teamCategory?._id || team?._id || "");
+													setTeamId(
+														teamCategory?._id ||
+															(typeof team === "string" ? team : team?._id) ||
+															""
+													);
 													handleTeamModal();
 													setNewItem(false);
 												}}
