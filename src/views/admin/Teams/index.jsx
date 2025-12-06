@@ -125,6 +125,7 @@ const TeamList = () => {
 	});
 
 	const handleDelete = () => {
+		// deleteMember({ catId: teamId, id: selectedId });
 		deleteMember({ catId: teamId, id: selectedId });
 	};
 
@@ -204,7 +205,7 @@ const TeamList = () => {
 											name,
 											role,
 											isLeader,
-											state,
+
 											team,
 											teamCategory,
 											updatedAt,
@@ -216,7 +217,11 @@ const TeamList = () => {
 											<TableDataRow
 												onClick={() => {
 													setSelectedId(_id);
-													setTeamId(teamCategory?._id || team || "");
+													setTeamId(
+														teamCategory?._id ||
+															(typeof team === "string" ? team : team?._id) ||
+															""
+													);
 													handleTeamModal();
 													setNewItem(false);
 												}}
@@ -235,10 +240,8 @@ const TeamList = () => {
 												<TableData className="ml-3">
 													{isLeader ? "Yes" : "No"}
 												</TableData>
-												<TableData>
-													{teamCategory?.name || team || "—"}
-												</TableData>
-												<TableData>{state}</TableData>
+												<TableData>{teamCategory?.name || "—"}</TableData>
+												<TableData>{role}</TableData>
 												<TableData>
 													{moment(updatedAt).format("DD MMM, YYYY")}
 												</TableData>
