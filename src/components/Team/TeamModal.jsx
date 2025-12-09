@@ -27,7 +27,7 @@ const TeamModal = ({
 	id,
 	catId,
 }) => {
-	console.log(id);
+
 	const intial = {
 		name: "",
 		role: "",
@@ -61,7 +61,9 @@ const TeamModal = ({
 	const { data, isLoading } = useQuery(
 		["team-member", id],
 		() => getTeamMember(catId, id),
+		
 		{
+			enabled: !!id && !newItem,
 			onSuccess: (data) => {
 				setMember(data);
 			},
@@ -302,7 +304,8 @@ const TeamModal = ({
 								{edit || newItem ? (
 									<select
 										className={`${inputClass}`}
-										value={teamCategory?._id || team?._id || ""}
+										// value={teamCategory?._id || team?._id || ""}
+										value={member.teamCategory || ""}
 										name="teamCategory"
 										onChange={handleCategoryChange}>
 										<option value="">Select Team</option>
