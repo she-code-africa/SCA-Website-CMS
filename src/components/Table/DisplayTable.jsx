@@ -3,6 +3,13 @@ import React, { useEffect, useRef, useState } from "react";
 import { HiEllipsisVertical } from "react-icons/hi2";
 import "react-placeholder/lib/reactPlaceholder.css";
 import { useLocation } from "react-router-dom";
+import ClipLoader from "react-spinners/ClipLoader";
+
+const override = {
+	display: "block",
+	margin: "0 auto",
+	borderColor: "#EC4899",
+};
 
 const DisplayTable = () => {
 	return <div>DisplayTable</div>;
@@ -37,7 +44,22 @@ export const TableHeader = ({ className, children }) => {
 
 export const TableBody = ({ loading, children }) => {
 	return (
-		<tbody className="bg-white">{loading ? <Loader /> : <>{children}</>}</tbody>
+		<>
+			{loading ? (
+				<ClipLoader
+					color="#"
+					cssOverride={override}
+					size={50}
+					aria-label="Loading Spinner"
+					data-testid="loader"
+					className=""
+				/>
+			) : (
+				<tbody className="bg-white">
+					<>{children}</>
+				</tbody>
+			)}
+		</>
 	);
 };
 
