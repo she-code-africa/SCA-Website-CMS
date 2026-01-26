@@ -43,7 +43,7 @@ const MediaPage = () => {
 			onError: () => {
 				toast.error("Could not fetch media data.");
 			},
-		}
+		},
 	);
 
 	// delete media mutation
@@ -97,61 +97,77 @@ const MediaPage = () => {
 										</div>
 									) : (
 										<>
-											{mediaData.map(
-												(
-													{ coverImage, description, type, title, _id },
-													idx
-												) => (
-													<TableDataRow
-														key={idx}
-														className="grid grid-cols-[150px_1fr_200px_100px_80px_80px] px-4 py-3 bg-white text-base items-center">
-														<TableData>
-															<figure className="m-0 w-12 h-12 rounded-full border-2 overflow-hidden ">
-																<img
-																	// src={coverImage}
-																	src={
-																		coverImage
-																			? typeof coverImage === "string"
-																				? coverImage
-																				: URL.createObjectURL(coverImage)
-																			: ""
-																	}
-																	alt={title}
-																	className="w-full h-full object-cover"
-																/>
-															</figure>
-														</TableData>
-														<TableData>
-															<span className="truncate">{description}</span>
-														</TableData>
-														<TableData>{title}</TableData>
-														<TableData>{type}</TableData>
-														<TableData>
-															<span className="flex items-center gap-3">
-																<button
-																	onClick={() => {
-																		setNewItem(false);
-																		setSelectedId(_id);
-																		setOpenModal(true);
-																	}}>
-																	<FaPencilAlt />
-																</button>
-																<button
-																	className="text-red-500"
-																	onClick={() => handleOpenDeleteModal(_id)}>
-																	<FaTrashAlt />
-																</button>
-															</span>
-														</TableData>
+											{mediaData.length > 0 ? (
+												<>
+													{mediaData.map(
+														(
+															{ coverImage, description, type, title, _id },
+															idx,
+														) => (
+															<TableDataRow
+																key={idx}
+																className="grid grid-cols-[150px_1fr_200px_100px_80px_80px] px-4 py-3 bg-white text-base items-center">
+																<TableData>
+																	<figure className="m-0 w-12 h-12 rounded-full border-2 overflow-hidden ">
+																		<img
+																			// src={coverImage}
+																			src={
+																				coverImage
+																					? typeof coverImage === "string"
+																						? coverImage
+																						: URL.createObjectURL(coverImage)
+																					: ""
+																			}
+																			alt={title}
+																			className="w-full h-full object-cover"
+																		/>
+																	</figure>
+																</TableData>
+																<TableData>
+																	<span className="truncate">
+																		{description}
+																	</span>
+																</TableData>
+																<TableData>{title}</TableData>
+																<TableData>{type}</TableData>
+																<TableData>
+																	<span className="flex items-center gap-3">
+																		<button
+																			onClick={() => {
+																				setNewItem(false);
+																				setSelectedId(_id);
+																				setOpenModal(true);
+																			}}>
+																			<FaPencilAlt />
+																		</button>
+																		<button
+																			className="text-red-500"
+																			onClick={() =>
+																				handleOpenDeleteModal(_id)
+																			}>
+																			<FaTrashAlt />
+																		</button>
+																	</span>
+																</TableData>
 
-														{/* <TableData>
+																{/* <TableData>
 															{moment(eventDate).format("DD MMM, YYYY")}
 														</TableData>
 														<TableData>
 															{moment(createdAt).format("DD MMM, YYYY")}
 														</TableData> */}
-													</TableDataRow>
-												)
+															</TableDataRow>
+														),
+													)}
+												</>
+											) : (
+												<TableDataRow className="grid grid-cols-[150px_1fr_200px_100px_80px_80px] px-4 py-3 bg-white text-base items-center">
+													<TableData colSpan={6}>
+														<span className="truncate col-span-6 w-full  inline-flex">
+															No media found.
+														</span>
+													</TableData>
+												</TableDataRow>
 											)}
 										</>
 									)}

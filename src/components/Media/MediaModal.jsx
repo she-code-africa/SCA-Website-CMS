@@ -57,7 +57,6 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 		date: "",
 		coverImage: null,
 		images: [], // mix of old urls + new Files
-		subcontent: [],
 	});
 
 	const { data, isLoading } = useQuery(["media", id], () => getAMedia(id), {
@@ -73,7 +72,6 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 				date: data.dateCreated ? data.dateCreated.split("T")[0] : "",
 				coverImage: data.coverImage,
 				images: data.images || [],
-				subcontent: data.subcontent || [],
 			});
 		},
 	});
@@ -106,18 +104,6 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 		}));
 	};
 
-	// --------------------------
-	// SUBCONTENT
-	// --------------------------
-	const [addSubContent, setAddSubContent] = useState(false);
-
-	const addNewSubcontent = (item) => {
-		setMediaData((prev) => ({
-			...prev,
-			subcontent: [...prev.subcontent, item],
-		}));
-	};
-
 	const queryClient = useQueryClient();
 
 	// --------------------------
@@ -138,7 +124,6 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 					date: "",
 					coverImage: null,
 					images: [],
-					subcontent: [],
 				});
 				queryClient.invalidateQueries({ queryKey: ["media"] });
 				handleModal();
@@ -147,7 +132,7 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 				toast.error("Error Adding Data");
 				handleModal();
 			},
-		}
+		},
 	);
 
 	// --------------------------
@@ -165,7 +150,7 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 				toast.error("Error updating media");
 				handleModal();
 			},
-		}
+		},
 	);
 
 	// ---------------------------------------------------------------
@@ -177,7 +162,7 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 		for (const [key, value] of Object.entries(mediaData)) {
 			const oldValue = data[key];
 
-			// COVER IMAGE
+			// COVER IMAGE - only if changed
 			if (key === "coverImage") {
 				if (value instanceof File) {
 					updatedFields.append("coverImage", value);
@@ -185,33 +170,19 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 				continue;
 			}
 
-			// IMAGES: separate old URLs from new Files
+			// IMAGES - only if new files were added
 			if (key === "images") {
-				const newFiles = [];
-				const existingUrls = [];
+				const newFiles = value.filter((item) => item instanceof File);
 
-				value.forEach((item) => {
-					if (item instanceof File) newFiles.push(item);
-					else existingUrls.push(item);
-				});
-
-				// append new files
-				newFiles.forEach((file) => updatedFields.append("images", file));
-
-				// append existing URLs for backend to keep them
-				updatedFields.append("existingImages", JSON.stringify(existingUrls));
-				continue;
-			}
-
-			// SUBCONTENT
-			if (key === "subcontent") {
-				if (JSON.stringify(value) !== JSON.stringify(oldValue)) {
-					updatedFields.append("subcontent", JSON.stringify(value));
+				if (newFiles.length > 0) {
+					newFiles.forEach((file) => {
+						updatedFields.append("images", file);
+					});
 				}
 				continue;
 			}
 
-			// BASIC FIELDS
+			// BASIC FIELDS - only if changed
 			if (value !== oldValue) {
 				updatedFields.append(key, value);
 			}
@@ -241,7 +212,6 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 			date,
 			images,
 			coverImage,
-			subcontent,
 		} = mediaData;
 
 		let formattedDate = "";
@@ -267,12 +237,6 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 			if (img instanceof File) formData.append("images", img);
 		});
 		// formData.append("subcontent", subcontent || []);
-
-		if (subcontent) {
-			subcontent.forEach((item, i) => {
-				formData.append(`subcontent[${i}]`, JSON.stringify(item));
-			});
-		}
 
 		newItem ? createNewMedia(formData) : updateMediaDetails();
 	};
@@ -438,62 +402,15 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 										</label>
 										<input type="file" multiple onChange={handleImagesUpload} />
 									</div>
-									{/* SUB CONTENT CHECKBOX */}
-									<div className="w-full mt-5 flex items-center gap-3">
-										<input
-											type="checkbox"
-											onChange={(e) => setAddSubContent(e.target.checked)}
-										/>
-										<label className="text-sm text-slate-600">
-											Add Sub-content
-										</label>
-									</div>
 								</>
-							)}
-
-							{/* SUB CONTENT COMPONENT */}
-							{mediaData.type.toLowerCase() === "image" && addSubContent && (
-								<SubContentComponent
-									edit={edit}
-									newItem={newItem}
-									inputClass={inputClass}
-									addNewSubcontent={addNewSubcontent}
-								/>
-							)}
-
-							{/* RENDER SUBCONTENTS */}
-							{mediaData.subcontent.length > 0 && (
-								<div className="w-full mt-6 border p-4 rounded-md bg-slate-50">
-									<h2 className="text-slate-700 font-semibold mb-3">
-										Sub-contents
-									</h2>
-
-									<div className="flex flex-col gap-3">
-										{mediaData.subcontent.map((item, idx) => (
-											<div
-												key={idx}
-												className="p-3 rounded-md border bg-white text-sm">
-												<p className="font-semibold text-slate-700">
-													{item.title}
-												</p>
-
-												{item.images?.length > 0 && (
-													<p className="text-xs mt-1 text-slate-500">
-														{item.images.length} image(s) added
-													</p>
-												)}
-											</div>
-										))}
-									</div>
-								</div>
 							)}
 
 							<button className="mt-5 rounded-md bg-pink-500 text-white text-xs  px-4 py-2">
 								{creating || updating
 									? "Loading..."
 									: newItem
-									? "Add"
-									: "Update"}
+										? "Add"
+										: "Update"}
 							</button>
 						</form>
 					)}
