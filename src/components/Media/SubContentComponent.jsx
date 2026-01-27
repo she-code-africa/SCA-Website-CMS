@@ -9,7 +9,7 @@ const SubContentComponent = ({
 	// Local subcontent state
 	const [subData, setSubData] = useState({
 		title: "",
-		images: [],
+		subcontentImages: [],
 	});
 
 	const handleChange = (e) => {
@@ -19,7 +19,7 @@ const SubContentComponent = ({
 
 	const handleSubImages = (e) => {
 		const files = [...e.target.files];
-		setSubData((prev) => ({ ...prev, images: files }));
+		setSubData((prev) => ({ ...prev, subcontentImages: files }));
 	};
 
 	const handleAddSubcontent = () => {
@@ -30,7 +30,7 @@ const SubContentComponent = ({
 		// Reset form
 		setSubData({
 			title: "",
-			images: [],
+			subcontentImages: [],
 		});
 	};
 
