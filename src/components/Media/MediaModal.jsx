@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import Tooltip from "components/Tooltip";
 import { GrView } from "react-icons/gr";
 import { MdOutlineModeEditOutline } from "react-icons/md";
+import { IoMdClose } from "react-icons/io";
 import Loader from "components/Loader";
 import SubContentComponent from "./SubContentComponent";
 import { useQuery, useMutation, useQueryClient } from "react-query";
@@ -59,6 +60,9 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 		images: [], // mix of old urls + new Files
 	});
 
+	// Store cover image preview URL
+	const [coverImagePreview, setCoverImagePreview] = useState(null);
+
 	const { data, isLoading } = useQuery(["media", id], () => getAMedia(id), {
 		enabled: !newItem && !!id,
 		onSuccess: (data) => {
@@ -73,6 +77,10 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 				coverImage: data.coverImage,
 				images: data.images || [],
 			});
+			// Set initial cover image preview if exists
+			if (data.coverImage) {
+				setCoverImagePreview(data.coverImage);
+			}
 		},
 	});
 
@@ -89,19 +97,57 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 	// --------------------------
 	const handleCoverImageUpload = (e) => {
 		const file = e.target.files[0];
-		setMediaData((prev) => ({ ...prev, coverImage: file }));
+		if (file) {
+			setMediaData((prev) => ({ ...prev, coverImage: file }));
+			// Create preview URL for the new file
+			const previewUrl = URL.createObjectURL(file);
+			setCoverImagePreview(previewUrl);
+		}
+	};
+
+	// --------------------------
+	// REMOVE COVER IMAGE
+	// --------------------------
+	const removeCoverImage = () => {
+		setMediaData((prev) => ({ ...prev, coverImage: null }));
+		setCoverImagePreview(null);
 	};
 
 	// ----------------------------------------------------
-	// FIXED: HANDLE MULTIPLE IMAGES (RETAIN OLD + ADD NEW FILES)
+	// HANDLE MULTIPLE IMAGES (RETAIN OLD + ADD NEW FILES)
 	// ----------------------------------------------------
 	const handleImagesUpload = (e) => {
 		const uploadedFiles = [...e.target.files];
 
 		setMediaData((prev) => ({
 			...prev,
-			images: [...prev.images, ...uploadedFiles], // keep old urls and add new Files
+			images: [...prev.images, ...uploadedFiles],
 		}));
+	};
+
+	// ----------------------------------------------------
+	// DELETE IMAGE FROM ARRAY
+	// ----------------------------------------------------
+	const handleDeleteImage = (index) => {
+		// Simply remove from images array
+		setMediaData((prev) => ({
+			...prev,
+			images: prev.images.filter((_, i) => i !== index),
+		}));
+	};
+
+	// ----------------------------------------------------
+	// GET IMAGE PREVIEW URL
+	// ----------------------------------------------------
+	const getImagePreviewUrl = (image) => {
+		if (typeof image === "string") {
+			// Existing image URL from server
+			return image;
+		} else if (image instanceof File) {
+			// New file - create object URL
+			return URL.createObjectURL(image);
+		}
+		return "";
 	};
 
 	const queryClient = useQueryClient();
@@ -125,6 +171,7 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 					coverImage: null,
 					images: [],
 				});
+				setCoverImagePreview(null);
 				queryClient.invalidateQueries({ queryKey: ["media"] });
 				handleModal();
 			},
@@ -154,7 +201,7 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 	);
 
 	// ---------------------------------------------------------------
-	// FIXED: UPDATE MEDIA — SEND BOTH OLD IMAGE URLs + NEW FILES
+	// UPDATE MEDIA — SEND COMPLETE IMAGES ARRAY (URLS + NEW FILES)
 	// ---------------------------------------------------------------
 	const updateMediaDetails = () => {
 		const updatedFields = new FormData();
@@ -170,15 +217,12 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 				continue;
 			}
 
-			// IMAGES - only if new files were added
+			// IMAGES - send complete array (existing URLs + new Files)
 			if (key === "images") {
-				const newFiles = value.filter((item) => item instanceof File);
-
-				if (newFiles.length > 0) {
-					newFiles.forEach((file) => {
-						updatedFields.append("images", file);
-					});
-				}
+				// Append all images (both URLs and new Files)
+				value.forEach((image) => {
+					updatedFields.append("images", image);
+				});
 				continue;
 			}
 
@@ -236,7 +280,6 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 		images.forEach((img) => {
 			if (img instanceof File) formData.append("images", img);
 		});
-		// formData.append("subcontent", subcontent || []);
 
 		newItem ? createNewMedia(formData) : updateMediaDetails();
 	};
@@ -327,7 +370,7 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 										required
 										type="text"
 										className={`${inputClass} mt-3`}
-										name="tag" // FIXED
+										name="tag"
 										placeholder="Enter media tag"
 										value={mediaData.tag}
 										onChange={handleInputChange}
@@ -373,7 +416,7 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 
 							<div className="w-full mt-5">
 								<label className="text-base font-medium text-slate-600">
-									Textarea
+									Description
 								</label>
 								<textarea
 									required
@@ -382,36 +425,123 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 									placeholder="Enter a valid description"
 									value={mediaData.description}
 									onChange={handleInputChange}
-									disabled={!edit && !newItem}></textarea>
+									disabled={!edit && !newItem}
+									rows={4}></textarea>
 							</div>
 
 							{/* COVER IMAGE */}
-							<div className="w-full mt-5 flex items-center gap-3">
-								<label className="text-base font-medium text-slate-600">
+							<div className="w-full mt-5">
+								<label className="text-base font-medium text-slate-600 block mb-3">
 									Cover Image
 								</label>
-								<input type="file" onChange={handleCoverImageUpload} />
+
+								{coverImagePreview && (
+									<div className="relative inline-block mb-3 mr-4">
+										<img
+											src={coverImagePreview}
+											alt="Cover preview"
+											className="w-40 h-40 object-cover rounded-md border border-slate-300"
+										/>
+										{(edit || newItem) && (
+											<button
+												type="button"
+												onClick={removeCoverImage}
+												className="absolute -top-2 -right-2 bg-pink-500 text-white rounded-full p-1.5 hover:bg-pink-600 transition-all shadow-md z-10">
+												<IoMdClose size="1.25rem" />
+											</button>
+										)}
+									</div>
+								)}
+
+								{(edit || newItem) && (
+									<label className="cursor-pointer inline-block">
+										<input
+											type="file"
+											onChange={handleCoverImageUpload}
+											accept="image/*"
+											className="hidden"
+											id="cover-upload"
+										/>
+										<span className="inline-block px-4 py-2 bg-white text-slate-700 text-sm font-medium rounded-md border-2 border-slate-300 hover:bg-slate-50 hover:border-slate-400 transition-colors shadow-sm mt-3">
+											Choose Cover Image
+										</span>
+									</label>
+								)}
 							</div>
 
 							{/* MULTIPLE IMAGES */}
 							{mediaData.type.toLowerCase() === "image" && (
-								<>
-									<div className="w-full mt-5 flex items-center gap-3">
-										<label className="text-base font-medium text-slate-600">
-											Upload images
-										</label>
-										<input type="file" multiple onChange={handleImagesUpload} />
-									</div>
-								</>
+								<div className="w-full mt-5">
+									<label className="text-base font-medium text-slate-600 block mb-3">
+										Gallery Images
+									</label>
+
+									{/* Image Grid Preview */}
+									{mediaData.images.length > 0 && (
+										<div className="grid grid-cols-5 gap-3 mb-4">
+											{mediaData.images.map((image, index) => (
+												<div key={index} className="relative w-full">
+													<img
+														src={getImagePreviewUrl(image)}
+														alt={`Preview ${index + 1}`}
+														className="w-full h-24 object-cover rounded-md border border-slate-300"
+													/>
+
+													<div className="flex gap-1 absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded-b-md items-center">
+														{(edit || newItem) && (
+															<button
+																type="button"
+																onClick={() => handleDeleteImage(index)}
+																className=" bg-pink-500 text-white rounded-full p-1.5 hover:bg-pink-600 transition-all shadow-md z-10">
+																<IoMdClose size="0.875rem" />
+															</button>
+														)}
+														<div className="">
+															{typeof image === "string" ? "Existing" : "New"}
+														</div>
+													</div>
+												</div>
+											))}
+										</div>
+									)}
+
+									{/* Upload Input */}
+									{(edit || newItem) && (
+										<div className="flex items-center gap-3">
+											<label className="cursor-pointer">
+												<input
+													type="file"
+													multiple
+													onChange={handleImagesUpload}
+													accept="image/*"
+													className="hidden"
+													id="gallery-upload"
+												/>
+												<span className="inline-block px-4 py-2 bg-white text-slate-700 text-sm font-medium rounded-md border-2 border-slate-300 hover:bg-slate-50 hover:border-slate-400 transition-colors shadow-sm">
+													Choose Files
+												</span>
+											</label>
+											<span className="text-xs text-slate-500">
+												{mediaData.images.length} image
+												{mediaData.images.length !== 1 ? "s" : ""} selected
+											</span>
+										</div>
+									)}
+								</div>
 							)}
 
-							<button className="mt-5 rounded-md bg-pink-500 text-white text-xs  px-4 py-2">
-								{creating || updating
-									? "Loading..."
-									: newItem
-										? "Add"
-										: "Update"}
-							</button>
+							{(edit || newItem) && (
+								<button
+									type="submit"
+									disabled={creating || updating}
+									className="mt-5 rounded-md bg-pink-500 text-white text-xs px-4 py-2 hover:bg-pink-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+									{creating || updating
+										? "Loading..."
+										: newItem
+											? "Add Media"
+											: "Update Media"}
+								</button>
+							)}
 						</form>
 					)}
 				</div>
