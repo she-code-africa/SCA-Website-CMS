@@ -205,12 +205,12 @@ export const routes = [
 		name: "companies",
 		label: "Companies",
 		icon: faBuilding,
-		path: "/admin/companies"
-	}
-	// {
-	// 	name: "media",
-	// 	label: "Media",
-	// 	icon: faFolderOpen,
-	// 	path: "/admin/media",
-	// },
+		path: "/admin/companies",
+	},
+	{
+		name: "media",
+		label: "Media",
+		icon: faFolderOpen,
+		path: "/admin/media",
+	},
 ];
