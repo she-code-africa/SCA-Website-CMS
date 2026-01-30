@@ -20,6 +20,9 @@ export const paths = {
 	listVolunteerCategory: "/admin/volunteer/category",
 	addVolunteerCategory: "/admin/volunteer/category/add",
 	editVolunteerCategory: "/admin/volunteer/category/edit/:id",
+	volunteerRoles: "/admin/volunteer-roles",
+	addVolunteerRole: "/admin/volunteer-roles/add",
+	editVolunteerRole: "/admin/volunteer-roles/edit",
 	jobs: "/admin/jobs",
 	addNewJob: "/admin/jobs/add",
 	editJob: "/admin/jobs/edit",
@@ -40,5 +43,5 @@ export const paths = {
 	sagImpactStories: "/admin/stem-a-girl/impact-stories",
 	sagTestimonials: "/admin/stem-a-girl/testimonials",
 	chapterEvents: "/admin/chapter-events",
-	chapterLeads: "/admin/chapter-leads",
+	chapterLeads: "/admin/chapter-leads"
 };

@@ -21,37 +21,52 @@ export const routes = [
 		name: "dashboard",
 		label: "Dashboard",
 		icon: faTableColumns,
-		path: "/admin/dashboard",
+		path: "/admin/dashboard"
 	},
 	{
 		name: "team",
 		label: "Team",
 		icon: faPeopleGroup,
-		path: "/admin/team",
+		path: "/admin/team"
 	},
+	
+	// ✅ UPDATED: Volunteers now has submenu items (including Volunteer Roles)
 	{
 		name: "volunteers",
 		label: "Volunteers",
 		icon: faHandHoldingHeart,
 		path: "/admin/volunteer",
+		items: [
+			{
+				name: "volunteer-requests",
+				label: "Volunteer Requests",
+				path: "/admin/volunteer"
+			},
+			{
+				name: "volunteer-roles",
+				label: "Volunteer Roles",
+				path: "/admin/volunteer-roles"
+			}
+		]
 	},
+
 	{
 		name: "talent",
 		label: "Talent Request",
 		icon: faUsersViewfinder,
-		path: "/admin/talent-request",
+		path: "/admin/talent-request"
 	},
 	{
 		name: "enquiries",
 		label: "Enquiries",
 		icon: faPersonCircleQuestion,
-		path: "/admin/enquiries",
+		path: "/admin/enquiries"
 	},
 	{
 		name: "testimonials",
 		label: "Testimonials",
 		icon: faComment,
-		path: "/admin/testimonials",
+		path: "/admin/testimonials"
 	},
 	// {
 	// 	name: "chapters",
@@ -63,7 +78,7 @@ export const routes = [
 		name: "reports",
 		label: "Reports",
 		icon: faClipboard,
-		path: "/admin/reports",
+		path: "/admin/reports"
 	},
 	// {
 	// 	name: "stories",
@@ -75,7 +90,7 @@ export const routes = [
 		name: "events",
 		label: "Events",
 		icon: faCalendar,
-		path: "/admin/events",
+		path: "/admin/events"
 	},
 	{
 		name: "chapters",
@@ -86,14 +101,14 @@ export const routes = [
 			{
 				name: "chapter-events",
 				label: "Chapter Events",
-				path: "/admin/chapter-events",
+				path: "/admin/chapter-events"
 			},
 			{
 				name: "chapter-leads",
 				label: "Chapter Leads",
-				path: "/admin/chapter-leads",
-			},
-		],
+				path: "/admin/chapter-leads"
+			}
+		]
 	},
 	{
 		name: "stem-a-girl",
@@ -104,17 +119,17 @@ export const routes = [
 			{
 				name: "schools",
 				label: "Schools",
-				path: "/admin/stem-a-girl/schools",
+				path: "/admin/stem-a-girl/schools"
 			},
 			{
 				name: "courses",
 				label: "Courses",
-				path: "/admin/stem-a-girl/courses",
+				path: "/admin/stem-a-girl/courses"
 			},
 			{
 				name: "activities",
 				label: "Activities",
-				path: "/admin/stem-a-girl/activities",
+				path: "/admin/stem-a-girl/activities"
 			},
 			// {
 			// 	name: "enquiries",
@@ -124,19 +139,19 @@ export const routes = [
 			{
 				name: "events",
 				label: "Events",
-				path: "/admin/stem-a-girl/events",
+				path: "/admin/stem-a-girl/events"
 			},
 			{
 				name: "impact-stories",
 				label: "Impact Stories",
-				path: "/admin/stem-a-girl/impact-stories",
+				path: "/admin/stem-a-girl/impact-stories"
 			},
 			{
 				name: "testimonials",
 				label: "Testimonials",
-				path: "/admin/stem-a-girl/testimonials",
-			},
-		],
+				path: "/admin/stem-a-girl/testimonials"
+			}
+		]
 	},
 	{
 		name: "academy",
@@ -147,51 +162,51 @@ export const routes = [
 			{
 				name: "schools",
 				label: "Schools",
-				path: "/admin/academy/schools",
+				path: "/admin/academy/schools"
 			},
 			{
 				name: "school-programs",
 				label: "School Programs",
-				path: "/admin/academy/school-programs",
+				path: "/admin/academy/school-programs"
 			},
 			{
 				name: "courses",
 				label: "Courses",
-				path: "/admin/academy/courses",
-			},
-		],
+				path: "/admin/academy/courses"
+			}
+		]
 	},
 	{
 		name: "initiatives",
 		label: "Initiatives",
 		icon: faOsi,
-		path: "/admin/initiatives",
+		path: "/admin/initiatives"
 	},
 
 	{
 		name: "partners",
 		label: "Partners/Sponsors",
 		icon: faHandshake,
-		path: "/admin/partners",
+		path: "/admin/partners"
 	},
 	{
 		name: "jobs",
 		label: "Jobs",
 		icon: faBriefcase,
-		path: "/admin/jobs",
+		path: "/admin/jobs"
 	},
 	{
 		name: "reach",
 		label: "Our Reach",
 		icon: faHandsPraying,
-		path: "/admin/reach",
+		path: "/admin/reach"
 	},
 	{
 		name: "companies",
 		label: "Companies",
 		icon: faBuilding,
-		path: "/admin/companies",
-	},
+		path: "/admin/companies"
+	}
 	// {
 	// 	name: "media",
 	// 	label: "Media",

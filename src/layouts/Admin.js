@@ -28,6 +28,11 @@ import {
 	AddVolunteerCategory,
 	EditVolunteerCategory,
 } from "views/admin/Volunteers/VolunteerCategory";
+import {
+	VolunteerRoleList,
+	AddVolunteerRole,
+	EditVolunteerRole
+} from "views/admin/Volunteers/VolunteerRoles";
 import Jobs from "views/admin/Jobs/Jobs";
 import AddJob from "views/admin/Jobs/AddJob";
 import EditJob from "views/admin/Jobs/EditJob";
@@ -142,6 +147,23 @@ export default function Admin() {
 							path={paths.editVolunteerCategory}
 							exact
 							component={EditVolunteerCategory}
+						/>
+
+						{/* ✅ NEW: Volunteer Roles */}
+						<Route
+							path={paths.volunteerRoles}
+							exact
+							component={VolunteerRoleList}
+						/>
+						<Route
+							path={paths.addVolunteerRole}
+							exact
+							component={AddVolunteerRole}
+						/>
+						<Route
+							path={`${paths.editVolunteerRole}/:id`}
+							exact
+							component={EditVolunteerRole}
 						/>
 
 						<Route path={"/admin/media"} exact component={MediaPage} />
