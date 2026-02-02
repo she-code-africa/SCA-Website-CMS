@@ -3,6 +3,17 @@ import axios from "axios";
 const baseUrl = process.env.REACT_APP_BASE_URL;
 const sagBaseUrl = process.env.REACT_APP_STEM_A_GIRL_BASE_URL;
 
+
+const unwrap = (res) => {
+	// api.get() might return either: (this is for volunteer roles currently)
+	// A) { data: { success, data } }
+	// B) { success, data }
+	// C) already unwrapped
+	const payload = res?.data ?? res;
+	return payload?.data ?? payload;
+};
+
+
 export async function getEvents() {
 	const events = await api.get(`${baseUrl}/events`);
 	return events;
@@ -383,6 +394,56 @@ export async function updateVolunteerStatus({ id, status }) {
 	return await api.patch(`${baseUrl}/volunteer-request/${id}/status`, {
 		status,
 	});
+}
+
+export async function getVolunteerRoles() {
+	const res = await api.get(`${baseUrl}/volunteer-role`);
+	return unwrap(res);
+}
+
+export async function getVolunteerRole(volunteerRoleId) {
+	const res = await api.get(`${baseUrl}/volunteer-role/${volunteerRoleId}`);
+	return unwrap(res);
+}
+
+/**
+ * payload: { name: string, description?: string, skills?: string[], image?: File }
+ */
+export async function createVolunteerRole(payload) {
+	const fd = new FormData();
+	fd.append("name", payload.name);
+	fd.append("description", payload.description || "");
+	fd.append("skills", JSON.stringify(payload.skills || []));
+	if (payload.image) fd.append("image", payload.image);
+
+	// Your api wrapper might already handle headers, but we set it explicitly
+	const res = await api.post(`${baseUrl}/volunteer-role`, fd, {
+		headers: { "Content-Type": "multipart/form-data" },
+	});
+
+	return unwrap(res);
+}
+
+/**
+ * payload: { name: string, description?: string, skills?: string[], image?: File }
+ */
+export async function updateVolunteerRole({ volunteerRoleId, payload }) {
+	const fd = new FormData();
+	fd.append("name", payload.name);
+	fd.append("description", payload.description || "");
+	fd.append("skills", JSON.stringify(payload.skills || []));
+	if (payload.image) fd.append("image", payload.image);
+
+	const res = await api.put(`${baseUrl}/volunteer-role/${volunteerRoleId}`, fd, {
+		headers: { "Content-Type": "multipart/form-data" },
+	});
+
+	return unwrap(res);
+}
+
+export async function deleteVolunteerRole(volunteerRoleId) {
+	const res = await api.delete(`${baseUrl}/volunteer-role/${volunteerRoleId}`);
+	return unwrap(res);
 }
 
 export async function getOurReach() {

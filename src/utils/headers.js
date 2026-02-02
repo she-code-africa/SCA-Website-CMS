@@ -279,6 +279,14 @@ export const volunteer = [
 	{ value: "updatedAt", label: "Updated at" },
 ];
 
+export const volunteerRoles = [
+  { value: "image", label: "Image" },
+  { value: "name", label: "Role Name" },
+  { value: "skills", label: "Skills" },
+  { value: "description", label: "Description" },
+  { value: "updatedAt", label: "Updated at" },
+];
+
 export const talentRequest = [
 	{
 		value: "fullname",
