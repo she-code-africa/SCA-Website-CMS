@@ -77,7 +77,7 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 				dateCreated: data.dateCreated ? data.dateCreated.split("T")[0] : "",
 				coverImage: data.coverImage,
 				images: data.images || [],
-				emebedUrl: data.embedUrl || "",
+				embedUrl: data.embedUrl || "",
 			});
 			// Set initial cover image preview if exists
 			if (data.coverImage) {
@@ -288,8 +288,8 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 
 		newItem ? createNewMedia(formData) : updateMediaDetails();
 	};
-	
 
+	console.log("media==>", mediaData);
 	return (
 		<>
 			<Modal
