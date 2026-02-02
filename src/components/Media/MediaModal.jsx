@@ -55,7 +55,7 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 		author: "",
 		tag: "",
 		link: "",
-		date: "",
+		dateCreated: "",
 		coverImage: null,
 		images: [],
 		embedUrl: "",
@@ -74,7 +74,7 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 				author: data.author,
 				tag: data.tag,
 				link: data.link || data.videoLink || data.blogLink || "",
-				date: data.dateCreated ? data.dateCreated.split("T")[0] : "",
+				dateCreated: data.dateCreated ? data.dateCreated.split("T")[0] : "",
 				coverImage: data.coverImage,
 				images: data.images || [],
 				emebedUrl: data.embedUrl || "",
@@ -169,7 +169,7 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 					author: "",
 					tag: "",
 					link: "",
-					date: "",
+					dateCreated: "",
 					coverImage: null,
 					images: [],
 					embedUrl: "",
@@ -256,15 +256,15 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 			link,
 			author,
 			tag,
-			date,
+			dateCreated,
 			images,
 			coverImage,
 			embedUrl,
 		} = mediaData;
 
 		let formattedDate = "";
-		if (date) {
-			formattedDate = new Date(date).toISOString().split("T")[0];
+		if (dateCreated) {
+			formattedDate = new Date(dateCreated).toISOString().split("T")[0];
 		}
 
 		const formData = new FormData();
@@ -396,8 +396,8 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 										required
 										type="date"
 										className={`${inputClass} mt-3`}
-										name="date"
-										value={mediaData.date}
+										name="dateCreated"
+										value={mediaData.dateCreated}
 										onChange={handleInputChange}
 										disabled={!edit && !newItem}
 									/>
