@@ -55,9 +55,10 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 		author: "",
 		tag: "",
 		link: "",
-		date: "",
+		dateCreated: "",
 		coverImage: null,
-		images: [], // mix of old urls + new Files
+		images: [],
+		embedUrl: "",
 	});
 
 	// Store cover image preview URL
@@ -73,9 +74,10 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 				author: data.author,
 				tag: data.tag,
 				link: data.link || data.videoLink || data.blogLink || "",
-				date: data.dateCreated ? data.dateCreated.split("T")[0] : "",
+				dateCreated: data.dateCreated ? data.dateCreated.split("T")[0] : "",
 				coverImage: data.coverImage,
 				images: data.images || [],
+				emebedUrl: data.embedUrl || "",
 			});
 			// Set initial cover image preview if exists
 			if (data.coverImage) {
@@ -167,9 +169,10 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 					author: "",
 					tag: "",
 					link: "",
-					date: "",
+					dateCreated: "",
 					coverImage: null,
 					images: [],
+					embedUrl: "",
 				});
 				setCoverImagePreview(null);
 				queryClient.invalidateQueries({ queryKey: ["media"] });
@@ -253,14 +256,15 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 			link,
 			author,
 			tag,
-			date,
+			dateCreated,
 			images,
 			coverImage,
+			embedUrl,
 		} = mediaData;
 
 		let formattedDate = "";
-		if (date) {
-			formattedDate = new Date(date).toISOString().split("T")[0];
+		if (dateCreated) {
+			formattedDate = new Date(dateCreated).toISOString().split("T")[0];
 		}
 
 		const formData = new FormData();
@@ -272,6 +276,7 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 		formData.append("author", author);
 		formData.append("tag", tag);
 		formData.append("dateCreated", formattedDate);
+		formData.append("embedUrl", embedUrl);
 
 		if (coverImage) {
 			formData.append("coverImage", coverImage);
@@ -283,6 +288,7 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 
 		newItem ? createNewMedia(formData) : updateMediaDetails();
 	};
+	
 
 	return (
 		<>
@@ -390,8 +396,8 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 										required
 										type="date"
 										className={`${inputClass} mt-3`}
-										name="date"
-										value={mediaData.date}
+										name="dateCreated"
+										value={mediaData.dateCreated}
 										onChange={handleInputChange}
 										disabled={!edit && !newItem}
 									/>
@@ -413,6 +419,25 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 									/>
 								</div>
 							</section>
+
+							{/* embed url*/}
+							{mediaData.type.toLowerCase() === "video" && (
+								<div className="w-full mt-5">
+									<label className="text-base font-medium text-slate-600 block mb-3">
+										Embed Video URL
+									</label>
+									<input
+										required
+										type="text"
+										className={`${inputClass} mt-3`}
+										name="embedUrl"
+										placeholder="Enter a valid url"
+										value={mediaData.embedUrl}
+										onChange={handleInputChange}
+										disabled={!edit && !newItem}
+									/>
+								</div>
+							)}
 
 							<div className="w-full mt-5">
 								<label className="text-base font-medium text-slate-600">
