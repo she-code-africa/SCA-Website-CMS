@@ -57,7 +57,8 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 		link: "",
 		date: "",
 		coverImage: null,
-		images: [], // mix of old urls + new Files
+		images: [],
+		embedUrl: "",
 	});
 
 	// Store cover image preview URL
@@ -76,6 +77,7 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 				date: data.dateCreated ? data.dateCreated.split("T")[0] : "",
 				coverImage: data.coverImage,
 				images: data.images || [],
+				emebedUrl: data.embedUrl || "",
 			});
 			// Set initial cover image preview if exists
 			if (data.coverImage) {
@@ -170,6 +172,7 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 					date: "",
 					coverImage: null,
 					images: [],
+					embedUrl: "",
 				});
 				setCoverImagePreview(null);
 				queryClient.invalidateQueries({ queryKey: ["media"] });
@@ -256,6 +259,7 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 			date,
 			images,
 			coverImage,
+			embedUrl,
 		} = mediaData;
 
 		let formattedDate = "";
@@ -272,6 +276,7 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 		formData.append("author", author);
 		formData.append("tag", tag);
 		formData.append("dateCreated", formattedDate);
+		formData.append("embedUrl", embedUrl);
 
 		if (coverImage) {
 			formData.append("coverImage", coverImage);
@@ -283,6 +288,7 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 
 		newItem ? createNewMedia(formData) : updateMediaDetails();
 	};
+	
 
 	return (
 		<>
@@ -413,6 +419,25 @@ const MediaModal = ({ isOpen, handleModal, id, newItem }) => {
 									/>
 								</div>
 							</section>
+
+							{/* embed url*/}
+							{mediaData.type.toLowerCase() === "video" && (
+								<div className="w-full mt-5">
+									<label className="text-base font-medium text-slate-600 block mb-3">
+										Embed Video URL
+									</label>
+									<input
+										required
+										type="text"
+										className={`${inputClass} mt-3`}
+										name="embedUrl"
+										placeholder="Enter a valid url"
+										value={mediaData.embedUrl}
+										onChange={handleInputChange}
+										disabled={!edit && !newItem}
+									/>
+								</div>
+							)}
 
 							<div className="w-full mt-5">
 								<label className="text-base font-medium text-slate-600">
