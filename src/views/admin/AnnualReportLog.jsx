@@ -7,22 +7,20 @@ import {
 	TableData,
 	TableBody,
 } from "components/Table/DisplayTable";
-import moment from "moment";
-import { useMutation, useQuery, useQueryClient } from "react-query";
+
+import { useQuery } from "react-query";
 import { getReportsViews } from "services";
 import { ToastContainer, toast } from "react-toastify";
-import { FaDownload } from "react-icons/fa6";
 
 const AnnualReportLog = () => {
-	const queryClient = useQueryClient();
 	const [details, setDetails] = useState([]);
-	const { isLoading } = useQuery("reports", getReportsViews, {
+	const { isLoading } = useQuery("reportsViews", getReportsViews, {
 		onSuccess: (data) => {
 			console.log("REPORT===>", data);
 			setDetails(data);
 		},
 		onError: () => {
-			toast.error("Error fetching Reports");
+			toast.error("Error fetching Report views");
 		},
 	});
 
@@ -38,9 +36,6 @@ const AnnualReportLog = () => {
 					<h5 className="font-medium text-xl text-slate-700">
 						Annual Report Views
 					</h5>
-					<span>
-						<FaDownload />
-					</span>
 
 					{isLoading
 						? 0
