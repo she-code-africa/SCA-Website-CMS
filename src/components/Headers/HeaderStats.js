@@ -10,18 +10,18 @@ import GoogleAnalytics from "analytics";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 const CLIENT_ID = process.env.REACT_APP_GA_CLIENT_ID;
 
-export default function HeaderStats () {
+export default function HeaderStats() {
 	const { data: totalUsers, isLoading: loadingUsers } = useQuery(
 		"users",
-		getUsers
+		getUsers,
 	);
 	const { data: totalEvents, isLoading: loadingEvents } = useQuery(
 		"events",
-		getEvents
+		getEvents,
 	);
 	const { data: totalMembers, isLoading: loadingMembers } = useQuery(
 		"teams",
-		getMembers
+		getMembers,
 	);
 
 	const [totalActiveEvents, setTotalActiveEvents] = useState();
@@ -80,7 +80,6 @@ export default function HeaderStats () {
 									<GoogleAnalytics />
 								</GoogleOAuthProvider>
 							</div>
-
 						</div>
 					</div>
 				</div>

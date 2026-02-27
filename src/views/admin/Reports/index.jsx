@@ -19,6 +19,7 @@ import DeleteModal from "components/Modal/DeleteModal";
 import SearchInput from "components/Inputs/SearchInput";
 import FilterDropdown from "components/Inputs/FilterDropdown";
 import { LuListFilter } from "react-icons/lu";
+import { Link } from "react-router-dom";
 
 const Reports = () => {
 	const queryClient = useQueryClient();
@@ -71,7 +72,7 @@ const Reports = () => {
 	const yearOptions = useMemo(() => {
 		if (!reports) return [];
 		const years = [...new Set(reports.map((report) => report.year))].sort(
-			(a, b) => b - a
+			(a, b) => b - a,
 		);
 		return years.map((year) => ({
 			value: year.toString(),
@@ -111,14 +112,14 @@ const Reports = () => {
 			filtered = filtered.filter(
 				(report) =>
 					report.year?.toString().includes(searchTerm) ||
-					report.link?.toLowerCase().includes(searchTerm)
+					report.link?.toLowerCase().includes(searchTerm),
 			);
 		}
 
 		// Apply year filter
 		if (filters.year) {
 			filtered = filtered.filter(
-				(report) => report.year?.toString() === filters.year
+				(report) => report.year?.toString() === filters.year,
 			);
 		}
 
@@ -200,6 +201,12 @@ const Reports = () => {
 						}}>
 						Add
 					</button>
+
+					<Link
+						className="rounded-md bg-pink-500 text-white text-xs px-4 py-2 w-full"
+						to="/admin/annual-report">
+						View annual report log
+					</Link>
 				</div>
 			</div>
 
@@ -253,7 +260,7 @@ const Reports = () => {
 										</TableData>
 									</TableDataRow>
 								);
-							}
+							},
 						)
 					) : (
 						<TableDataRow className="grid grid-cols-4 px-4 py-8 bg-white">
