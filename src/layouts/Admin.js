@@ -31,7 +31,7 @@ import {
 import {
 	VolunteerRoleList,
 	AddVolunteerRole,
-	EditVolunteerRole
+	EditVolunteerRole,
 } from "views/admin/Volunteers/VolunteerRoles";
 import Jobs from "views/admin/Jobs/Jobs";
 import AddJob from "views/admin/Jobs/AddJob";
@@ -56,6 +56,7 @@ import ChapterEvents from "views/admin/Chapters/events";
 import ChapterLeads from "views/admin/Chapters/leads";
 import { Redirect } from "react-router-dom/cjs/react-router-dom";
 import MediaPage from "views/admin/Media";
+import AnnualReportLog from "views/admin/AnnualReportLog";
 
 export default function Admin() {
 	return (
@@ -67,6 +68,11 @@ export default function Admin() {
 				<div className="px-4 flex md:px-10 mx-auto w-full -mt-20 mb-12">
 					<Switch>
 						<Route path={paths.dashboard} exact component={Dashboard} />
+						<Route
+							path="/admin/annual-report"
+							exact
+							component={AnnualReportLog}
+						/>
 						<Route path={paths.settings} exact component={Settings} />
 						<Route path={paths.team} exact component={TeamList} />
 						<Route path={paths.partners} exact component={PartnersList} />

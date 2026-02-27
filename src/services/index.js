@@ -3,7 +3,6 @@ import axios from "axios";
 const baseUrl = process.env.REACT_APP_BASE_URL;
 const sagBaseUrl = process.env.REACT_APP_STEM_A_GIRL_BASE_URL;
 
-
 const unwrap = (res) => {
 	// api.get() might return either: (this is for volunteer roles currently)
 	// A) { data: { success, data } }
@@ -12,7 +11,6 @@ const unwrap = (res) => {
 	const payload = res?.data ?? res;
 	return payload?.data ?? payload;
 };
-
 
 export async function getEvents() {
 	const events = await api.get(`${baseUrl}/events`);
@@ -192,7 +190,7 @@ export async function addTeamMember(data) {
 export async function editTeamMember({ id, catId, data }) {
 	const member = await api.put(
 		`${baseUrl}/teams/categories/${catId}/members/${id}`,
-		data
+		data,
 	);
 	return member;
 }
@@ -204,7 +202,7 @@ export async function addTeamCategory(data) {
 
 export async function getTeamMember(catId, id) {
 	const member = await api.get(
-		`${baseUrl}/teams/categories/${catId}/members/${id}`
+		`${baseUrl}/teams/categories/${catId}/members/${id}`,
 	);
 	return member;
 }
@@ -218,7 +216,7 @@ export async function getActivityLog(
 	page,
 	limit,
 	startDate = null,
-	endDate = null
+	endDate = null,
 ) {
 	let url = `${baseUrl}/logs?page=${page}&limit=${limit}`;
 	if (startDate) {
@@ -238,21 +236,21 @@ export async function createEvent(data) {
 
 export async function publishTeamMember({ catId, id }) {
 	const member = await api.patch(
-		`${baseUrl}/teams/categories/${catId}/members/${id}/publish`
+		`${baseUrl}/teams/categories/${catId}/members/${id}/publish`,
 	);
 	return member;
 }
 
 export async function archiveTeamMember({ catId, id }) {
 	const member = await api.patch(
-		`${baseUrl}/teams/categories/${catId}/members/${id}/archive`
+		`${baseUrl}/teams/categories/${catId}/members/${id}/archive`,
 	);
 	return member;
 }
 
 export async function deleteTeamMember({ catId, id }) {
 	const member = await api.delete(
-		`${baseUrl}/teams/categories/${catId}/members/${id}`
+		`${baseUrl}/teams/categories/${catId}/members/${id}`,
 	);
 	return member;
 }
@@ -260,7 +258,7 @@ export async function deleteTeamMember({ catId, id }) {
 export async function editTeamCategories({ catId, name: data }) {
 	const categories = await api.put(
 		`${baseUrl}/teams/categories/${catId}`,
-		data
+		data,
 	);
 	return categories;
 }
@@ -434,9 +432,13 @@ export async function updateVolunteerRole({ volunteerRoleId, payload }) {
 	fd.append("skills", JSON.stringify(payload.skills || []));
 	if (payload.image) fd.append("image", payload.image);
 
-	const res = await api.put(`${baseUrl}/volunteer-role/${volunteerRoleId}`, fd, {
-		headers: { "Content-Type": "multipart/form-data" },
-	});
+	const res = await api.put(
+		`${baseUrl}/volunteer-role/${volunteerRoleId}`,
+		fd,
+		{
+			headers: { "Content-Type": "multipart/form-data" },
+		},
+	);
 
 	return unwrap(res);
 }
@@ -516,26 +518,26 @@ export async function createProgram(data) {
 
 export async function getProgram(catId, id) {
 	return await api.get(
-		`${baseUrl}/programs/categories/${catId}/member-programs/${id}`
+		`${baseUrl}/programs/categories/${catId}/member-programs/${id}`,
 	);
 }
 
 export async function deleteProgram({ id, categoryId }) {
 	return await api.delete(
-		`${baseUrl}/programs/categories/${categoryId}/member-programs/${id}`
+		`${baseUrl}/programs/categories/${categoryId}/member-programs/${id}`,
 	);
 }
 
 export async function editProgram({ id, categoryId, data }) {
 	return await api.put(
 		`${baseUrl}/programs/categories/${categoryId}/member-programs/${id}`,
-		data
+		data,
 	);
 }
 
 export async function publishProgram({ id, categoryId }) {
 	return await api.patch(
-		`${baseUrl}/programs/categories/${categoryId}/member-programs/${id}/publish`
+		`${baseUrl}/programs/categories/${categoryId}/member-programs/${id}/publish`,
 	);
 }
 
@@ -545,7 +547,7 @@ export async function updateTeamPositions(payload) {
 
 export async function archiveProgram({ id, categoryId }) {
 	return await api.patch(
-		`${baseUrl}/programs/categories/${categoryId}/member-programs/${id}/archive`
+		`${baseUrl}/programs/categories/${categoryId}/member-programs/${id}/archive`,
 	);
 }
 
@@ -583,7 +585,7 @@ export async function editChapterCategory({ id, data }) {
 
 export async function getChapters(page, limit = 8) {
 	const chapters = await axios.get(
-		`${baseUrl}/chapters/member-chapters?page=${page}&limit=${limit}`
+		`${baseUrl}/chapters/member-chapters?page=${page}&limit=${limit}`,
 	);
 	return chapters.data;
 }
@@ -666,6 +668,10 @@ export async function createChapterLead(data) {
 
 export async function getReports() {
 	return await api.get(`${baseUrl}/reports`);
+}
+
+export async function getReportsViews() {
+	return await api.get(`${baseUrl}/annual-report`);
 }
 
 export async function getReport(id) {
