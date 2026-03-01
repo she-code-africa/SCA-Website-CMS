@@ -5,9 +5,7 @@ import { clearLoggedInCookie } from "./session";
 export function logout() {
   clearLoggedInCookie();
   clearToken();
-
-  // optional cleanup
   if (typeof window !== "undefined") {
-    localStorage.removeItem("rememberedEmail");
+    window.location.href = "/login"; // This "hard" redirect is safest for session expiration
   }
 }

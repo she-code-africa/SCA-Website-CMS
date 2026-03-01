@@ -1,12 +1,8 @@
-import { ThemeToggle } from "@/components/molecules/theme-toggle";
+import { redirect } from "next/navigation";
 
 export default function Page() {
-  return (
-    <div className="min-h-screen bg-background text-foreground p-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Theme test</h1>
-        <ThemeToggle />
-      </div>
-    </div>
-  );
+  // Since middleware handles the 'isLoggedIn' check,
+  // we just redirect to the dashboard by default.
+  // If not logged in, middleware will intercept and send them to /login.
+  redirect("/admin/dashboard");
 }
