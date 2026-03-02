@@ -56,7 +56,7 @@ const statusConfig: Record<
   }
 > = {
   active: { label: "Active", variant: "default" },
-  inactive: { label: "Inactive", variant: "destructive" },
+  inactive: { label: "Deactivated", variant: "destructive" },
   pending: { label: "Pending", variant: "outline" }
 };
 

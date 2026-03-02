@@ -1,4 +1,3 @@
-// src/app/admin/chapters/page.tsx
 "use client";
 
 import * as React from "react";
@@ -17,45 +16,40 @@ import { ChapterPagination } from "@/features/chapters/components/chapter-pagina
 import { TableShell } from "@/components/templates/table-shell";
 import { TableFrame } from "@/components/templates/table-frame";
 
-// Helper to extract category ID
 function extractCategoryId(val: any): string {
   if (!val) return "";
   if (typeof val === "string") return val;
   return val._id || "";
 }
 
-// Client-side filters
 function applyClientFilters(rows: Chapter[], f: ChapterFilters) {
   let out = [...rows];
 
   const q = f.search?.trim().toLowerCase();
   if (q) {
-    out = out.filter((ch) => {
-      return ch.name?.toLowerCase().includes(q);
-    });
+    out = out.filter((ch) => ch.name?.toLowerCase().includes(q));
   }
 
-  if (f.state && f.state !== "") {
+  // ✅ Fixed TS comparison error by checking truthiness
+  if (f.state) {
     out = out.filter((ch) => ch.state === f.state);
   }
 
-  if (f.category && f.category !== "") {
+  if (f.category) {
     out = out.filter((ch) => extractCategoryId(ch.category) === f.category);
   }
 
-  if (f.sortBy && f.sortBy !== "") {
+  if (f.sortBy) {
     const key = f.sortBy;
     out.sort((a: any, b: any) => {
       const av = a?.[key];
       const bv = b?.[key];
-
       if (key === "createdAt" || key === "updatedAt") {
         return new Date(bv ?? 0).getTime() - new Date(av ?? 0).getTime();
       }
       return String(av ?? "").localeCompare(String(bv ?? ""));
     });
   } else {
-    // Default sort by created date (newest first)
     out.sort(
       (a, b) =>
         new Date(b.createdAt ?? 0).getTime() -
@@ -69,12 +63,11 @@ function applyClientFilters(rows: Chapter[], f: ChapterFilters) {
 export default function ChaptersPage() {
   const [filters, setFilters] = React.useState<ChapterFilters>({
     search: "",
-    state: "",
+    state: "" as any,
     category: "",
     sortBy: ""
   });
 
-  // client-side pagination
   const [page, setPage] = React.useState(1);
   const limit = 10;
 
@@ -92,14 +85,13 @@ export default function ChaptersPage() {
     return () => window.removeEventListener("chapter:add", handler);
   }, []);
 
-  // reset to page 1 when filters change
   React.useEffect(() => {
     setPage(1);
   }, [filters.search, filters.state, filters.category, filters.sortBy]);
 
   const query = useQuery({
     queryKey: ["chapters"],
-    queryFn: () => getChapters(1, 1000), // Fetch all for client-side filtering
+    queryFn: () => getChapters(1, 1000),
     staleTime: 30_000
   });
 
@@ -128,30 +120,31 @@ export default function ChaptersPage() {
       }
     >
       <div className="space-y-4">
-        {/* Controls */}
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <Filters
             value={filters}
             onChange={setFilters}
             onReset={() =>
-              setFilters({ search: "", state: "", category: "", sortBy: "" })
+              setFilters({
+                search: "",
+                state: "" as any,
+                category: "",
+                sortBy: ""
+              })
             }
           />
 
+          {/* ✅ FIXED: Corrected prop names to match ChapterPagination interface */}
           <ChapterPagination
             currentPage={page}
             totalPages={totalPages}
-            onPrevious={() => setPage((p) => Math.max(1, p - 1))}
-            onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
+            onPageChange={(newPage) => setPage(newPage)}
             isLoading={query.isFetching}
           />
         </div>
 
-        {/* Responsive list/table wrapper */}
         <div className="grid grid-cols-12 gap-4">
-          {/* Left: table/cards */}
           <div className="col-span-12 lg:col-span-9 space-y-3">
-            {/* Mobile list */}
             <div className="grid gap-3 md:hidden">
               {query.isLoading ? (
                 Array.from({ length: 6 }).map((_, i) => (
@@ -179,7 +172,6 @@ export default function ChaptersPage() {
               )}
             </div>
 
-            {/* Tablet + Desktop table */}
             <div className="hidden md:block">
               <TableFrame>
                 <ChapterTable
@@ -192,7 +184,6 @@ export default function ChaptersPage() {
             </div>
           </div>
 
-          {/* Right: categories panel */}
           <div className="col-span-12 lg:col-span-3">
             <ChapterCategoriesPanel />
           </div>
