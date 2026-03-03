@@ -27,7 +27,7 @@ export default function AuthLayout({
             href="https://shecodeafrica.org"
             target="_blank"
             rel="noopener noreferrer"
-            className="underline"
+            className="underline font-medium"
           >
             She Code Africa.
           </a>{" "}

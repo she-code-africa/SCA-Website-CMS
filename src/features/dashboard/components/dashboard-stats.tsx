@@ -6,7 +6,7 @@ import { Users, CalendarDays, ListChecks, UserCog } from "lucide-react";
 
 import { getUsers } from "@/features/team/api";
 import { getMembers } from "@/features/team/api";
-import { getEvents, EventItem } from "@/features/events/api";
+import { getEvents, type Event } from "@/features/events/api";
 import { GoogleAnalyticsCard } from "@/features/analytics/components/google-analytics-card";
 import { StatCard } from "@/components/molecules/stats-card";
 
@@ -61,7 +61,7 @@ function computeMonthTrend(thisMonth: number, lastMonth: number): TrendMeta {
   return { trend: "neutral", value: "0%", label: "Since last month" };
 }
 
-function countActivePrograms(events: EventItem[]) {
+function countActivePrograms(events: Event[]) {
   const now = new Date();
   return events.filter((e) => {
     if (!e?.eventDate) return false;
@@ -90,7 +90,7 @@ export function DashboardStats() {
 
   const membersQuery = useQuery({
     queryKey: ["members"],
-    queryFn: getMembers,
+    queryFn: () => getMembers(),
     retry: false,
     refetchOnWindowFocus: false,
     staleTime: 60_000
@@ -101,7 +101,7 @@ export function DashboardStats() {
     [usersQuery.data]
   );
   const events = React.useMemo(
-    () => (eventsQuery.data ?? []) as EventItem[],
+    () => (eventsQuery.data ?? []) as Event[],
     [eventsQuery.data]
   );
   const members = React.useMemo(

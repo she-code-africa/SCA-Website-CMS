@@ -28,7 +28,6 @@ import {
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
 
 type Props = {
   open: boolean;
@@ -143,7 +142,7 @@ export function VolunteerDetailsSheet({ open, onOpenChange, id }: Props) {
 
                 <div className="grid gap-2">
                   <label className="text-sm font-medium">Purpose</label>
-                  <div className="rounded-md border px-3 py-2 text-sm bg-muted/50 min-h-[100px]">
+                  <div className="rounded-md border px-3 py-2 text-sm bg-muted/50 min-h-25">
                     {v.purpose ?? "—"}
                   </div>
                 </div>

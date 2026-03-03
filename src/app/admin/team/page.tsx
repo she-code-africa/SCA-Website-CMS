@@ -16,6 +16,7 @@ import { TeamMemberSheet } from "@/features/team/components/team-member-sheet";
 import { TeamPagination } from "@/features/team/components/team-pagination";
 import { TableShell } from "@/components/templates/table-shell";
 import { TableFrame } from "@/components/templates/table-frame";
+import { PermissionGate } from "@/components/PermissionGate";
 
 export default function TeamPage() {
   const [filters, setFilters] = React.useState<TeamMembersFilters>({
@@ -66,7 +67,7 @@ export default function TeamPage() {
   };
 
   return (
-    
+    <PermissionGate permission="VIEW_TEAM">
     <TableShell
       title="Team"
       description="Manage members and categories."
@@ -143,7 +144,10 @@ export default function TeamPage() {
 
           {/* Right: categories panel */}
           <div className="col-span-12 lg:col-span-3">
+            <PermissionGate permission="VIEW_TEAMCATEGORIES">
             <TeamCategoriesPanel />
+
+            </PermissionGate>
           </div>
         </div>
 
@@ -162,5 +166,7 @@ export default function TeamPage() {
         />
       </div>
     </TableShell>
+
+    </PermissionGate>
   );
 }

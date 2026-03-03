@@ -15,9 +15,9 @@ export const MOCK_ROLES = [
 export const MOCK_USERS: AdminUser[] = [
   {
     id: "usr_001",
-    firstName: "Amara",
+    firstName: "Glory",
     lastName: "Okafor",
-    email: "amara.okafor@shecodeafrica.org",
+    email: "glory.okafor@shecodeafrica.org",
     role: { id: "role_administrator", name: "Administrator", isDefault: true },
     status: "active",
     lastLogin: "2026-02-28T09:14:00Z",

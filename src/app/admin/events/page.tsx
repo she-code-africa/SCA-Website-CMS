@@ -27,11 +27,11 @@ function applyClientFilters(rows: Event[], f: EventFilters) {
     });
   }
 
-  if (f.state && f.state !== "") out = out.filter((e) => e.state === f.state);
+  if (f.state) out = out.filter((e) => e.state === f.state);
 
-  if (f.sortBy && f.sortBy !== "") {
+  if (f.sortBy) {
     const key = f.sortBy;
-    out.sort((a: any, b: any) => {
+    out.sort((a: Event, b: Event) => {
       const av = a?.[key];
       const bv = b?.[key];
 

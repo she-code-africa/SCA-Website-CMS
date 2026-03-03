@@ -2,6 +2,7 @@ import { ActivityLogTable } from "@/features/activity-log/components/activity-lo
 import { DashboardStats } from "@/features/dashboard/components/dashboard-stats";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { TableShell } from "@/components/templates/table-shell";
+import { PermissionGate } from "@/components/PermissionGate";
 
 export default function DashboardPage() {
   const GA_CLIENT_ID = process.env.NEXT_PUBLIC_GA_CLIENT_ID!;
@@ -14,9 +15,11 @@ export default function DashboardPage() {
       </GoogleOAuthProvider>
 
       {/* Activity log */}
+      <PermissionGate permission="VIEW_DASHBOARD">
       <TableShell title="Activity Log">
         <ActivityLogTable />
       </TableShell>
+      </PermissionGate>
     </div>
   );
 }

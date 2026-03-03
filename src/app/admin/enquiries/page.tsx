@@ -34,9 +34,9 @@ function applyClientFilters(rows: Enquiry[], f: EnquiryFilters) {
 
   if (f.sortBy) {
     const key = f.sortBy;
-    out.sort((a: any, b: any) => {
-      const av = a?.[key];
-      const bv = b?.[key];
+    out.sort((a: Enquiry, b: Enquiry) => {
+      const av = a?.[key as keyof Enquiry];
+      const bv = b?.[key as keyof Enquiry];
 
       if (key === "createdAt" || key === "updatedAt") {
         return new Date(bv ?? 0).getTime() - new Date(av ?? 0).getTime();

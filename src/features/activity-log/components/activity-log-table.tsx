@@ -30,11 +30,8 @@ import { columns } from "@/features/activity-log/components/columns";
 import {
   globalFilterFn,
   toCSV,
-  downloadCSV,
-  colClass
+  downloadCSV
 } from "@/features/activity-log/utils";
-
-import { cn } from "@/lib/utils/utils";
 import {
   Table,
   TableBody,
@@ -44,8 +41,10 @@ import {
   TableRow
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
+import { usePermissions } from "@/hooks/usePermissions";
 
 export function ActivityLogTable() {
+  const { can } = usePermissions();
   const [page, setPage] = React.useState(1);
   const [limit] = React.useState(10);
 
@@ -81,7 +80,7 @@ export function ActivityLogTable() {
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     staleTime: 30_000,
-    enabled: hasToken
+    enabled: hasToken && can("VIEW_DASHBOARD")
   });
 
   const isUnauthorized = (() => {
@@ -136,9 +135,10 @@ export function ActivityLogTable() {
       toast.success("CSV exported successfully");
       setExportOpen(false);
     } catch (err: unknown) {
+      const errorObj = err as { response?: { data?: { message?: string } }; message?: string };
       const message =
-        (err as any)?.response?.data?.message ||
-        (err as any)?.message ||
+        errorObj?.response?.data?.message ||
+        errorObj?.message ||
         "Failed to export logs.";
       toast.error(message);
     } finally {
@@ -233,7 +233,7 @@ export function ActivityLogTable() {
         {/* Table */}
         <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
           <div className="w-full overflow-x-auto">
-            <Table className="min-w-[1100px]">
+            <Table className="min-w-275">
               <TableHeader className="sticky top-0 z-10 bg-card">
                 {table.getHeaderGroups().map((hg) => (
                   <TableRow key={hg.id} className="border-b">

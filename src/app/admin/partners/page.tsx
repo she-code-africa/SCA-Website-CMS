@@ -24,14 +24,14 @@ function applyClientFilters(rows: Partner[], f: PartnerFilters) {
   const q = f.search?.trim().toLowerCase();
   if (q) out = out.filter((p) => p.name?.toLowerCase().includes(q));
 
-  if (f.featured && f.featured !== "") {
+  if (f.featured) {
     const isFeatured = f.featured === "true";
     out = out.filter((p) => p.featured === isFeatured);
   }
 
-  if (f.sortBy && f.sortBy !== "") {
+  if (f.sortBy) {
     const key = f.sortBy;
-    out.sort((a: any, b: any) => {
+    out.sort((a: Partner, b: Partner) => {
       const av = a?.[key];
       const bv = b?.[key];
 

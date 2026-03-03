@@ -38,15 +38,11 @@ export default function UsersPage() {
   const [selected, setSelected] = React.useState<AdminUser | null>(null);
 
   // Listen for invite button in filters
-  React.useEffect(() => {
-    const handler = () => {
-      setSelected(null);
-      setSheetMode("invite");
-      setSheetOpen(true);
-    };
-    window.addEventListener("users:invite", handler);
-    return () => window.removeEventListener("users:invite", handler);
-  }, []);
+const handleOpenInvite = () => {
+  setSelected(null);
+  setSheetMode("invite");
+  setSheetOpen(true);
+};
 
   // Reset to page 1 on filter change
   React.useEffect(() => {
@@ -115,6 +111,7 @@ export default function UsersPage() {
             onChange={setFilters}
             onReset={() => setFilters({ search: "", roleId: "", status: "" })}
             roles={roles}
+            onInvite={handleOpenInvite}
           />
           <UserPagination
             currentPage={page}

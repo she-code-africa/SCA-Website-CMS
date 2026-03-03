@@ -111,6 +111,12 @@ export const PERMISSION_MODULES: PermissionModule[] = [
       "DELETE_CHAPTER"
     ]
   },
+
+  {
+    key: "chapterEvents",
+    label: "Chapter Events",
+    permissions: ["VIEW_EVENT", "CREATE_EVENT", "UPDATE_EVENT", "DELETE_EVENT"]
+  },
   {
     key: "chapterCats",
     label: "Chapter Categories",
@@ -245,6 +251,16 @@ export const PERMISSION_MODULES: PermissionModule[] = [
       "UPDATE_JOBTYPE",
       "DELETE_JOBTYPE"
     ]
+  },
+  {
+    key: "media",
+    label: "Media & Activities",
+    permissions: [
+      "VIEW_ACTIVITY",
+      "CREATE_ACTIVITY",
+      "UPDATE_ACTIVITY",
+      "DELETE_ACTIVITY"
+    ]
   }
 ];
 
@@ -293,4 +309,29 @@ export function getMockRoles(): RoleDetail[] {
 
 export function setMockRoles(roles: RoleDetail[]): void {
   _roles = roles;
+}
+
+export const getPermissionByAction = (
+  permissions: string[],
+  action: string
+) => {
+  // Matches "VIEW_TEAM" or "TEAM_VIEW" or "VIEW_DASHBOARD"
+  return permissions.find(
+    (p) =>
+      p.startsWith(`${action}_`) || p.endsWith(`_${action}`) || p === action // edge case
+  );
+};
+
+if (process.env.NODE_ENV === "development") {
+  const flattenedModules = PERMISSION_MODULES.flatMap((m) => m.permissions);
+  const missingInModules = ALL_PERMISSIONS.filter(
+    (p) => !flattenedModules.includes(p)
+  );
+
+  if (missingInModules.length > 0) {
+    console.warn(
+      "RBAC Warning: Some permissions are not assigned to any UI Module:",
+      missingInModules
+    );
+  }
 }

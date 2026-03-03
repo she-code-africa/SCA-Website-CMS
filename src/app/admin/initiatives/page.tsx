@@ -30,19 +30,19 @@ function applyClientFilters(rows: Initiative[], f: InitiativeFilters) {
     });
   }
 
-  if (f.isAvailable && f.isAvailable !== "") {
+  if (f.isAvailable) {
     const isAvail = f.isAvailable === "true";
     out = out.filter((i) => i.isAvailable === isAvail);
   }
 
-  if (f.sortBy && f.sortBy !== "") {
-    const key = f.sortBy;
-    out.sort((a: any, b: any) => {
+  if (f.sortBy) {
+    const key = f.sortBy as keyof Initiative;
+    out.sort((a: Initiative, b: Initiative) => {
       const av = a?.[key];
       const bv = b?.[key];
 
       if (key === "createdAt" || key === "updatedAt") {
-        return new Date(bv ?? 0).getTime() - new Date(av ?? 0).getTime();
+        return new Date(bv as string ?? 0).getTime() - new Date(av as string ?? 0).getTime();
       }
       return String(av ?? "").localeCompare(String(bv ?? ""));
     });

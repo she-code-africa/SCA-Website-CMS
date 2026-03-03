@@ -24,14 +24,19 @@ interface UsePermissionsReturn {
   isAdmin: boolean;
   /** The full Set of permissions the current user has — for advanced checks */
   permissionSet: Set<Permission>;
+
+  isLoading: boolean;
 }
 
 export function usePermissions(): UsePermissionsReturn {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
 
-  const isAdmin = user?.role?.name === "Administrator";
+  // Determine admin status strictly by the verified name or role ID
+  const isAdmin =
+    user?.role?.id === "role_administrator" ||
+    user?.role?.name?.toLowerCase() === "administrator";
 
-  // Use the pre-built Set from AuthContext for O(1) lookups
+  // AuthContext should provide a Set for O(1) lookups
   const permissionSet: Set<Permission> = user?.permissionSet ?? new Set();
 
   const can = (permission: Permission): boolean => {
@@ -49,5 +54,5 @@ export function usePermissions(): UsePermissionsReturn {
     return permissions.every((p) => permissionSet.has(p));
   };
 
-  return { can, canAny, canAll, isAdmin, permissionSet };
+  return { can, canAny, canAll, isAdmin, permissionSet, isLoading };
 }

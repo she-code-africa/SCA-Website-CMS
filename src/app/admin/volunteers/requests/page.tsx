@@ -36,14 +36,14 @@ function applyClientFilters(rows: VolunteerRequest[], f: VolunteerFilters) {
     });
   }
 
-  if (f.status && f.status !== "all")
+  if (f.status)
     out = out.filter((v) => v.status === f.status);
-  if (f.volunteerRole && f.volunteerRole !== "all")
+  if (f.volunteerRole)
     out = out.filter((v) => v.volunteerRole === f.volunteerRole);
 
-  if (f.sortBy && f.sortBy !== "all") {
+  if (f.sortBy) {
     const key = f.sortBy;
-    out.sort((a: any, b: any) => {
+    out.sort((a: VolunteerRequest, b: VolunteerRequest) => {
       const av = a?.[key];
       const bv = b?.[key];
 

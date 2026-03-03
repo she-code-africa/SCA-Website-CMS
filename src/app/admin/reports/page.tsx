@@ -31,9 +31,9 @@ function applyClientFilters(rows: Report[], f: ReportFilters) {
 
   if (f.year && f.year !== "") out = out.filter((r) => r.year === f.year);
 
-  if (f.sortBy && f.sortBy !== "") {
+  if (f.sortBy) {
     const key = f.sortBy;
-    out.sort((a: any, b: any) => {
+    out.sort((a: Report, b: Report) => {
       const av = a?.[key];
       const bv = b?.[key];
 

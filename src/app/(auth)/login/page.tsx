@@ -1,182 +1,231 @@
-// src/app/(auth)/login/page.tsx
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
-import { Loader2, Eye, EyeOff } from "lucide-react";
+import { Loader2, Eye, EyeOff, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
+import { useForm } from "react-hook-form";
+import { z } from "zod"; 
+import { zodResolver } from "@hookform/resolvers/zod";
+import type { AxiosError } from "axios";
 
 import { login } from "@/features/auth/api/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage
+} from "@/components/ui/form";
+import { Checkbox } from "@/components/ui/checkbox";
+
+// Validation Schema
+const loginSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  rememberMe: z.boolean()
+});
+
+type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
-
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
   const [showPassword, setShowPassword] = React.useState(false);
-  const [rememberMe, setRememberMe] = React.useState(false);
 
+  const form = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    mode: "onBlur",
+    defaultValues: {
+      email: "",
+      password: "",
+      rememberMe: false
+    }
+  });
+
+  // Load remembered email
   React.useEffect(() => {
     const savedEmail = localStorage.getItem("rememberedEmail");
     if (savedEmail) {
-      setEmail(savedEmail);
-      setRememberMe(true);
+      form.setValue("email", savedEmail);
+      form.setValue("rememberMe", true);
     }
-  }, []);
+  }, [form]);
 
   const mutation = useMutation({
     mutationFn: login,
     onSuccess: (token: string) => {
-      // cookie for middleware route-guard
-      const expires = rememberMe ? 30 : 7;
-      Cookies.set("isLoggedIn", "true", { expires });
+      const values = form.getValues();
+      const expires = values.rememberMe ? 30 : 7;
 
-      // store token (interceptor reads localStorage)
+      // 1. Set Cookie for Middleware
+      Cookies.set("isLoggedIn", "true", { expires, sameSite: "lax" });
+
+      // 2. Store Token for API Interceptor
       localStorage.setItem("token", token);
 
-      // email persistence
-      if (rememberMe) localStorage.setItem("rememberedEmail", email);
-      else localStorage.removeItem("rememberedEmail");
+      // 3. Handle Email Persistence
+      if (values.rememberMe) {
+        localStorage.setItem("rememberedEmail", values.email);
+      } else {
+        localStorage.removeItem("rememberedEmail");
+      }
 
-      toast.success("Signed in successfully");
+      toast.success("Welcome back!");
       router.push("/admin/dashboard");
     },
-    onError: (err: any) => {
+    onError: (err: AxiosError) => {
       const status = err?.response?.status;
-      if (status === 401) toast.error("Invalid email or password");
-      else toast.error("Login failed. Please try again.");
+      if (status === 401) {
+        toast.error("Invalid credentials", {
+          description: "The email or password you entered is incorrect."
+        });
+      } else {
+        toast.error("Connection Error", {
+          description: "Could not reach the authentication server."
+        });
+      }
     }
   });
 
-  const onSubmit = () => {
-    if (!email || !password) {
-      // validation message can stay inline OR toast — your call.
-      toast.warning("Please enter email and password");
-      return;
-    }
-    mutation.mutate({ email, password });
+  const onSubmit = (data: LoginFormValues) => {
+    mutation.mutate({ email: data.email, password: data.password });
   };
 
   return (
-    <div className="container mx-auto px-4 h-full">
-      <div className="flex items-center justify-center min-h-[75vh]">
-        <div className="w-full max-w-md px-2">
-          <div className="bg-slate-200 rounded-lg shadow-lg border overflow-hidden">
-            <div className="px-6 pt-8">
-              <div className="flex justify-center">
-                <img
-                  src="/brand/sca-logo-white.png"
-                  alt="She Code Africa"
-                  className="h-24 w-auto"
-                />
-              </div>
-            </div>
-
-            <div className="px-6 py-8">
-              <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-                <div className="space-y-2">
-                  <label className="block uppercase text-slate-600 text-xs font-bold">
-                    Email
-                  </label>
-                  <Input
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="bg-white text-slate-900"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="block uppercase text-slate-600 text-xs font-bold">
-                    Password
-                  </label>
-
-                  <div className="relative">
-                    <Input
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="bg-white text-slate-900 pr-10"
-                    />
-
-                    <button
-                      type="button"
-                      aria-label={
-                        showPassword ? "Hide password" : "Show password"
-                      }
-                      onClick={() => setShowPassword((s) => !s)}
-                      onMouseDown={(e) => e.preventDefault()}
-                      className="absolute inset-y-0 right-3 inline-flex items-center text-slate-600"
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <label className="inline-flex items-center text-sm text-slate-600">
-                    <input
-                      type="checkbox"
-                      checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
-                      className="form-checkbox mr-2 h-4 w-4"
-                    />
-                    Remember me
-                  </label>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      toast.message("Forgot password not implemented yet")
-                    }
-                    className="text-slate-600 text-sm hover:underline"
-                  >
-                    Forgot password?
-                  </button>
-                </div>
-
-                <Button
-                  type="button"
-                  onClick={onSubmit}
-                  disabled={mutation.isPending}
-                  className="w-full bg-slate-800 hover:bg-slate-700 text-white mt-4"
-                >
-                  {mutation.isPending ? (
-                    <span className="flex items-center gap-2">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Signing in...
-                    </span>
-                  ) : (
-                    "Sign In"
-                  )}
-                </Button>
-
-                <div className="flex justify-end pt-2">
-                  <button
-                    type="button"
-                    onClick={() => router.push("/register")}
-                    className="text-slate-600 text-sm hover:underline"
-                  >
-                    Create account
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-
-          <p className="mt-4 text-center text-xs text-slate-200/80">
-            Admin portal access only.
+    <div className="container relative flex flex-col items-center justify-center min-h-[80vh] px-4">
+      <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-100">
+        <div className="flex flex-col space-y-2 text-center items-center">
+          <Image
+            src="/brand/sca-logo-white.png"
+            alt="She Code Africa"
+            width={80}
+            height={80}
+            className="h-20 w-auto mb-4"
+          />
+          <h1 className="text-2xl font-semibold tracking-tight text-white">
+            Admin Portal
+          </h1>
+          <p className="text-sm text-slate-300">
+            Enter your credentials to manage the platform
           </p>
+        </div>
+
+        <div className="grid gap-6 p-8 bg-white rounded-xl shadow-2xl border-t-4 border-slate-800">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-slate-700 font-bold uppercase text-[10px]">
+                      Email Address
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="name@company.com"
+                        {...field}
+                        className="h-11 text-slate-600 font-medium"
+                      />
+                    </FormControl>
+                    <FormMessage className="text-xs" />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex items-center justify-between">
+                      <FormLabel className="text-slate-700 font-bold uppercase text-[10px]">
+                        Password
+                      </FormLabel>
+                      <button
+                        type="button"
+                        className="text-[11px] text-slate-500 hover:underline"
+                        onClick={() =>
+                          toast.info(
+                            "Contact your system administrator to reset password."
+                          )
+                        }
+                      >
+                        Forgot password?
+                      </button>
+                    </div>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          type={showPassword ? "text" : "password"}
+                          {...field}
+                          className="h-11 pr-10 text-slate-600 font-medium"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                        >
+                          {showPassword ? (
+                            <EyeOff size={16} />
+                          ) : (
+                            <Eye size={16} />
+                          )}
+                        </button>
+                      </div>
+                    </FormControl>
+                    <FormMessage className="text-xs" />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="rememberMe"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center space-x-2 space-y-0 py-2">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormLabel className="text-sm font-medium text-slate-600 cursor-pointer">
+                      Remember this device
+                    </FormLabel>
+                  </FormItem>
+                )}
+              />
+
+              <Button
+                type="submit"
+                disabled={mutation.isPending}
+                className="w-full h-11 bg-slate-900 hover:bg-slate-800 text-white font-semibold transition-all active:scale-[0.98]"
+              >
+                {mutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Authenticating...
+                  </>
+                ) : (
+                  "Sign In to Dashboard"
+                )}
+              </Button>
+            </form>
+          </Form>
+        </div>
+
+        <div className="flex items-center justify-center gap-2 text-slate-400">
+          <ShieldCheck size={14} />
+          <span className="text-[10px] uppercase tracking-widest font-bold">
+            Secure Admin Access Only
+          </span>
         </div>
       </div>
     </div>

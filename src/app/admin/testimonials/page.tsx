@@ -32,11 +32,11 @@ function applyClientFilters(rows: Testimonial[], f: TestimonialFilters) {
     });
   }
 
-  if (f.state && f.state !== "") out = out.filter((t) => t.state === f.state);
+  if (f.state) out = out.filter((t) => t.state === f.state);
 
-  if (f.sortBy && f.sortBy !== "") {
+  if (f.sortBy) {
     const key = f.sortBy;
-    out.sort((a: any, b: any) => {
+    out.sort((a: Testimonial, b: Testimonial) => {
       const av = a?.[key];
       const bv = b?.[key];
 

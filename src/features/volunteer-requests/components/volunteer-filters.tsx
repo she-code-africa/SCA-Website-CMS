@@ -1,7 +1,6 @@
 // src/features/volunteers/components/volunteer-filters.tsx
 "use client";
 
-import * as React from "react";
 import type { VolunteerFilters } from "@/features/volunteer-requests/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -27,9 +26,9 @@ type Props = {
 export function VolunteerFilters({ value, onChange, onReset }: Props) {
   const activeCount =
     Number(!!value.search?.trim()) +
-    Number(value.status && value.status !== "all") +
-    Number(value.volunteerRole && value.volunteerRole !== "all") +
-    Number(value.sortBy && value.sortBy !== "all");
+    Number(!!value.status) +
+    Number(!!value.volunteerRole) +
+    Number(!!value.sortBy);
 
   return (
     <div className="flex w-full flex-col gap-2 lg:w-auto lg:flex-row lg:items-center">
@@ -58,10 +57,10 @@ export function VolunteerFilters({ value, onChange, onReset }: Props) {
                 <p className="text-sm font-medium">Status</p>
                 <Select
                   value={value.status ?? "all"}
-                  onValueChange={(v) =>
+                  onValueChange={(v: string) =>
                     onChange({
                       ...value,
-                      status: v === "all" ? "" : (v as any)
+                      status: v === "all" ? "" : (v as VolunteerFilters['status'])
                     })
                   }
                 >
@@ -81,10 +80,10 @@ export function VolunteerFilters({ value, onChange, onReset }: Props) {
                 <p className="text-sm font-medium">Volunteer Role</p>
                 <Select
                   value={value.volunteerRole ?? "all"}
-                  onValueChange={(v) =>
+                  onValueChange={(v: string) =>
                     onChange({
                       ...value,
-                      volunteerRole: v === "all" ? "" : (v as any)
+                      volunteerRole: v === "all" ? "" : (v as VolunteerFilters['volunteerRole'])
                     })
                   }
                 >
@@ -115,10 +114,10 @@ export function VolunteerFilters({ value, onChange, onReset }: Props) {
                 <p className="text-sm font-medium">Sort By</p>
                 <Select
                   value={value.sortBy ?? "all"}
-                  onValueChange={(v) =>
+                  onValueChange={(v: string) =>
                     onChange({
                       ...value,
-                      sortBy: v === "all" ? "" : (v as any)
+                      sortBy: v === "all" ? "" : (v as VolunteerFilters['sortBy'])
                     })
                   }
                 >

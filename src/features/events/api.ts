@@ -2,6 +2,8 @@
 import { api } from "@/lib/api/client";
 import type { Event, EventUpsertInput } from "@/features/events/types";
 
+export type { Event, EventUpsertInput };
+
 type ApiListResponse<T> = T[] | { data?: T[] } | { data?: { data?: T[] } };
 
 function normalizeList<T>(res: unknown): T[] {
@@ -19,7 +21,7 @@ function normalizeList<T>(res: unknown): T[] {
 }
 
 /* ============================
-   EVENTS
+  EVENTS
 ============================ */
 
 export async function getEvents(): Promise<Event[]> {

@@ -52,18 +52,14 @@ export function PermissionGate({
 }: PermissionGateProps) {
   const { can, canAny, canAll } = usePermissions();
 
-  let hasAccess = false;
+  // If no props are passed, default to access granted
+  if (!permission && !anyOf && !allOf) return <>{children}</>;
 
-  if (permission) {
-    hasAccess = can(permission);
-  } else if (anyOf && anyOf.length > 0) {
-    hasAccess = canAny(anyOf);
-  } else if (allOf && allOf.length > 0) {
-    hasAccess = canAll(allOf);
-  } else {
-    // No permission prop provided — render children
-    hasAccess = true;
-  }
+  const hasSingle = permission ? can(permission) : true;
+  const hasAny = anyOf && anyOf.length > 0 ? canAny(anyOf) : true;
+  const hasAll = allOf && allOf.length > 0 ? canAll(allOf) : true;
+
+  const hasAccess = hasSingle && hasAny && hasAll;
 
   return hasAccess ? <>{children}</> : <>{fallback}</>;
 }

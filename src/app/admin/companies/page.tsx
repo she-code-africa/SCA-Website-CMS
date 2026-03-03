@@ -31,9 +31,9 @@ function applyClientFilters(rows: Company[], f: CompanyFilters) {
     });
   }
 
-  if (f.state && f.state !== "") out = out.filter((c) => c.state === f.state);
+  if (f.state) out = out.filter((c) => c.state === f.state);
 
-  if (f.sortBy && f.sortBy !== "") {
+  if (f.sortBy) {
     const key = f.sortBy;
     out.sort((a: any, b: any) => {
       const av = a?.[key];

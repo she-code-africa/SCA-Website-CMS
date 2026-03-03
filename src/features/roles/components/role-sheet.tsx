@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Info, Lock } from "lucide-react";
+import { Info, Lock, Search, X } from "lucide-react";
 
 import { createRole, updateRole } from "@/features/roles/api";
 import type { RoleDetail } from "@/features/roles/types";
@@ -35,16 +35,18 @@ type Props = {
   role?: RoleDetail | null;
 };
 
-// ─── Checkbox atom ───────────────────────────────────────────────────────────
+// ─── Memoized Checkbox Atom ──────────────────────────────────────────────────
 
-function PermCheckbox({
+const PermCheckbox = React.memo(function PermCheckbox({
+  id,
   checked,
   disabled,
   onChange
 }: {
+  id: string;
   checked: boolean;
   disabled: boolean;
-  onChange?: (v: boolean) => void;
+  onChange: (id: string, v: boolean) => void;
 }) {
   return (
     <div className="flex items-center justify-center">
@@ -52,7 +54,7 @@ function PermCheckbox({
         type="checkbox"
         checked={checked}
         disabled={disabled}
-        onChange={(e) => onChange?.(e.target.checked)}
+        onChange={(e) => onChange(id, e.target.checked)}
         className={cn(
           "h-4 w-4 rounded border cursor-pointer",
           "accent-primary",
@@ -61,9 +63,9 @@ function PermCheckbox({
       />
     </div>
   );
-}
+});
 
-// ─── Permission Matrix ────────────────────────────────────────────────────────
+// ─── Permission Matrix with Search ───────────────────────────────────────────
 
 function PermissionMatrix({
   selected,
@@ -74,135 +76,187 @@ function PermissionMatrix({
   onChange: (next: Set<string>) => void;
   readOnly: boolean;
 }) {
-  const toggle = (perm: string, on: boolean) => {
-    const next = new Set(selected);
-    if (on) next.add(perm);
-    else next.delete(perm);
-    onChange(next);
-  };
+  const [searchQuery, setSearchQuery] = React.useState("");
 
-  // Select/deselect all in a module
+  const filteredModules = React.useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return PERMISSION_MODULES;
+    return PERMISSION_MODULES.filter(
+      (m) =>
+        m.label.toLowerCase().includes(q) || m.key.toLowerCase().includes(q)
+    );
+  }, [searchQuery]);
+
+  const toggle = React.useCallback(
+    (perm: string, on: boolean) => {
+      const next = new Set(selected);
+      if (on) next.add(perm);
+      else next.delete(perm);
+      onChange(next);
+    },
+    [selected, onChange]
+  );
+
   const toggleModule = (permissions: string[], on: boolean) => {
     const next = new Set(selected);
     permissions.forEach((p) => (on ? next.add(p) : next.delete(p)));
     onChange(next);
   };
 
-  // Select/deselect entire action column
   const toggleColumn = (action: string, on: boolean) => {
     const next = new Set(selected);
     PERMISSION_MODULES.forEach(({ permissions }) => {
       permissions
-        .filter((p) => p.startsWith(action + "_"))
+        .filter((p) => p.startsWith(action + "_") || p.endsWith("_" + action))
         .forEach((p) => (on ? next.add(p) : next.delete(p)));
     });
     onChange(next);
   };
 
   return (
-    <div className="rounded-md border overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          {/* Column headers */}
-          <thead>
-            <tr className="bg-muted/60 border-b">
-              <th className="py-2.5 px-3 text-left font-medium text-muted-foreground min-w-45">
-                Module
-              </th>
-              {ACTION_COLUMNS.map((action) => {
-                // Determine if entire column is selected
-                const colPerms = PERMISSION_MODULES.flatMap(({ permissions }) =>
-                  permissions.filter((p) => p.startsWith(action + "_"))
-                );
-                const allOn =
-                  colPerms.length > 0 && colPerms.every((p) => selected.has(p));
-                const someOn = colPerms.some((p) => selected.has(p));
+    <div className="space-y-3">
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          placeholder="Search modules (e.g. 'Team', 'Events')..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-9 pr-9 text-xs h-9"
+        />
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
 
-                return (
-                  <th
-                    key={action}
-                    className="py-2.5 px-2 text-center font-medium text-muted-foreground w-18"
-                  >
-                    <div className="flex flex-col items-center gap-1.5">
-                      <span className="text-xs">{ACTION_LABELS[action]}</span>
-                      {!readOnly && colPerms.length > 0 && (
-                        <input
-                          type="checkbox"
-                          title={`Toggle all ${ACTION_LABELS[action]}`}
-                          checked={allOn}
-                          ref={(el) => {
-                            if (el) el.indeterminate = someOn && !allOn;
-                          }}
-                          onChange={(e) =>
-                            toggleColumn(action, e.target.checked)
-                          }
-                          className="h-3.5 w-3.5 accent-primary cursor-pointer"
-                        />
-                      )}
-                    </div>
-                  </th>
-                );
-              })}
-            </tr>
-          </thead>
+      <div className="rounded-md border overflow-hidden">
+        <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
+          <table className="w-full text-sm border-separate border-spacing-0">
+            <thead className="sticky top-0 z-20 shadow-sm">
+              <tr className="bg-muted/90 backdrop-blur-sm">
+                <th className="py-2.5 px-3 text-left font-medium text-muted-foreground min-w-[180px] border-b">
+                  Module
+                </th>
+                {ACTION_COLUMNS.map((action) => {
+                  const colPerms = PERMISSION_MODULES.flatMap(
+                    ({ permissions }) =>
+                      permissions.filter(
+                        (p) =>
+                          p.startsWith(action + "_") || p.endsWith("_" + action)
+                      )
+                  );
+                  const allOn =
+                    colPerms.length > 0 &&
+                    colPerms.every((p) => selected.has(p));
+                  const someOn = colPerms.some((p) => selected.has(p));
 
-          <tbody className="divide-y">
-            {PERMISSION_MODULES.map(({ key, label, permissions }) => {
-              const moduleSelected = permissions.filter((p) => selected.has(p));
-              const allOn = moduleSelected.length === permissions.length;
-              const someOn = moduleSelected.length > 0;
-
-              return (
-                <tr key={key} className="hover:bg-muted/30 transition-colors">
-                  {/* Module name + select-all row checkbox */}
-                  <td className="py-2.5 px-3">
-                    <div className="flex items-center gap-2">
-                      {!readOnly && (
-                        <input
-                          type="checkbox"
-                          title={`Toggle all in ${label}`}
-                          checked={allOn}
-                          ref={(el) => {
-                            if (el) el.indeterminate = someOn && !allOn;
-                          }}
-                          onChange={(e) =>
-                            toggleModule(permissions, e.target.checked)
-                          }
-                          className="h-3.5 w-3.5 accent-primary cursor-pointer shrink-0"
-                        />
-                      )}
-                      <span className="text-xs font-medium leading-tight">
-                        {label}
-                      </span>
-                    </div>
-                  </td>
-
-                  {/* Action cells */}
-                  {ACTION_COLUMNS.map((action) => {
-                    const perm = permissions.find((p) =>
-                      p.startsWith(action + "_")
-                    );
-                    return (
-                      <td key={action} className="py-2.5 px-2 text-center">
-                        {perm ? (
-                          <PermCheckbox
-                            checked={selected.has(perm)}
-                            disabled={readOnly}
-                            onChange={(v) => toggle(perm, v)}
+                  return (
+                    <th
+                      key={action}
+                      className="py-2.5 px-2 text-center font-medium text-muted-foreground w-18 border-b"
+                    >
+                      <div className="flex flex-col items-center gap-1.5">
+                        <span className="text-xs uppercase tracking-wider">
+                          {ACTION_LABELS[action]}
+                        </span>
+                        {!readOnly && colPerms.length > 0 && (
+                          <input
+                            type="checkbox"
+                            checked={allOn}
+                            ref={(el) => {
+                              if (el) el.indeterminate = someOn && !allOn;
+                            }}
+                            onChange={(e) =>
+                              toggleColumn(action, e.target.checked)
+                            }
+                            className="h-3.5 w-3.5 accent-primary cursor-pointer"
                           />
-                        ) : (
-                          <span className="text-muted-foreground/30 text-xs">
-                            —
-                          </span>
                         )}
+                      </div>
+                    </th>
+                  );
+                })}
+              </tr>
+            </thead>
+
+            <tbody className="divide-y bg-background">
+              {filteredModules.length > 0 ? (
+                filteredModules.map(({ key, label, permissions }) => {
+                  const moduleSelected = permissions.filter((p) =>
+                    selected.has(p)
+                  );
+                  const allOn = moduleSelected.length === permissions.length;
+                  const someOn = moduleSelected.length > 0;
+
+                  return (
+                    <tr
+                      key={key}
+                      className="hover:bg-muted/30 transition-colors"
+                    >
+                      <td className="py-2.5 px-3 border-r">
+                        <div className="flex items-center gap-2">
+                          {!readOnly && (
+                            <input
+                              type="checkbox"
+                              checked={allOn}
+                              ref={(el) => {
+                                if (el) el.indeterminate = someOn && !allOn;
+                              }}
+                              onChange={(e) =>
+                                toggleModule(permissions, e.target.checked)
+                              }
+                              className="h-3.5 w-3.5 accent-primary cursor-pointer shrink-0"
+                            />
+                          )}
+                          <span className="text-xs font-semibold text-foreground">
+                            {label}
+                          </span>
+                        </div>
                       </td>
-                    );
-                  })}
+
+                      {ACTION_COLUMNS.map((action) => {
+                        const perm = permissions.find(
+                          (p) =>
+                            p.startsWith(action + "_") ||
+                            p.endsWith("_" + action)
+                        );
+                        return (
+                          <td key={action} className="py-2.5 px-2 text-center">
+                            {perm ? (
+                              <PermCheckbox
+                                id={perm}
+                                checked={selected.has(perm)}
+                                disabled={readOnly}
+                                onChange={toggle}
+                              />
+                            ) : (
+                              <span className="text-muted-foreground/20 text-[10px]">
+                                —
+                              </span>
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td
+                    colSpan={ACTION_COLUMNS.length + 1}
+                    className="py-12 text-center text-muted-foreground italic text-xs"
+                  >
+                    No modules found matching &quot;{searchQuery}&quot;
+                  </td>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
@@ -221,7 +275,6 @@ export function RoleSheet({ open, onOpenChange, mode, role }: Props) {
   );
   const [nameError, setNameError] = React.useState("");
 
-  // Reset / populate when sheet opens
   React.useEffect(() => {
     if (!open) {
       setNameError("");
@@ -299,7 +352,6 @@ export function RoleSheet({ open, onOpenChange, mode, role }: Props) {
         side="right"
         className="w-full sm:max-w-3xl p-0 flex flex-col"
       >
-        {/* Header */}
         <SheetHeader className="px-6 py-4 border-b space-y-1 shrink-0">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
@@ -321,8 +373,7 @@ export function RoleSheet({ open, onOpenChange, mode, role }: Props) {
               >
                 {role.isDefault ? (
                   <>
-                    <Lock className="h-3 w-3 mr-1" />
-                    System
+                    <Lock className="h-3 w-3 mr-1" /> System
                   </>
                 ) : (
                   "Custom"
@@ -334,7 +385,6 @@ export function RoleSheet({ open, onOpenChange, mode, role }: Props) {
 
         <ScrollArea className="flex-1 px-6">
           <div className="py-6 space-y-6">
-            {/* Edit / view toggle row for non-default roles */}
             {mode === "view" && canEdit && (
               <div className="flex items-center justify-end">
                 <Button
@@ -342,7 +392,6 @@ export function RoleSheet({ open, onOpenChange, mode, role }: Props) {
                   size="sm"
                   onClick={() => {
                     if (editing) {
-                      // cancel — reset to saved
                       setName(role!.name);
                       setDescription(role!.description);
                       setSelectedPerms(new Set(role!.permissions));
@@ -355,18 +404,16 @@ export function RoleSheet({ open, onOpenChange, mode, role }: Props) {
               </div>
             )}
 
-            {/* System role read-only notice */}
             {mode === "view" && role?.isDefault && (
               <div className="flex items-start gap-2 rounded-lg border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
                 <Info className="h-4 w-4 shrink-0 mt-0.5" />
                 <span>
                   System roles are managed by SheCode Africa and cannot be
-                  modified or deleted. You can view the permissions below.
+                  modified or deleted.
                 </span>
               </div>
             )}
 
-            {/* Name & description */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <label className="text-sm font-medium">
@@ -392,7 +439,6 @@ export function RoleSheet({ open, onOpenChange, mode, role }: Props) {
                   </>
                 )}
               </div>
-
               {mode === "view" && role && (
                 <div className="grid gap-2">
                   <label className="text-sm font-medium text-muted-foreground">
@@ -423,15 +469,14 @@ export function RoleSheet({ open, onOpenChange, mode, role }: Props) {
 
             <Separator />
 
-            {/* Permissions section */}
             <div className="space-y-3">
               <div className="flex items-center justify-between gap-2">
                 <div>
                   <p className="text-sm font-medium">Permissions</p>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     {isReadOnly
-                      ? `${selectedPerms.size} permissions granted to this role.`
-                      : "Select which actions this role can perform on each module."}
+                      ? `${selectedPerms.size} permissions granted.`
+                      : "Select actions for each module."}
                   </p>
                 </div>
                 {!isReadOnly && (
@@ -461,7 +506,6 @@ export function RoleSheet({ open, onOpenChange, mode, role }: Props) {
           </div>
         </ScrollArea>
 
-        {/* Footer */}
         {(mode === "create" || (mode === "view" && editing)) && (
           <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background shrink-0">
             <Button

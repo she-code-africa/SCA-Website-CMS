@@ -21,7 +21,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-
+import { PermissionGate } from "@/components/PermissionGate";
+import { usePermissions } from "@/hooks/usePermissions";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -103,6 +104,8 @@ export function TeamCategoriesPanel() {
 
       <CardContent className="space-y-4">
         {/* Add category */}
+        <PermissionGate permission="CREATE_TEAMCATEGORIES">
+
         <div className="flex flex-col gap-2 sm:flex-row">
           <Input
             placeholder="New category name"
@@ -122,6 +125,7 @@ export function TeamCategoriesPanel() {
             {addMut.isPending ? "Adding…" : "Add"}
           </Button>
         </div>
+        </PermissionGate>
 
         {/* List */}
         <div className="rounded-md border">
@@ -177,6 +181,12 @@ function CategoryRow({
   React.useEffect(() => setVal(initialName), [initialName]);
 
   const canSave = val.trim().length > 0 && val.trim() !== initialName.trim();
+  const { can } = usePermissions();
+  const canUpdate = can("UPDATE_TEAMCATEGORIES");
+  const canDelete = can("DELETE_TEAMCATEGORIES");
+
+  // If the user can't do either, we should hide the Actions menu entirely
+  const hasActions = canUpdate || canDelete;
 
   return (
     <div className="flex items-center justify-between gap-3 p-3 hover:bg-muted/50 transition-colors">
@@ -229,7 +239,7 @@ function CategoryRow({
       </div>
 
       {/* Right: actions menu */}
-      {!editing && (
+      {!editing && hasActions && (
         <div className="shrink-0">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -239,9 +249,14 @@ function CategoryRow({
             </DropdownMenuTrigger>
 
             <DropdownMenuContent align="end" className="w-44">
+              {canUpdate && (
               <DropdownMenuItem onClick={() => setEditing(true)}>
                 Rename
               </DropdownMenuItem>
+
+              )}
+
+{canDelete && (
 
               <AlertDialog>
                 <AlertDialogTrigger asChild>
@@ -285,6 +300,7 @@ function CategoryRow({
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
+)}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

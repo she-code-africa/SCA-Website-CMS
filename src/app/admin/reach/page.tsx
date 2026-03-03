@@ -23,16 +23,16 @@ function applyClientFilters(rows: Reach[], f: ReachFilters) {
   const q = f.search?.trim().toLowerCase();
   if (q) out = out.filter((r) => r.name?.toLowerCase().includes(q));
 
-  if (f.sortBy && f.sortBy !== "") {
+  if (f.sortBy) {
     const key = f.sortBy;
-    out.sort((a: any, b: any) => {
+    out.sort((a: Reach, b: Reach) => {
       const av = a?.[key];
       const bv = b?.[key];
 
       if (key === "createdAt" || key === "updatedAt") {
         return new Date(bv ?? 0).getTime() - new Date(av ?? 0).getTime();
       }
-      if (key === "value") return (bv ?? 0) - (av ?? 0);
+      if (key === "value") return Number(bv ?? 0) - Number(av ?? 0);
       return String(av ?? "").localeCompare(String(bv ?? ""));
     });
   } else {

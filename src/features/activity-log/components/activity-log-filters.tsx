@@ -11,6 +11,7 @@ import {
   PopoverTrigger
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { PermissionGate } from "@/components/PermissionGate";
 
 const calendarClassNames = {
   months: "flex flex-col sm:flex-row gap-4",
@@ -137,14 +138,15 @@ export function ActivityLogFilters({
         >
           Reset
         </Button>
-
-        <Button
-          variant="default"
-          onClick={onExportClick}
-          className="w-full sm:w-auto bg-primary hover:bg-primary/90"
-        >
-          Export
-        </Button>
+        <PermissionGate permission="EXPORT_DASHBOARD_DATA">
+          <Button
+            variant="default"
+            onClick={onExportClick}
+            className="w-full sm:w-auto bg-primary hover:bg-primary/90"
+          >
+            Export
+          </Button>
+      </PermissionGate>
       </div>
     </div>
   );

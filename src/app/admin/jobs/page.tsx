@@ -19,7 +19,7 @@ import { JobTypesPanel } from "@/features/jobs/components/job-types-panel";
 import { TableShell } from "@/components/templates/table-shell";
 import { TableFrame } from "@/components/templates/table-frame";
 
-function extractId(val: any): string {
+function extractId(val: string | { _id: string } | null | undefined): string {
   if (!val) return "";
   if (typeof val === "string") return val;
   return val._id || "";
@@ -37,15 +37,15 @@ function applyClientFilters(rows: Job[], f: JobFilters) {
     });
   }
 
-  if (f.state && f.state !== "") out = out.filter((j) => j.state === f.state);
+  if (f.state) out = out.filter((j) => j.state === f.state);
   if (f.jobType && f.jobType !== "")
     out = out.filter((j) => extractId(j.jobType) === f.jobType);
   if (f.jobCategory && f.jobCategory !== "")
     out = out.filter((j) => extractId(j.jobCategory) === f.jobCategory);
 
-  if (f.sortBy && f.sortBy !== "") {
+  if (f.sortBy) {
     const key = f.sortBy;
-    out.sort((a: any, b: any) => {
+    out.sort((a: Job, b: Job) => {
       const av = a?.[key];
       const bv = b?.[key];
 
