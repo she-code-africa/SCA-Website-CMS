@@ -24,7 +24,7 @@ import {
 } from "react";
 
 import { getToken } from "@/lib/auth/token";
-import { api } from "@/lib/api/client";
+// import { api } from "@/lib/api/client";
 import type { Permission } from "@/lib/rbac/permissions";
 import { DEFAULT_ROLES } from "@/lib/rbac/permissions";
 

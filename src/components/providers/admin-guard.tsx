@@ -9,11 +9,13 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading && !user) {
+    // Only run redirection logic if we are in the browser
+    if (typeof window !== "undefined" && !isLoading && !user) {
       router.replace("/login");
     }
   }, [user, isLoading, router]);
 
+  // Handle the "Verifying Session" UI
   if (isLoading) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-slate-900">
@@ -25,7 +27,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // If there's no user, return null so we don't flash the Sidebar/Topbar
+  // If there's no user, return null to prevent content flash during redirect
   if (!user) return null;
 
   return <>{children}</>;

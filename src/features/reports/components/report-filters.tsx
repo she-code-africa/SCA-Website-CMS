@@ -56,7 +56,7 @@ export function ReportFilters({
           <PopoverContent
             align="start"
             sideOffset={8}
-            className="z-50 w-[340px] max-w-[calc(100vw-2rem)] rounded-md border p-4 shadow-md"
+            className="z-50 w-85 max-w-[calc(100vw-2rem)] rounded-md border p-4 shadow-md"
           >
             <div className="grid gap-3">
               <div className="grid gap-1">

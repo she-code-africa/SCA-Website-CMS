@@ -373,7 +373,7 @@ export function VolunteerRoleSheet({
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     disabled={mode !== "edit"}
-                    className="min-h-[140px]"
+                    className="min-h-35"
                   />
                 </div>
 

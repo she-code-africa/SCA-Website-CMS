@@ -7,6 +7,9 @@ import { useQuery } from "@tanstack/react-query";
 import { getOurReach } from "@/features/our-reach/api";
 import type { Reach, ReachFilters } from "@/features/our-reach/types";
 
+// Add this line to bypass static generation errors on Heroku
+export const dynamic = "force-dynamic";
+
 import { ReachFilters as Filters } from "@/features/our-reach/components/reach-filters";
 import { ReachTable } from "@/features/our-reach/components/reach-table";
 import { MobileReachCard } from "@/features/our-reach/components/mobile-reach-card";
@@ -128,9 +131,9 @@ export default function OurReachPage() {
                   Failed to load our reach stats.
                 </div>
               ) : paged.length ? (
-                paged.map((r) => (
+                paged.map((r, index) => (
                   <button
-                    key={r._id}
+                    key={r._id || `reach-item-${index}`}
                     type="button"
                     onClick={() => openView(r)}
                     className="text-left w-full"
