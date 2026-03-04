@@ -93,7 +93,7 @@ export async function deactivateUser(id: string): Promise<void> {
   await delay(400);
   // REAL: return api.patch(`/admin/users/${id}/deactivate`);
   _users = _users.map((u) =>
-    // Fixed: Changed "inactive" to "deactivated" to match your AdminUser type
+    
     u.id === id ? { ...u, status: "deactivated" as const } : u
   );
 }

@@ -2,21 +2,33 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useSyncExternalStore } from "react";
+
+// This is a "No-op" subscriber for the linter's sake
+const subscribe = () => () => {};
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
   const router = useRouter();
 
+  // This replaces the useState/useEffect mount logic.
+  // It returns false on the server and true on the client.
+  const isClient = useSyncExternalStore(
+    subscribe,
+    () => true,
+    () => false
+  );
+
   useEffect(() => {
-    // Only run redirection logic if we are in the browser
-    if (typeof window !== "undefined" && !isLoading && !user) {
+    // Only redirect if we are confirmed on the client and auth is missing
+    if (isClient && !isLoading && !user) {
       router.replace("/login");
     }
-  }, [user, isLoading, router]);
+  }, [user, isLoading, router, isClient]);
 
   // Handle the "Verifying Session" UI
-  if (isLoading) {
+  // We check !isClient first to ensure the Server and Client start with the same HTML
+  if (!isClient || isLoading) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-slate-900">
         <div className="text-center">

@@ -94,12 +94,12 @@ export function VolunteerRoleTable({
             Array.from({ length: 8 }).map((_, idx) => (
               <TableRow key={idx}>
                 {/* Role cell skeleton: image circle + text */}
-                <TableCell className="min-w-[360px]">
+                <TableCell className="min-w-90">
                   <div className="flex items-center gap-3">
                     <Skeleton className="h-8 w-8 rounded-full" />
                     <div className="min-w-0 space-y-2">
                       <Skeleton className="h-4 w-44" />
-                      <Skeleton className="h-3 w-[420px] max-w-[60vw]" />
+                      <Skeleton className="h-3 w-105 max-w-[60vw]" />
                     </div>
                   </div>
                 </TableCell>
@@ -136,7 +136,7 @@ export function VolunteerRoleTable({
                 className={cn("cursor-pointer hover:bg-muted/50")}
               >
                 {/* ROLE + IMAGE */}
-                <TableCell className="min-w-[360px]">
+                <TableCell className="min-w-90">
                   <div className="flex items-center gap-3">
                     {r.image ? (
                       <Tooltip>
@@ -161,7 +161,7 @@ export function VolunteerRoleTable({
                               alt={`${r.name} preview`}
                               className="h-24 w-24 rounded-xl object-cover border"
                             />
-                            <div className="max-w-[240px]">
+                            <div className="max-w-60">
                               <p className="text-sm font-medium">{r.name}</p>
                               <p className="text-xs text-muted-foreground">
                                 Hover preview
@@ -181,7 +181,7 @@ export function VolunteerRoleTable({
 
                       {/* 🔥 Hard truncate (no plugin required) */}
                       <div
-                        className="text-xs text-muted-foreground truncate max-w-[520px]"
+                        className="text-xs text-muted-foreground truncate max-w-130"
                         title={(r.description ?? "").trim() || undefined}
                       >
                         {truncateText(r.description, 90)}

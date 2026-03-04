@@ -8,14 +8,13 @@ import {
   MessageSquareText,
   CalendarDays,
   Building2,
-  HandCoins,
+  // HandCoins,
   BriefcaseBusiness,
   Handshake,
   School,
   ClipboardList,
   Cpu,
   UsersRound,
-  MonitorPlay,
   Sparkles,
   Settings
 } from "lucide-react";
@@ -197,13 +196,6 @@ export const adminRoutes: NavItem[] = [
     permission: "VIEW_JOB"
   },
   {
-    name: "reach",
-    label: "Our Reach",
-    icon: HandCoins,
-    path: "/admin/reach",
-    permission: "VIEW_OUR_REACH"
-  },
-  {
     name: "companies",
     label: "Companies",
     icon: Building2,
@@ -217,6 +209,12 @@ export const adminRoutes: NavItem[] = [
     path: "/admin/settings/users",
     permission: "VIEW_USER",
     items: [
+      {
+        name: "reach",
+        label: "Our Reach",
+        path: "/admin/settings/reach",
+        permission: "VIEW_OUR_REACH"
+      },
       {
         name: "users",
         label: "Users",

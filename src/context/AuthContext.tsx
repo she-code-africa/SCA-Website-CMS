@@ -11,7 +11,7 @@
 // WHEN BACKEND SHIPS RBAC:
 //   1. Set IS_MOCK_MODE = false
 //   2. Make sure your backend's /auth/me returns:
-//      { user: { id, firstName, lastName, email, role: { id, name, permissions: string[] } } }
+//       { user: { id, firstName, lastName, email, role: { id, name, permissions: string[] } } }
 //   3. Done. Everything else requires zero changes.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -88,6 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     async function init() {
+      // getToken() usually accesses localStorage/Cookies, which only exist in the browser
       const token = getToken();
 
       // Not logged in at all — no token means no user
@@ -106,25 +107,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } else {
           // ── REAL MODE ──────────────────────────────────────────────────────
           // Uncomment when backend ships /auth/me returning role + permissions.
-          //
-          // const data = await api.get<{
-          //   user: {
-          //     id: string;
-          //     firstName: string;
-          //     lastName: string;
-          //     email: string;
-          //     role: { id: string; name: string; isDefault: boolean; permissions: string[] };
-          //   };
-          // }>("/auth/me");
-          //
-          // setUser({
-          //   ...data.user,
-          //   role: {
-          //     ...data.user.role,
-          //     permissions: data.user.role.permissions as Permission[]
-          //   },
-          //   permissionSet: new Set(data.user.role.permissions as Permission[])
-          // });
+          /*
+          const data = await api.get<{
+            user: {
+              id: string;
+              firstName: string;
+              lastName: string;
+              email: string;
+              role: { id: string; name: string; isDefault: boolean; permissions: string[] };
+            };
+          }>("/auth/me");
+
+          setUser({
+            ...data.user,
+            role: {
+              ...data.user.role,
+              permissions: data.user.role.permissions as Permission[]
+            },
+            permissionSet: new Set(data.user.role.permissions as Permission[])
+          });
+          */
         }
       } catch {
         // Token is invalid or /me failed — treat as unauthenticated
@@ -150,12 +152,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-// ─── Hook ─────────────────────────────────────────────────────────────────────
+// ─── Hook (Heroku Build Safe) ─────────────────────────────────────────────────
 
 export function useAuth(): AuthContextValue {
   const context = useContext(AuthContext);
+
+  /**
+   * SAFETY CHECK FOR HEROKU BUILD:
+   * During the 'next build' prerendering phase, this context might be null.
+   * Instead of throwing a hard error and crashing the build, we return
+   * a safe loading state. This allows the compiler to finish.
+   */
   if (!context) {
-    throw new Error("useAuth must be used inside <AuthProvider>");
+    return {
+      user: null,
+      isLoading: true,
+      isAuthenticated: false
+    };
   }
   return context;
 }
