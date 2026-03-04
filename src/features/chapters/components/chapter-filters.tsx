@@ -1,7 +1,6 @@
 // src/features/chapters/components/chapter-filters.tsx
 "use client";
 
-import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { ChapterFilters } from "@/features/chapters/types";
 import { getChapterCategories } from "@/features/chapters/api";
@@ -32,11 +31,11 @@ export function ChapterFilters({ value, onChange, onReset }: Props) {
     queryFn: getChapterCategories
   });
 
-  const activeCount =
-    Number(!!value.search?.trim()) +
-    Number(value.state && value.state !== "") +
-    Number(value.category && value.category !== "") +
-    Number(value.sortBy && value.sortBy !== "");
+const activeCount =
+  Number(!!value.search?.trim()) +
+  Number(!!value.state) +
+  Number(!!value.category) +
+  Number(!!value.sortBy);
 
   return (
     <div className="flex w-full flex-col gap-2 lg:w-auto lg:flex-row lg:items-center">
@@ -58,7 +57,7 @@ export function ChapterFilters({ value, onChange, onReset }: Props) {
           <PopoverContent
             align="start"
             sideOffset={8}
-            className="z-50 w-[340px] max-w-[calc(100vw-2rem)] rounded-md border p-4 shadow-md"
+            className="z-50 w-85 max-w-[calc(100vw-2rem)] rounded-md border p-4 shadow-md"
           >
             <div className="grid gap-3">
               <div className="grid gap-1">
@@ -68,7 +67,7 @@ export function ChapterFilters({ value, onChange, onReset }: Props) {
                   onValueChange={(v) =>
                     onChange({
                       ...value,
-                      state: v === "all" ? "" : (v as any)
+                      state: v === "all" ? "" : (v as "published" | "draft" | "archived")
                     })
                   }
                 >
@@ -100,7 +99,7 @@ export function ChapterFilters({ value, onChange, onReset }: Props) {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Any</SelectItem>
-                    {categories.map((c: any) => (
+                    {categories.map((c: { _id: string; name: string }) => (
                       <SelectItem key={c._id} value={c._id}>
                         {c.name}
                       </SelectItem>
@@ -116,7 +115,7 @@ export function ChapterFilters({ value, onChange, onReset }: Props) {
                   onValueChange={(v) =>
                     onChange({
                       ...value,
-                      sortBy: v === "all" ? "" : (v as any)
+                      sortBy: v === "all" ? "" : (v as "name" | "createdAt" | "updatedAt")
                     })
                   }
                 >

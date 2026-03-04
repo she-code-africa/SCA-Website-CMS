@@ -138,12 +138,18 @@ export function JobSheet({ open, onOpenChange, mode, jobId }: Props) {
         jobType: jobTypeId,
         jobCategory: jobCategoryId,
         guestPost: j.guestPost ?? true,
-        guestPostMetaData: j.guestPostMetaData || {
-          companyName: "",
-          companyEmail: "",
-          companyUrl: ""
+        guestPostMetaData: {
+          companyName: j.guestPostMetaData?.companyName || "",
+          companyEmail: j.guestPostMetaData?.companyEmail || "",
+          companyUrl: j.guestPostMetaData?.companyUrl || ""
         },
-        company: j.company || undefined
+        company: j.company
+          ? {
+              companyName: j.company.companyName || "",
+              email: j.company.email || "",
+              companyUrl: j.company.companyUrl || ""
+            }
+          : undefined
       });
     }
   }, [open, mode, jobQuery.data, initialForm]);
@@ -222,7 +228,7 @@ export function JobSheet({ open, onOpenChange, mode, jobId }: Props) {
     }
 
     // Clean payload
-    const payload: any = { ...form };
+    const payload: JobUpsertInput = { ...form };
 
     // Clean empty company info
     if (form.guestPost && form.guestPostMetaData) {
@@ -446,7 +452,7 @@ export function JobSheet({ open, onOpenChange, mode, jobId }: Props) {
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
                     <SelectContent>
-                      {types.map((t: any) => (
+                      {types.map((t) => (
                         <SelectItem key={t._id} value={t._id}>
                           {t.name}
                         </SelectItem>
@@ -466,7 +472,7 @@ export function JobSheet({ open, onOpenChange, mode, jobId }: Props) {
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
-                      {categories.map((c: any) => (
+                      {categories.map((c) => (
                         <SelectItem key={c._id} value={c._id}>
                           {c.name}
                         </SelectItem>

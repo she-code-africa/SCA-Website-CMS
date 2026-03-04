@@ -30,7 +30,7 @@ import { DEFAULT_ROLES } from "@/lib/rbac/permissions";
 
 // ─── TOGGLE THIS to test different roles ─────────────────────────────────────
 // Options: "Administrator" | "Program Manager" | "Viewer" | "Auditor"
-const MOCK_ACTIVE_ROLE = "Auditor";
+const MOCK_ACTIVE_ROLE = "Administrator";
 
 // ─── FLIP THIS to false when backend ships RBAC ──────────────────────────────
 const IS_MOCK_MODE = true;

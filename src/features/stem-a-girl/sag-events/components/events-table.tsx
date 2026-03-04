@@ -2,8 +2,7 @@
 
 import * as React from "react";
 import { format } from "date-fns";
-import type { SagEvent } from "@/features/sag-events/types";
-import { cn } from "@/lib/utils/utils";
+import type { SagEvent } from "@/features/stem-a-girl/sag-events/types";import { cn } from "@/lib/utils/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,

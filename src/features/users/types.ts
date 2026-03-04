@@ -1,6 +1,6 @@
 // src/features/users/types.ts
 
-export type UserStatus = "active" | "Deactivated" | "pending";
+export type UserStatus = "active" | "deactivated" | "pending";
 
 export interface UserRole {
   id: string;

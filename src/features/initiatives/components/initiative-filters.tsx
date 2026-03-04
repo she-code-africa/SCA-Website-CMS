@@ -1,7 +1,6 @@
 // src/features/initiatives/components/initiative-filters.tsx
 "use client";
 
-import * as React from "react";
 import type { InitiativeFilters } from "@/features/initiatives/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -25,10 +24,10 @@ type Props = {
 };
 
 export function InitiativeFilters({ value, onChange, onReset }: Props) {
-  const activeCount =
-    Number(!!value.search?.trim()) +
-    Number(value.isAvailable && value.isAvailable !== "") +
-    Number(value.sortBy && value.sortBy !== "");
+const activeCount =
+  Number(!!value.search?.trim()) +
+  Number(!!value.isAvailable) + // Checks if it's "true" or "false" vs undefined/empty
+  Number(!!value.sortBy);
 
   return (
     <div className="flex w-full flex-col gap-2 lg:w-auto lg:flex-row lg:items-center">
@@ -50,7 +49,7 @@ export function InitiativeFilters({ value, onChange, onReset }: Props) {
           <PopoverContent
             align="start"
             sideOffset={8}
-            className="z-50 w-[340px] max-w-[calc(100vw-2rem)] rounded-md border p-4 shadow-md"
+            className="z-50 w-85 max-w-[calc(100vw-2rem)] rounded-md border p-4 shadow-md"
           >
             <div className="grid gap-3">
               <div className="grid gap-1">
@@ -60,7 +59,7 @@ export function InitiativeFilters({ value, onChange, onReset }: Props) {
                   onValueChange={(v) =>
                     onChange({
                       ...value,
-                      isAvailable: v === "all" ? "" : (v as any)
+                      isAvailable: v === "all" ? "" : (v as "true" | "false")
                     })
                   }
                 >
@@ -82,7 +81,7 @@ export function InitiativeFilters({ value, onChange, onReset }: Props) {
                   onValueChange={(v) =>
                     onChange({
                       ...value,
-                      sortBy: v === "all" ? "" : (v as any)
+                      sortBy: v === "all" ? "" : (v as "createdAt" | "updatedAt" | "title")
                     })
                   }
                 >

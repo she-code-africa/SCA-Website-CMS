@@ -1,10 +1,19 @@
 // src/features/jobs/components/job-filters.tsx
 "use client";
 
-import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
-import type { JobFilters } from "@/features/jobs/types";
+import type { JobFilters, JobState } from "@/features/jobs/types";
 import { getJobCategories, getJobTypes } from "@/features/jobs/api";
+
+type JobType = {
+  _id: string;
+  name: string;
+};
+
+type JobCategory = {
+  _id: string;
+  name: string;
+};
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,22 +36,22 @@ type Props = {
 };
 
 export function JobFilters({ value, onChange, onReset }: Props) {
-  const { data: categories = [] } = useQuery({
+  const { data: categories = [] } = useQuery<JobCategory[]>({
     queryKey: ["job-categories"],
     queryFn: getJobCategories
   });
 
-  const { data: types = [] } = useQuery({
+  const { data: types = [] } = useQuery<JobType[]>({
     queryKey: ["job-types"],
     queryFn: getJobTypes
   });
 
-  const activeCount =
-    Number(!!value.search?.trim()) +
-    Number(value.state && value.state !== "") +
-    Number(value.jobType && value.jobType !== "") +
-    Number(value.jobCategory && value.jobCategory !== "") +
-    Number(value.sortBy && value.sortBy !== "");
+const activeCount =
+  Number(!!value.search?.trim()) +
+  Number(!!value.state) +
+  Number(!!value.jobType) +
+  Number(!!value.jobCategory) +
+  Number(!!value.sortBy);
 
   return (
     <div className="flex w-full flex-col gap-2 lg:w-auto lg:flex-row lg:items-center">
@@ -64,17 +73,17 @@ export function JobFilters({ value, onChange, onReset }: Props) {
           <PopoverContent
             align="start"
             sideOffset={8}
-            className="z-50 w-[340px] max-w-[calc(100vw-2rem)] rounded-md border p-4 shadow-md"
+            className="z-50 w-85 max-w-[calc(100vw-2rem)] rounded-md border p-4 shadow-md"
           >
             <div className="grid gap-3">
               <div className="grid gap-1">
                 <p className="text-sm font-medium">State</p>
                 <Select
                   value={value.state ?? "all"}
-                  onValueChange={(v) =>
+                  onValueChange={(v: string) =>
                     onChange({
                       ...value,
-                      state: v === "all" ? "" : (v as any)
+                      state: (v === "all" ? "" : v) as "" | JobState
                     })
                   }
                 >
@@ -106,7 +115,7 @@ export function JobFilters({ value, onChange, onReset }: Props) {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Any</SelectItem>
-                    {types.map((t: any) => (
+                    {types.map((t: JobType) => (
                       <SelectItem key={t._id} value={t._id}>
                         {t.name}
                       </SelectItem>
@@ -131,7 +140,7 @@ export function JobFilters({ value, onChange, onReset }: Props) {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Any</SelectItem>
-                    {categories.map((c: any) => (
+                    {categories.map((c: JobCategory) => (
                       <SelectItem key={c._id} value={c._id}>
                         {c.name}
                       </SelectItem>
@@ -144,10 +153,10 @@ export function JobFilters({ value, onChange, onReset }: Props) {
                 <p className="text-sm font-medium">Sort By</p>
                 <Select
                   value={value.sortBy ?? "all"}
-                  onValueChange={(v) =>
+                  onValueChange={(v: string) =>
                     onChange({
                       ...value,
-                      sortBy: v === "all" ? "" : (v as any)
+                      sortBy: (v === "all" ? "" : v) as "" | "createdAt" | "updatedAt" | "deadline" | "title"
                     })
                   }
                 >

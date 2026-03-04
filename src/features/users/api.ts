@@ -2,7 +2,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // All functions currently use mock data.
 // When the backend is ready, replace each function body with the real api call.
-// ─────────────────────────────────────────────────────────────────────────────
+// ───────────────────────────────────────────────────────────────────────────── 
 import type {
   AdminUser,
   InviteUserInput,
@@ -10,7 +10,7 @@ import type {
   UsersFilters
 } from "./types";
 import { MOCK_USERS, MOCK_ROLES } from "./mock";
-// import { api } from "@/lib/api/client";   ← uncomment when backend is ready
+// import { api } from "@/lib/api/client";    ← uncomment when backend is ready
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -18,7 +18,7 @@ function delay(ms = 400) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-let _users = [...MOCK_USERS]; // mutable in-memory store for mock CRUD
+let _users = [...MOCK_USERS] as AdminUser[]; // Explicitly type the mutable store
 
 // ── Queries ──────────────────────────────────────────────────────────────────
 
@@ -63,7 +63,7 @@ export async function inviteUser(input: InviteUserInput): Promise<void> {
     lastName: "",
     email: input.email,
     role,
-    status: "pending",
+    status: "pending", // Valid status
     createdAt: new Date().toISOString()
   };
   _users = [..._users, newUser];
@@ -80,7 +80,11 @@ export async function updateUser(
     const role = input.roleId
       ? (MOCK_ROLES.find((r) => r.id === input.roleId) ?? u.role)
       : u.role;
-    return { ...u, role, status: input.status ?? u.status };
+    return { 
+      ...u, 
+      role, 
+      status: (input.status as AdminUser["status"]) ?? u.status 
+    };
   });
   return _users.find((u) => u.id === id)!;
 }
@@ -89,7 +93,8 @@ export async function deactivateUser(id: string): Promise<void> {
   await delay(400);
   // REAL: return api.patch(`/admin/users/${id}/deactivate`);
   _users = _users.map((u) =>
-    u.id === id ? { ...u, status: "inactive" as const } : u
+    // Fixed: Changed "inactive" to "deactivated" to match your AdminUser type
+    u.id === id ? { ...u, status: "deactivated" as const } : u
   );
 }
 
@@ -97,6 +102,7 @@ export async function activateUser(id: string): Promise<void> {
   await delay(400);
   // REAL: return api.patch(`/admin/users/${id}/activate`);
   _users = _users.map((u) =>
+    // Fixed: Using "active" status
     u.id === id ? { ...u, status: "active" as const } : u
   );
 }

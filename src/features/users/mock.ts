@@ -67,7 +67,7 @@ export const MOCK_USERS: AdminUser[] = [
       name: "Program Manager",
       isDefault: true
     },
-    status: "inactive",
+    status: "deactivated",
     lastLogin: "2025-11-10T10:00:00Z",
     createdAt: "2023-11-20T08:00:00Z"
   },

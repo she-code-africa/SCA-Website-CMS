@@ -1,5 +1,3 @@
-// src/features/media/types.ts
-
 export type MediaType = "blog" | "video" | "image";
 
 export type Media = {
@@ -26,6 +24,9 @@ export type MediaFiltersType = {
   type?: "" | MediaType;
 };
 
+// Fix: Alias the type so the API and Components can find "MediaFilters"
+export type MediaFilters = MediaFiltersType;
+
 export type MediaUpsertInput = {
   title: string;
   description: string;
@@ -35,5 +36,5 @@ export type MediaUpsertInput = {
   link: string;
   dateCreated: string;
   coverImage?: File | null;
-  images?: (File | string)[]; // Mix of new Files and existing URLs
+  images?: (File | string)[]; 
 };

@@ -1,8 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import type { SagEvent } from "@/features/sag-events/types";
-import { Badge } from "@/components/ui/badge";
+import type { SagEvent } from "@/features/stem-a-girl/sag-events/types";import { Badge } from "@/components/ui/badge";
 
 function fmtDate(v?: string) {
   if (!v) return "—";

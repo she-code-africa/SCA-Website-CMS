@@ -2,10 +2,18 @@
 import { clearToken } from "./token";
 import { clearLoggedInCookie } from "./session";
 
-export function logout() {
+interface LogoutOptions {
+  reason?: string;
+  redirectTo?: string;
+}
+
+export function logout(options?: LogoutOptions) {
   clearLoggedInCookie();
   clearToken();
+
   if (typeof window !== "undefined") {
-    window.location.href = "/login"; // This "hard" redirect is safest for session expiration
+    // Use the provided redirect path, or default to "/login"
+    const destination = options?.redirectTo || "/login";
+    window.location.href = destination;
   }
 }

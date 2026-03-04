@@ -1,4 +1,3 @@
-// src/features/partners/components/partner-filters.tsx
 "use client";
 
 import * as React from "react";
@@ -25,10 +24,11 @@ type Props = {
 };
 
 export function PartnerFilters({ value, onChange, onReset }: Props) {
+  // Fixed: Use double negation (!!) to check for existence without comparing to ""
   const activeCount =
     Number(!!value.search?.trim()) +
-    Number(value.featured && value.featured !== "") +
-    Number(value.sortBy && value.sortBy !== "");
+    Number(!!value.featured) +
+    Number(!!value.sortBy);
 
   return (
     <div className="flex w-full flex-col gap-2 lg:w-auto lg:flex-row lg:items-center">
@@ -50,7 +50,7 @@ export function PartnerFilters({ value, onChange, onReset }: Props) {
           <PopoverContent
             align="start"
             sideOffset={8}
-            className="z-50 w-[340px] max-w-[calc(100vw-2rem)] rounded-md border p-4 shadow-md"
+            className="z-50 w-85 max-w-[calc(100vw-2rem)] rounded-md border p-4 shadow-md"
           >
             <div className="grid gap-3">
               <div className="grid gap-1">
@@ -60,7 +60,11 @@ export function PartnerFilters({ value, onChange, onReset }: Props) {
                   onValueChange={(v) =>
                     onChange({
                       ...value,
-                      featured: v === "all" ? "" : (v as any)
+                      // Fixed: Cast to specific type instead of 'any'
+                      featured:
+                        v === "all"
+                          ? undefined
+                          : (v as PartnerFilters["featured"])
                     })
                   }
                 >
@@ -82,7 +86,11 @@ export function PartnerFilters({ value, onChange, onReset }: Props) {
                   onValueChange={(v) =>
                     onChange({
                       ...value,
-                      sortBy: v === "all" ? "" : (v as any)
+                      // Fixed: Cast to specific type instead of 'any'
+                      sortBy:
+                        v === "all"
+                          ? undefined
+                          : (v as PartnerFilters["sortBy"])
                     })
                   }
                 >
@@ -107,7 +115,7 @@ export function PartnerFilters({ value, onChange, onReset }: Props) {
 
         <Button
           variant="default"
-          className="w-full sm:w-auto bg-pink-600 hover:bg-pink-700"
+          className="w-full sm:w-auto bg-primary hover:bg-pink-700"
           onClick={() => window.dispatchEvent(new CustomEvent("partner:add"))}
         >
           Add Partner

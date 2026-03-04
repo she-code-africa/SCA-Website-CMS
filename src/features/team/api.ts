@@ -90,9 +90,13 @@ export async function editTeamMember(payload: {
   if (d.name !== undefined) fd.append("name", d.name);
   if (d.teamCategory !== undefined) fd.append("teamCategory", d.teamCategory);
   if (d.role !== undefined) fd.append("role", d.role);
-  if (d.bio !== undefined) fd.append("bio", d.bio);
+
+  // FIXED: Commented out or remove the bio line to match your type definition
+  // if (d.bio !== undefined) fd.append("bio", d.bio);
+
   if (d.position !== undefined)
     fd.append("position", String(Number(d.position)));
+
   if (d.isLeader !== undefined) fd.append("isLeader", String(!!d.isLeader));
   if (d.image !== undefined && d.image !== null) fd.append("image", d.image);
 

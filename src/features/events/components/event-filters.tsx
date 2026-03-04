@@ -1,7 +1,6 @@
 // src/features/events/components/event-filters.tsx
 "use client";
 
-import * as React from "react";
 import type { EventFilters } from "@/features/events/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -27,8 +26,8 @@ type Props = {
 export function EventFilters({ value, onChange, onReset }: Props) {
   const activeCount =
     Number(!!value.search?.trim()) +
-    Number(value.state && value.state !== "") +
-    Number(value.sortBy && value.sortBy !== "");
+    Number(!!value.state) +
+    Number(!!value.sortBy);
 
   return (
     <div className="flex w-full flex-col gap-2 lg:w-auto lg:flex-row lg:items-center">
@@ -50,7 +49,7 @@ export function EventFilters({ value, onChange, onReset }: Props) {
           <PopoverContent
             align="start"
             sideOffset={8}
-            className="z-50 w-[340px] max-w-[calc(100vw-2rem)] rounded-md border p-4 shadow-md"
+            className="z-50 w-85 max-w-[calc(100vw-2rem)] rounded-md border p-4 shadow-md"
           >
             <div className="grid gap-3">
               <div className="grid gap-1">
@@ -60,7 +59,7 @@ export function EventFilters({ value, onChange, onReset }: Props) {
                   onValueChange={(v) =>
                     onChange({
                       ...value,
-                      state: v === "all" ? "" : (v as any)
+                      state: v === "all" ? "" : (v as EventFilters["state"])
                     })
                   }
                 >
@@ -83,7 +82,7 @@ export function EventFilters({ value, onChange, onReset }: Props) {
                   onValueChange={(v) =>
                     onChange({
                       ...value,
-                      sortBy: v === "all" ? "" : (v as any)
+                      sortBy: v === "all" ? "" : (v as EventFilters["sortBy"])
                     })
                   }
                 >

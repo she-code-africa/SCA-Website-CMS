@@ -1,4 +1,3 @@
-// src/features/reports/components/report-filters.tsx
 "use client";
 
 import * as React from "react";
@@ -31,10 +30,11 @@ export function ReportFilters({
   onReset,
   yearOptions
 }: Props) {
+  // Fixed: Using !! avoids the empty string comparison error
   const activeCount =
     Number(!!value.search?.trim()) +
-    Number(value.year && value.year !== "") +
-    Number(value.sortBy && value.sortBy !== "");
+    Number(!!value.year) +
+    Number(!!value.sortBy);
 
   return (
     <div className="flex w-full flex-col gap-2 lg:w-auto lg:flex-row lg:items-center">
@@ -66,7 +66,7 @@ export function ReportFilters({
                   onValueChange={(v) =>
                     onChange({
                       ...value,
-                      year: v === "all" ? "" : v
+                      year: v === "all" ? undefined : v
                     })
                   }
                 >
@@ -83,12 +83,11 @@ export function ReportFilters({
                   </SelectContent>
                 </Select>
 
-                {/* Clear year only */}
                 <Button
                   type="button"
                   variant="ghost"
                   className="justify-start px-0 text-muted-foreground hover:text-foreground"
-                  onClick={() => onChange({ ...value, year: "" })}
+                  onClick={() => onChange({ ...value, year: undefined })}
                 >
                   Clear year filter
                 </Button>
@@ -101,7 +100,9 @@ export function ReportFilters({
                   onValueChange={(v) =>
                     onChange({
                       ...value,
-                      sortBy: v === "all" ? "" : (v as any)
+                      // Fixed: Cast to specific type instead of 'any'
+                      sortBy:
+                        v === "all" ? undefined : (v as ReportFilters["sortBy"])
                     })
                   }
                 >
@@ -126,7 +127,7 @@ export function ReportFilters({
 
         <Button
           variant="default"
-          className="w-full sm:w-auto bg-pink-600 hover:bg-pink-700"
+          className="w-full sm:w-auto bg-primary hover:bg-pink-700"
           onClick={() => window.dispatchEvent(new CustomEvent("report:add"))}
         >
           Add Report

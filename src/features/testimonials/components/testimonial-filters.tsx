@@ -1,4 +1,3 @@
-// src/features/testimonials/components/testimonial-filters.tsx
 "use client";
 
 import * as React from "react";
@@ -25,10 +24,11 @@ type Props = {
 };
 
 export function TestimonialFilters({ value, onChange, onReset }: Props) {
+  // Fixed: Using !! avoids the "unintentional comparison" error with ""
   const activeCount =
     Number(!!value.search?.trim()) +
-    Number(value.state && value.state !== "") +
-    Number(value.sortBy && value.sortBy !== "");
+    Number(!!value.state) +
+    Number(!!value.sortBy);
 
   return (
     <div className="flex w-full flex-col gap-2 lg:w-auto lg:flex-row lg:items-center">
@@ -60,7 +60,11 @@ export function TestimonialFilters({ value, onChange, onReset }: Props) {
                   onValueChange={(v) =>
                     onChange({
                       ...value,
-                      state: v === "all" ? "" : (v as any)
+                      // Fixed: Cast to the specific union type instead of 'any'
+                      state:
+                        v === "all"
+                          ? undefined
+                          : (v as TestimonialFilters["state"])
                     })
                   }
                 >
@@ -83,7 +87,11 @@ export function TestimonialFilters({ value, onChange, onReset }: Props) {
                   onValueChange={(v) =>
                     onChange({
                       ...value,
-                      sortBy: v === "all" ? "" : (v as any)
+                      // Fixed: Cast to the specific union type instead of 'any'
+                      sortBy:
+                        v === "all"
+                          ? undefined
+                          : (v as TestimonialFilters["sortBy"])
                     })
                   }
                 >

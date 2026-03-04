@@ -1,9 +1,12 @@
-// src/features/media/api.ts
 import { api } from "@/lib/api/client";
-import type { Media, MediaFilters, MediaUpsertInput } from "@/features/media/types";
+import type {
+  Media,
+  MediaFilters,
+  MediaUpsertInput
+} from "@/features/media/types";
 
 /* ============================
-   Helpers
+    Helpers
 ============================ */
 
 type ApiListResponse<T> = T[] | { data?: T[] } | { data?: { data?: T[] } };
@@ -13,10 +16,7 @@ function normalizeList<T>(res: unknown): T[] {
 
   const r = res as any;
 
-  // { data: [...] }
   if (Array.isArray(r?.data)) return r.data as T[];
-
-  // { data: { data: [...] } }
   if (Array.isArray(r?.data?.data)) return r.data.data as T[];
 
   return [];
@@ -33,7 +33,7 @@ function buildQuery(filters: MediaFilters) {
 }
 
 /* ============================
-   MEDIA
+    MEDIA
 ============================ */
 
 export async function getAllMedia(
@@ -50,26 +50,25 @@ export async function getMedia(id: string): Promise<Media> {
 
 export async function createMedia(input: MediaUpsertInput) {
   const fd = new FormData();
-  
+
   fd.append("title", input.title);
   fd.append("description", input.description);
   fd.append("type", input.type);
   fd.append("author", input.author);
   fd.append("tag", input.tag);
   fd.append("link", input.link);
-  
-  // Format date
+
   if (input.dateCreated) {
-    const formattedDate = new Date(input.dateCreated).toISOString().split("T")[0];
+    const formattedDate = new Date(input.dateCreated)
+      .toISOString()
+      .split("T")[0];
     fd.append("dateCreated", formattedDate);
   }
-  
-  // Cover image
+
   if (input.coverImage) {
     fd.append("coverImage", input.coverImage);
   }
-  
-  // Multiple images (only new files for create)
+
   if (input.images) {
     input.images.forEach((img) => {
       if (img instanceof File) {
@@ -94,18 +93,16 @@ export async function editMedia(payload: {
   if (d.author !== undefined) fd.append("author", d.author);
   if (d.tag !== undefined) fd.append("tag", d.tag);
   if (d.link !== undefined) fd.append("link", d.link);
-  
+
   if (d.dateCreated !== undefined) {
     const formattedDate = new Date(d.dateCreated).toISOString().split("T")[0];
     fd.append("dateCreated", formattedDate);
   }
-  
-  // Cover image (only if it's a new file)
+
   if (d.coverImage !== undefined && d.coverImage instanceof File) {
     fd.append("coverImage", d.coverImage);
   }
-  
-  // Images array (both existing URLs and new files)
+
   if (d.images !== undefined) {
     d.images.forEach((img) => {
       fd.append("images", img);

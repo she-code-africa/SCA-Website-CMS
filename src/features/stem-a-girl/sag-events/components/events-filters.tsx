@@ -5,7 +5,7 @@ import type {
   SagActivity,
   SagEventsFilters,
   SagState
-} from "@/features/sag-events/types";
+} from "@/features/stem-a-girl/sag-events/types"; // Updated path
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,6 +36,7 @@ export function EventsFilters({
   activities,
   activitiesLoading
 }: Props) {
+  // Safe boolean coercion for the counter
   const activeCount =
     Number(!!value.search?.trim()) +
     Number(!!value.state) +
@@ -61,7 +62,7 @@ export function EventsFilters({
           <PopoverContent
             align="start"
             sideOffset={8}
-            className="z-50 w-[340px] max-w-[calc(100vw-2rem)] rounded-md border p-4 shadow-md"
+            className="z-50 w-85 max-w-[calc(100vw-2rem)] rounded-md border p-4 shadow-md"
           >
             <div className="grid gap-3">
               <div className="grid gap-1">
@@ -71,6 +72,7 @@ export function EventsFilters({
                   onValueChange={(v) =>
                     onChange({
                       ...value,
+                      // Cast to SagState instead of any
                       state: v === "all" ? "" : (v as SagState)
                     })
                   }
