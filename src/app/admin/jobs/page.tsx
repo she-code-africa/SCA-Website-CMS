@@ -19,6 +19,12 @@ import { JobTypesPanel } from "@/features/jobs/components/job-types-panel";
 import { TableShell } from "@/components/templates/table-shell";
 import { TableFrame } from "@/components/templates/table-frame";
 
+/**
+ * FORCE DYNAMIC: This is the primary fix for the Heroku build crash.
+ * It tells Next.js to skip the static pre-rendering phase for this route.
+ */
+export const dynamic = "force-dynamic";
+
 function extractId(val: string | { _id: string } | null | undefined): string {
   if (!val) return "";
   if (typeof val === "string") return val;
@@ -31,9 +37,7 @@ function applyClientFilters(rows: Job[], f: JobFilters) {
   const q = f.search?.trim().toLowerCase();
   if (q) {
     out = out.filter((j) => {
-      return (
-        j.title?.toLowerCase().includes(q)
-      );
+      return j.title?.toLowerCase().includes(q);
     });
   }
 
@@ -81,7 +85,12 @@ export default function JobsPage() {
   const [modalMode, setModalMode] = React.useState<"create" | "view">("create");
   const [selected, setSelected] = React.useState<Job | null>(null);
 
+  /**
+   * HYDRATION GUARD: Prevents window access during build-time dry runs.
+   */
   React.useEffect(() => {
+    if (typeof window === "undefined") return;
+
     const handler = () => {
       setSelected(null);
       setModalMode("create");
@@ -133,7 +142,6 @@ export default function JobsPage() {
     >
       <div className="space-y-4">
         <div className="grid grid-cols-12 gap-4">
-          {/* Left: table/cards (Team pattern) */}
           <div className="col-span-12 lg:col-span-9 space-y-3">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <Filters
@@ -159,11 +167,11 @@ export default function JobsPage() {
               />
             </div>
 
-            {/* Mobile list */}
             <div className="grid gap-3 md:hidden">
               {query.isLoading ? (
+                // UNIQUE KEYS: Prefixed for stable hydration
                 Array.from({ length: 6 }).map((_, i) => (
-                  <MobileJobSkeletonCard key={i} />
+                  <MobileJobSkeletonCard key={`job-skeleton-${i}`} />
                 ))
               ) : query.isError ? (
                 <div className="rounded-xl border bg-background p-6 text-center text-sm text-red-500">
@@ -187,7 +195,6 @@ export default function JobsPage() {
               )}
             </div>
 
-            {/* Desktop table */}
             <div className="hidden md:block">
               <TableFrame>
                 <JobTable
@@ -200,7 +207,6 @@ export default function JobsPage() {
             </div>
           </div>
 
-          {/* Right: panels (Team pattern) */}
           <div className="col-span-12 lg:col-span-3 space-y-4">
             <JobCategoriesPanel />
             <JobTypesPanel />

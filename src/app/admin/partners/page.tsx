@@ -17,7 +17,8 @@ import { PartnerPagination } from "@/features/partners/components/partner-pagina
 import { TableShell } from "@/components/templates/table-shell";
 import { TableFrame } from "@/components/templates/table-frame";
 
-// local filter/sort util
+export const dynamic = "force-dynamic";
+
 function applyClientFilters(rows: Partner[], f: PartnerFilters) {
   let out = [...rows];
 
@@ -66,6 +67,7 @@ export default function PartnersPage() {
   const [selected, setSelected] = React.useState<Partner | null>(null);
 
   React.useEffect(() => {
+    if (typeof window === "undefined") return;
     const handler = () => {
       setSelected(null);
       setModalMode("create");
@@ -128,11 +130,10 @@ export default function PartnersPage() {
 
         <div className="grid grid-cols-12 gap-4">
           <div className="col-span-12 lg:col-span-12 space-y-3">
-            {/* Mobile list */}
             <div className="grid gap-3 md:hidden">
               {query.isLoading ? (
                 Array.from({ length: 6 }).map((_, i) => (
-                  <MobilePartnerSkeletonCard key={i} />
+                  <MobilePartnerSkeletonCard key={`partner-skeleton-${i}`} />
                 ))
               ) : query.isError ? (
                 <div className="rounded-xl border bg-background p-6 text-center text-sm text-red-500">
@@ -156,7 +157,6 @@ export default function PartnersPage() {
               )}
             </div>
 
-            {/* Desktop table */}
             <div className="hidden md:block">
               <TableFrame>
                 <PartnerTable

@@ -20,6 +20,8 @@ import { InitiativePagination } from "@/features/initiatives/components/initiati
 import { TableShell } from "@/components/templates/table-shell";
 import { TableFrame } from "@/components/templates/table-frame";
 
+export const dynamic = "force-dynamic";
+
 function applyClientFilters(rows: Initiative[], f: InitiativeFilters) {
   let out = [...rows];
 
@@ -42,7 +44,10 @@ function applyClientFilters(rows: Initiative[], f: InitiativeFilters) {
       const bv = b?.[key];
 
       if (key === "createdAt" || key === "updatedAt") {
-        return new Date(bv as string ?? 0).getTime() - new Date(av as string ?? 0).getTime();
+        return (
+          new Date((bv as string) ?? 0).getTime() -
+          new Date((av as string) ?? 0).getTime()
+        );
       }
       return String(av ?? "").localeCompare(String(bv ?? ""));
     });
@@ -72,6 +77,7 @@ export default function InitiativesPage() {
   const [selected, setSelected] = React.useState<Initiative | null>(null);
 
   React.useEffect(() => {
+    if (typeof window === "undefined") return;
     const handler = () => {
       setSelected(null);
       setModalMode("create");
@@ -139,7 +145,7 @@ export default function InitiativesPage() {
             <div className="grid gap-3 md:hidden">
               {query.isLoading ? (
                 Array.from({ length: 6 }).map((_, i) => (
-                  <MobileInitiativeSkeletonCard key={i} />
+                  <MobileInitiativeSkeletonCard key={`init-skeleton-${i}`} />
                 ))
               ) : query.isError ? (
                 <div className="rounded-xl border bg-background p-6 text-center text-sm text-red-500">

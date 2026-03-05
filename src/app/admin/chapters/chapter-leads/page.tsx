@@ -1,4 +1,4 @@
-// src/app/admin/chapters/leads/page.tsx
+// src/app/admin/chapters-leads/page.tsx
 "use client";
 
 import * as React from "react";
@@ -16,13 +16,14 @@ import { Button } from "@/components/ui/button";
 import { TableShell } from "@/components/templates/table-shell";
 import { TableFrame } from "@/components/templates/table-frame";
 
+export const dynamic = "force-dynamic";
+
 const STORAGE_KEY = "selectedChapterId-leads";
 
 export default function ChapterLeadsPage() {
   const [selectedChapterId, setSelectedChapterId] = React.useState("");
   const [selectedChapterName, setSelectedChapterName] = React.useState("");
 
-  // Sheet state (Team-style)
   const [sheetOpen, setSheetOpen] = React.useState(false);
   const [sheetMode, setSheetMode] = React.useState<"create" | "view">("create");
   const [selectedLeadId, setSelectedLeadId] = React.useState<
@@ -30,6 +31,7 @@ export default function ChapterLeadsPage() {
   >(undefined);
 
   React.useEffect(() => {
+    if (typeof window === "undefined") return;
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
@@ -46,10 +48,12 @@ export default function ChapterLeadsPage() {
 
   const handleChapterChange = (chapterId: string) => {
     setSelectedChapterId(chapterId);
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({ chapterId, chapterName: "" })
-    );
+    if (typeof window !== "undefined") {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ chapterId, chapterName: "" })
+      );
+    }
   };
 
   const {
@@ -76,18 +80,18 @@ export default function ChapterLeadsPage() {
     setSheetOpen(true);
   };
 
-  const subtitle = selectedChapterId
-    ? `Leads for ${selectedChapterName || "selected chapter"}.`
-    : "Select a chapter to view and manage leads.";
-
   return (
     <TableShell
       title="Chapter Leads"
-      description={subtitle}
+      description={
+        selectedChapterId
+          ? `Leads for ${selectedChapterName || "selected chapter"}.`
+          : "Select a chapter."
+      }
       right={
         <div className="text-sm text-muted-foreground">
           {!selectedChapterId
-            ? "No chapter selected"
+            ? "No selection"
             : isLoading
               ? "Loading…"
               : `${leads.length} lead(s)`}
@@ -95,7 +99,6 @@ export default function ChapterLeadsPage() {
       }
     >
       <div className="space-y-4">
-        {/* Controls row (Team pattern) */}
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <ChapterSelect
@@ -103,7 +106,6 @@ export default function ChapterLeadsPage() {
               onValueChange={handleChapterChange}
               placeholder="Select a chapter"
             />
-
             <Button
               className="w-full sm:w-auto"
               onClick={openCreate}
@@ -112,30 +114,19 @@ export default function ChapterLeadsPage() {
               Add Lead
             </Button>
           </div>
-
           <div className="text-sm text-muted-foreground">
-            {selectedChapterId ? (isFetching ? "Refreshing…" : " ") : " "}
+            {selectedChapterId && isFetching ? "Refreshing…" : ""}
           </div>
         </div>
 
-        {/* Content grid (Team pattern) */}
         <div className="grid grid-cols-12 gap-4">
           <div className="col-span-12 lg:col-span-12 space-y-3">
-            {/* Mobile list */}
             <div className="grid gap-3 md:hidden">
               {!selectedChapterId ? (
-                <div className="rounded-xl border bg-background p-6 text-center text-sm text-muted-foreground">
-                  Please select a chapter to view its leads.
+                <div className="p-6 text-center text-muted-foreground border rounded-xl">
+                  Select a chapter.
                 </div>
-              ) : isLoading ? (
-                <div className="rounded-xl border bg-background p-6 text-center text-sm text-muted-foreground">
-                  Loading leads…
-                </div>
-              ) : isError ? (
-                <div className="rounded-xl border bg-background p-6 text-center text-sm text-red-500">
-                  Failed to load leads.
-                </div>
-              ) : leads.length ? (
+              ) : (
                 leads.map((lead) => (
                   <button
                     key={lead._id}
@@ -143,33 +134,14 @@ export default function ChapterLeadsPage() {
                     onClick={() => openView(lead)}
                     className="text-left w-full"
                   >
-                    {/* Mobile card should be display-only (no edit/delete buttons) */}
                     <MobileChapterLeadCard lead={lead} />
                   </button>
                 ))
-              ) : (
-                <div className="rounded-xl border bg-background p-6 text-center">
-                  <p className="text-sm text-muted-foreground">
-                    There are no leads for this chapter.
-                  </p>
-                  <Button
-                    variant="outline"
-                    className="mt-4"
-                    onClick={openCreate}
-                  >
-                    Add First Lead
-                  </Button>
-                </div>
               )}
             </div>
 
-            {/* Desktop table */}
             <div className="hidden md:block">
-              {!selectedChapterId ? (
-                <div className="rounded-xl border bg-background p-6 text-center text-sm text-muted-foreground">
-                  Please select a chapter to view its leads.
-                </div>
-              ) : (
+              {selectedChapterId && (
                 <TableFrame>
                   <ChapterLeadTable
                     rows={leads}
@@ -183,7 +155,6 @@ export default function ChapterLeadsPage() {
           </div>
         </div>
 
-        {/* Lead Sheet (delete happens inside sheet) */}
         <ChapterLeadSheet
           open={sheetOpen}
           onOpenChange={setSheetOpen}

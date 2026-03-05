@@ -1,4 +1,3 @@
-// src/app/admin/companies/page.tsx
 "use client";
 
 import * as React from "react";
@@ -17,10 +16,10 @@ import { CompanyPagination } from "@/features/companies/components/company-pagin
 import { TableShell } from "@/components/templates/table-shell";
 import { TableFrame } from "@/components/templates/table-frame";
 
-// local filter/sort util
+export const dynamic = "force-dynamic";
+
 function applyClientFilters(rows: Company[], f: CompanyFilters) {
   let out = [...rows];
-
   const q = f.search?.trim().toLowerCase();
   if (q) {
     out = out.filter((c) => {
@@ -38,7 +37,6 @@ function applyClientFilters(rows: Company[], f: CompanyFilters) {
     out.sort((a: any, b: any) => {
       const av = a?.[key];
       const bv = b?.[key];
-
       if (key === "createdAt" || key === "updatedAt") {
         return new Date(bv ?? 0).getTime() - new Date(av ?? 0).getTime();
       }
@@ -51,7 +49,6 @@ function applyClientFilters(rows: Company[], f: CompanyFilters) {
         new Date(a.createdAt ?? 0).getTime()
     );
   }
-
   return out;
 }
 
@@ -94,7 +91,7 @@ export default function CompaniesPage() {
   return (
     <TableShell
       title="Companies"
-      description="Companies are automatically registered when they post jobs. View and manage their information."
+      description="Companies are automatically registered when they post jobs."
       right={
         <div className="text-sm text-muted-foreground">
           {query.isLoading ? "Loading…" : `${rows.length} company(s)`}
@@ -102,7 +99,6 @@ export default function CompaniesPage() {
       }
     >
       <div className="space-y-4">
-        {/* Controls (Team pattern) */}
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <Filters
             value={filters}
@@ -119,14 +115,12 @@ export default function CompaniesPage() {
           />
         </div>
 
-        {/* Layout (Team grid pattern) */}
         <div className="grid grid-cols-12 gap-4">
           <div className="col-span-12 lg:col-span-12 space-y-3">
-            {/* Mobile list */}
             <div className="grid gap-3 md:hidden">
               {query.isLoading ? (
                 Array.from({ length: 6 }).map((_, i) => (
-                  <MobileCompanySkeletonCard key={i} />
+                  <MobileCompanySkeletonCard key={`comp-skeleton-${i}`} />
                 ))
               ) : query.isError ? (
                 <div className="rounded-xl border bg-background p-6 text-center text-sm text-red-500">
@@ -150,7 +144,6 @@ export default function CompaniesPage() {
               )}
             </div>
 
-            {/* Desktop table */}
             <div className="hidden md:block">
               <TableFrame>
                 <CompanyTable

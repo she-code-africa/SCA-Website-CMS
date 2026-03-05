@@ -1,3 +1,4 @@
+// src/app/admin/chapters/page.tsx
 "use client";
 
 import * as React from "react";
@@ -16,6 +17,11 @@ import { ChapterPagination } from "@/features/chapters/components/chapter-pagina
 import { TableShell } from "@/components/templates/table-shell";
 import { TableFrame } from "@/components/templates/table-frame";
 
+/**
+ * FORCE DYNAMIC: Bypasses build-time pre-rendering for the admin chapter table.
+ */
+export const dynamic = "force-dynamic";
+
 function extractCategoryId(val: any): string {
   if (!val) return "";
   if (typeof val === "string") return val;
@@ -30,7 +36,6 @@ function applyClientFilters(rows: Chapter[], f: ChapterFilters) {
     out = out.filter((ch) => ch.name?.toLowerCase().includes(q));
   }
 
-  // ✅ Fixed TS comparison error by checking truthiness
   if (f.state) {
     out = out.filter((ch) => ch.state === f.state);
   }
@@ -75,7 +80,12 @@ export default function ChaptersPage() {
   const [modalMode, setModalMode] = React.useState<"create" | "view">("create");
   const [selected, setSelected] = React.useState<Chapter | null>(null);
 
+  /**
+   * HYDRATION GUARD: Safely attaches event listeners on the client.
+   */
   React.useEffect(() => {
+    if (typeof window === "undefined") return;
+
     const handler = () => {
       setSelected(null);
       setModalMode("create");
@@ -134,7 +144,6 @@ export default function ChaptersPage() {
             }
           />
 
-          {/* ✅ FIXED: Corrected prop names to match ChapterPagination interface */}
           <ChapterPagination
             currentPage={page}
             totalPages={totalPages}
@@ -147,8 +156,9 @@ export default function ChaptersPage() {
           <div className="col-span-12 lg:col-span-9 space-y-3">
             <div className="grid gap-3 md:hidden">
               {query.isLoading ? (
+                // UNIQUE KEYS: Fixed with prefixing
                 Array.from({ length: 6 }).map((_, i) => (
-                  <MobileChapterSkeletonCard key={i} />
+                  <MobileChapterSkeletonCard key={`chapter-skeleton-${i}`} />
                 ))
               ) : query.isError ? (
                 <div className="rounded-xl border bg-background p-6 text-center text-sm text-red-500">

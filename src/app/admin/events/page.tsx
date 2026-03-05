@@ -17,6 +17,12 @@ import { EventPagination } from "@/features/events/components/event-pagination";
 import { TableShell } from "@/components/templates/table-shell";
 import { TableFrame } from "@/components/templates/table-frame";
 
+/**
+ * FORCE DYNAMIC: Prevents Next.js from trying to statically generate
+ * this page during the build, which bypasses the useContext/null error on Heroku.
+ */
+export const dynamic = "force-dynamic";
+
 function applyClientFilters(rows: Event[], f: EventFilters) {
   let out = [...rows];
 
@@ -65,7 +71,13 @@ export default function EventsPage() {
   const [modalMode, setModalMode] = React.useState<"create" | "view">("create");
   const [selected, setSelected] = React.useState<Event | null>(null);
 
+  /**
+   * HYDRATION SAFE EFFECT: Prevents window access errors during
+   * the Next.js build-time "dry run."
+   */
   React.useEffect(() => {
+    if (typeof window === "undefined") return;
+
     const handler = () => {
       setSelected(null);
       setModalMode("create");
@@ -130,8 +142,9 @@ export default function EventsPage() {
           <div className="col-span-12 lg:col-span-12 space-y-3">
             <div className="grid gap-3 md:hidden">
               {query.isLoading ? (
+                // UNIQUE KEYS: Fixed with a specific prefix
                 Array.from({ length: 6 }).map((_, i) => (
-                  <MobileEventSkeletonCard key={i} />
+                  <MobileEventSkeletonCard key={`event-skeleton-${i}`} />
                 ))
               ) : query.isError ? (
                 <div className="rounded-xl border bg-background p-6 text-center text-sm text-red-500">

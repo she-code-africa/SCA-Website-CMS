@@ -17,6 +17,12 @@ import { MobileEnquiryCard } from "@/features/enquiries/components/mobile-enquir
 import { MobileEnquirySkeletonCard } from "@/features/enquiries/components/mobile-enquiry-skeleton-card";
 import { EnquiryDetailsSheet } from "@/features/enquiries/components/enquiry-details-sheet";
 
+/**
+ * FORCE DYNAMIC: Prevents Next.js from attempting to statically optimize
+ * this admin route during the Heroku build process.
+ */
+export const dynamic = "force-dynamic";
+
 function applyClientFilters(rows: Enquiry[], f: EnquiryFilters) {
   let out = [...rows];
 
@@ -44,7 +50,6 @@ function applyClientFilters(rows: Enquiry[], f: EnquiryFilters) {
       return String(av ?? "").localeCompare(String(bv ?? ""));
     });
   } else {
-    // default: newest updated first (feels right for support inbox)
     out.sort(
       (a, b) =>
         new Date(b.updatedAt ?? 0).getTime() -
@@ -103,7 +108,6 @@ export default function EnquiriesPage() {
       }
     >
       <div className="space-y-4 mt-4">
-        {/* Controls */}
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <Filters
             value={filters}
@@ -120,13 +124,11 @@ export default function EnquiriesPage() {
           />
         </div>
 
-        {/* Mobile cards + Desktop table */}
         <div className="space-y-3">
-          {/* Mobile */}
           <div className="grid gap-3 md:hidden">
             {query.isLoading ? (
               Array.from({ length: 6 }).map((_, i) => (
-                <MobileEnquirySkeletonCard key={i} />
+                <MobileEnquirySkeletonCard key={`enquiry-skeleton-${i}`} />
               ))
             ) : query.isError ? (
               <div className="rounded-xl border bg-background p-6 text-center text-sm text-red-500">
@@ -150,9 +152,7 @@ export default function EnquiriesPage() {
             )}
           </div>
 
-          {/* Desktop */}
           <div className="hidden md:block">
-            {/* ✅ This is what gives you that "Activity Log table background" feel */}
             <TableFrame>
               <EnquiryTable
                 rows={paged}

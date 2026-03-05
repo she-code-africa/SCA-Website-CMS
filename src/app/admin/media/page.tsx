@@ -13,13 +13,14 @@ import { MediaPagination } from "@/features/media/components/media-pagination";
 import { TableShell } from "@/components/templates/table-shell";
 import { TableFrame } from "@/components/templates/table-frame";
 
+export const dynamic = "force-dynamic";
+
 export default function MediaPage() {
   const [filters, setFilters] = React.useState<MediaFiltersType>({
     search: "",
     type: ""
   });
 
-  // client-side pagination
   const [page, setPage] = React.useState(1);
   const limit = 10;
 
@@ -28,6 +29,7 @@ export default function MediaPage() {
   const [selected, setSelected] = React.useState<Media | null>(null);
 
   React.useEffect(() => {
+    if (typeof window === "undefined") return;
     const handler = () => {
       setSelected(null);
       setModalMode("create");
@@ -37,7 +39,6 @@ export default function MediaPage() {
     return () => window.removeEventListener("media:add", handler);
   }, []);
 
-  // reset to page 1 when filters change
   React.useEffect(() => {
     setPage(1);
   }, [filters.search, filters.type]);
@@ -49,7 +50,6 @@ export default function MediaPage() {
   });
 
   const rows = React.useMemo(() => query.data ?? [], [query.data]);
-
   const totalPages = Math.max(1, Math.ceil(rows.length / limit));
   const paged = rows.slice((page - 1) * limit, page * limit);
 
@@ -70,7 +70,6 @@ export default function MediaPage() {
       }
     >
       <div className="space-y-4">
-        {/* Controls */}
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <MediaFilters
             value={filters}
@@ -87,9 +86,7 @@ export default function MediaPage() {
           />
         </div>
 
-        {/* Responsive table wrapper */}
         <div className="space-y-3">
-          {/* Mobile list */}
           <div className="md:hidden">
             <MediaTable
               rows={paged}
@@ -99,7 +96,6 @@ export default function MediaPage() {
             />
           </div>
 
-          {/* Tablet + Desktop table */}
           <div className="hidden md:block">
             <TableFrame>
               <MediaTable

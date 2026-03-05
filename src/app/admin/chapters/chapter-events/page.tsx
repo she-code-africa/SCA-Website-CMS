@@ -1,4 +1,3 @@
-// src/app/admin/chapters/events/page.tsx
 "use client";
 
 import * as React from "react";
@@ -16,20 +15,24 @@ import { Button } from "@/components/ui/button";
 import { TableShell } from "@/components/templates/table-shell";
 import { TableFrame } from "@/components/templates/table-frame";
 
+export const dynamic = "force-dynamic";
+
 const STORAGE_KEY = "selectedChapterId-events";
 
 export default function ChapterEventsPage() {
   const [selectedChapterId, setSelectedChapterId] = React.useState("");
   const [selectedChapterName, setSelectedChapterName] = React.useState("");
 
-  // Sheet state (Team-style)
+  // Sheet state
   const [sheetOpen, setSheetOpen] = React.useState(false);
   const [sheetMode, setSheetMode] = React.useState<"create" | "view">("create");
   const [selectedEventId, setSelectedEventId] = React.useState<
     string | undefined
   >(undefined);
 
+  // Safe localStorage access inside useEffect
   React.useEffect(() => {
+    if (typeof window === "undefined") return;
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
@@ -46,10 +49,12 @@ export default function ChapterEventsPage() {
 
   const handleChapterChange = (chapterId: string) => {
     setSelectedChapterId(chapterId);
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({ chapterId, chapterName: "" })
-    );
+    if (typeof window !== "undefined") {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ chapterId, chapterName: "" })
+      );
+    }
   };
 
   const {
@@ -95,7 +100,6 @@ export default function ChapterEventsPage() {
       }
     >
       <div className="space-y-4">
-        {/* Controls row (Team pattern) */}
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <ChapterSelect
@@ -118,10 +122,8 @@ export default function ChapterEventsPage() {
           </div>
         </div>
 
-        {/* Content grid (Team pattern) */}
         <div className="grid grid-cols-12 gap-4">
           <div className="col-span-12 lg:col-span-12 space-y-3">
-            {/* Mobile list */}
             <div className="grid gap-3 md:hidden">
               {!selectedChapterId ? (
                 <div className="rounded-xl border bg-background p-6 text-center text-sm text-muted-foreground">
@@ -143,7 +145,6 @@ export default function ChapterEventsPage() {
                     onClick={() => openView(event)}
                     className="text-left w-full"
                   >
-                    {/* Mobile card should be display-only (no edit/delete buttons) */}
                     <MobileChapterEventCard event={event} />
                   </button>
                 ))
@@ -163,7 +164,6 @@ export default function ChapterEventsPage() {
               )}
             </div>
 
-            {/* Desktop table */}
             <div className="hidden md:block">
               {!selectedChapterId ? (
                 <div className="rounded-xl border bg-background p-6 text-center text-sm text-muted-foreground">
@@ -183,7 +183,6 @@ export default function ChapterEventsPage() {
           </div>
         </div>
 
-        {/* Event Sheet (delete/publish/archive happen inside sheet) */}
         <ChapterEventSheet
           open={sheetOpen}
           onOpenChange={setSheetOpen}

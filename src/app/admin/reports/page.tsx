@@ -16,6 +16,11 @@ import { ReportPagination } from "@/features/reports/components/report-paginatio
 import { TableShell } from "@/components/templates/table-shell";
 import { TableFrame } from "@/components/templates/table-frame";
 
+/** * FORCE DYNAMIC: This prevents Next.js from trying to "prerender"
+ * the page during build time, which is where your error is occurring.
+ */
+export const dynamic = "force-dynamic";
+
 // local filter/sort util
 function applyClientFilters(rows: Report[], f: ReportFilters) {
   let out = [...rows];
@@ -42,13 +47,12 @@ function applyClientFilters(rows: Report[], f: ReportFilters) {
       }
 
       if (key === "year") {
-        return Number(bv ?? 0) - Number(av ?? 0); // Newest year first
+        return Number(bv ?? 0) - Number(av ?? 0);
       }
 
       return String(av ?? "").localeCompare(String(bv ?? ""));
     });
   } else {
-    // Default sort by year (newest first)
     out.sort((a, b) => Number(b.year ?? 0) - Number(a.year ?? 0));
   }
 
@@ -62,7 +66,6 @@ export default function ReportsPage() {
     sortBy: ""
   });
 
-  // client-side pagination
   const [page, setPage] = React.useState(1);
   const limit = 10;
 
@@ -70,7 +73,12 @@ export default function ReportsPage() {
   const [modalMode, setModalMode] = React.useState<"create" | "view">("create");
   const [selected, setSelected] = React.useState<Report | null>(null);
 
+  /**
+   * HYDRATION SAFE EFFECT: We check if window exists before adding listeners.
+   */
   React.useEffect(() => {
+    if (typeof window === "undefined") return;
+
     const handler = () => {
       setSelected(null);
       setModalMode("create");
@@ -80,7 +88,6 @@ export default function ReportsPage() {
     return () => window.removeEventListener("report:add", handler);
   }, []);
 
-  // reset to page 1 when filters change
   React.useEffect(() => {
     setPage(1);
   }, [filters.search, filters.year, filters.sortBy]);
@@ -96,7 +103,6 @@ export default function ReportsPage() {
     [query.data, filters]
   );
 
-  // Get unique years for filter dropdown
   const yearOptions = React.useMemo(() => {
     if (!query.data) return [];
     const years = [...new Set(query.data.map((r) => r.year))].sort(
@@ -125,7 +131,6 @@ export default function ReportsPage() {
       }
     >
       <div className="space-y-4">
-        {/* Controls */}
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <Filters
             value={filters}
@@ -149,13 +154,12 @@ export default function ReportsPage() {
           />
         </div>
 
-        {/* Responsive list/table wrapper */}
         <div className="space-y-3">
-          {/* Mobile list */}
           <div className="grid gap-3 md:hidden">
             {query.isLoading ? (
+              // UNIQUE KEYS: Added specific prefix to avoid hydration warnings
               Array.from({ length: 6 }).map((_, i) => (
-                <MobileReportSkeletonCard key={i} />
+                <MobileReportSkeletonCard key={`report-skeleton-${i}`} />
               ))
             ) : query.isError ? (
               <div className="rounded-xl border bg-background p-6 text-center text-sm text-red-500">
@@ -179,15 +183,14 @@ export default function ReportsPage() {
             )}
           </div>
 
-          {/* Tablet + Desktop table */}
           <div className="hidden md:block">
             <TableFrame>
-                <ReportTable
-                  rows={paged}
-                  isLoading={query.isLoading}
-                  isError={query.isError}
-                  onRowClick={openView}
-                />
+              <ReportTable
+                rows={paged}
+                isLoading={query.isLoading}
+                isError={query.isError}
+                onRowClick={openView}
+              />
             </TableFrame>
           </div>
         </div>
