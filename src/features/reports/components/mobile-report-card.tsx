@@ -28,7 +28,7 @@ export function MobileReportCard({ report }: { report: Report }) {
             className="mt-1 flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 hover:underline"
             onClick={(e) => e.stopPropagation()}
           >
-            <span className="truncate max-w-[200px]">{report.link ?? "—"}</span>
+            <span className="truncate max-w-50">{report.link ?? "—"}</span>
             <ExternalLink className="h-3 w-3 shrink-0" />
           </a>
         </div>

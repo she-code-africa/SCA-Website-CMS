@@ -12,7 +12,7 @@ export function TableFrame({
   return (
     <div
       className={cn(
-        "rounded-md border bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/40",
+        "rounded-md border bg-background/60 backdrop-blur supports-backdrop-filter:bg-background/40",
         className
       )}
     >
