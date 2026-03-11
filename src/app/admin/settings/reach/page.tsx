@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getOurReach } from "@/features/our-reach/api";
 import type { Reach, ReachFilters } from "@/features/our-reach/types";
 
-// Add this line to bypass static generation errors on Heroku
+// Add this line to bypass static generation errors on Heroku so it can deploy successfully. We can remove this and implement static generation later if we want to optimize performance, but for now it's easier to just make the page dynamic.
 export const dynamic = "force-dynamic";
 
 import { ReachFilters as Filters } from "@/features/our-reach/components/reach-filters";
