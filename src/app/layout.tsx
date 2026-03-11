@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
 import "./globals.css";
 import { AppProviders } from "@/components/providers/app-providers";
+
+export const metadata: Metadata = {
+  title: "SCA Admin",
+  description: "SheCode Africa Admin Dashboard"
+};
 
 export default function RootLayout({
   children

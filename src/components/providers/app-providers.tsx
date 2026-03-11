@@ -52,18 +52,18 @@ import { Toaster } from "@/components/ui/sonner";
 export function AppProviders({ children }: { children: React.ReactNode }) {
   const clientId = process.env.NEXT_PUBLIC_GA_CLIENT_ID;
 
-  // We define a wrapper that only renders GoogleOAuthProvider if clientId exists.
-  // However, to keep the React Hook tree stable, it's better to always render
-  // the same hierarchy if possible, or handle the conditional logic carefully.
-
-  return (
-    <GoogleOAuthProvider clientId={clientId || ""}>
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-        <QueryProvider>
-          {children}
-          <Toaster richColors position="top-right" />
-        </QueryProvider>
-      </ThemeProvider>
-    </GoogleOAuthProvider>
+  const inner = (
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <QueryProvider>
+        {children}
+        <Toaster richColors position="top-right" />
+      </QueryProvider>
+    </ThemeProvider>
   );
+
+  if (!clientId) {
+    return inner;
+  }
+
+  return <GoogleOAuthProvider clientId={clientId}>{inner}</GoogleOAuthProvider>;
 }
