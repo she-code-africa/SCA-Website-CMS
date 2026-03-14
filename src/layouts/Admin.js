@@ -57,6 +57,7 @@ import ChapterLeads from "views/admin/Chapters/leads";
 import { Redirect } from "react-router-dom/cjs/react-router-dom";
 import MediaPage from "views/admin/Media";
 import AnnualReportLog from "views/admin/AnnualReportLog";
+import ContactSubmissionsPage from "views/admin/Stem-a-girl/contact-submissions";
 
 export default function Admin() {
 	return (
@@ -187,6 +188,11 @@ export default function Admin() {
 							path={paths.sagTestimonials}
 							exact
 							component={SAGTestimonials}
+						/>
+						<Route
+							path={paths.sagEnquiries}
+							exact
+							component={ContactSubmissionsPage}
 						/>
 
 						<Redirect from="/admin" to="/admin/dashboard" />
