@@ -58,6 +58,9 @@ import { Redirect } from "react-router-dom/cjs/react-router-dom";
 import MediaPage from "views/admin/Media";
 import AnnualReportLog from "views/admin/AnnualReportLog";
 import ContactSubmissionsPage from "views/admin/Stem-a-girl/contact-submissions";
+import CreateCoursesPage from "views/admin/Stem-a-girl/courses/create";
+import EditCoursePage from "views/admin/Stem-a-girl/courses/edit";
+import OutreachPage from "views/admin/Stem-a-girl/outreach";
 
 export default function Admin() {
 	return (
@@ -99,6 +102,7 @@ export default function Admin() {
 						<Route path={paths.testimonials} exact component={Testimonials} />
 						<Route path={paths.courses} exact component={Courses} />
 						<Route path={paths.schools} exact component={School} />
+
 						<Route
 							path={paths.schoolPrograms}
 							exact
@@ -177,12 +181,24 @@ export default function Admin() {
 
 						<Route path={paths.sagSchools} exact component={Schools} />
 						<Route path={paths.sagCourses} exact component={SAGCourses} />
+						<Route
+							path="/admin/courses/create"
+							exact
+							component={CreateCoursesPage}
+						/>
+						<Route path="/admin/courses/:id" exact component={EditCoursePage} />
+
 						<Route path={paths.sagActivities} exact component={SAGActivities} />
 						<Route path={paths.sagEvents} exact component={SAGEvents} />
 						<Route
 							path={paths.sagImpactStories}
 							exact
 							component={SAGImpactStories}
+						/>
+						<Route
+							path={"/admin/stem-a-girl/outreach"}
+							exact
+							component={OutreachPage}
 						/>
 						<Route
 							path={paths.sagTestimonials}

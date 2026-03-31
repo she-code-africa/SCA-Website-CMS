@@ -52,7 +52,7 @@ const CourseModal = ({
 						state: newData.state,
 					});
 			},
-		}
+		},
 	);
 
 	const { isActivitiesLoading } = useQuery(
@@ -65,7 +65,7 @@ const CourseModal = ({
 			onError: () => {
 				toast.error("Could not fetch activities");
 			},
-		}
+		},
 	);
 
 	const { mutate: addCourse, isLoading: creating } = useMutation(
@@ -80,7 +80,7 @@ const CourseModal = ({
 			onError: () => {
 				toast.error("Could not create Course");
 			},
-		}
+		},
 	);
 
 	const { mutateAsync: editCourse, isLoading: updating } = useMutation(
@@ -98,7 +98,7 @@ const CourseModal = ({
 			onSettled: () => {
 				setLoading(false);
 			},
-		}
+		},
 	);
 
 	const handleInputChange = useCallback(
@@ -109,7 +109,7 @@ const CourseModal = ({
 				[name]: value,
 			}));
 		},
-		[setCourse]
+		[setCourse],
 	);
 
 	const handleOnChange = (e) => {

@@ -114,43 +114,48 @@ export const routes = [
 		name: "stem-a-girl",
 		label: "Stem a Girl",
 		icon: faCalendar,
-		path: "/admin/stem-a-girl/schools",
+		path: "/admin/stem-a-girl/courses",
 		items: [
+			// {
+			// 	name: "schools",
+			// 	label: "Schools",
+			// 	path: "/admin/stem-a-girl/schools",
+			// },
 			{
-				name: "schools",
-				label: "Schools",
-				path: "/admin/stem-a-girl/schools",
+				name: "outreach",
+				label: "Outreach",
+				path: "/admin/stem-a-girl/outreach",
 			},
 			{
 				name: "courses",
 				label: "Courses",
 				path: "/admin/stem-a-girl/courses",
 			},
-			{
-				name: "activities",
-				label: "Activities",
-				path: "/admin/stem-a-girl/activities",
-			},
+			// {
+			// 	name: "activities",
+			// 	label: "Activities",
+			// 	path: "/admin/stem-a-girl/activities",
+			// },
 			{
 				name: "enquiries",
 				label: "Enquiries",
 				path: "/admin/stem-a-girl/enquiries",
 			},
-			{
-				name: "events",
-				label: "Events",
-				path: "/admin/stem-a-girl/events",
-			},
-			{
-				name: "impact-stories",
-				label: "Impact Stories",
-				path: "/admin/stem-a-girl/impact-stories",
-			},
-			{
-				name: "testimonials",
-				label: "Testimonials",
-				path: "/admin/stem-a-girl/testimonials",
-			},
+			// {
+			// 	name: "events",
+			// 	label: "Events",
+			// 	path: "/admin/stem-a-girl/events",
+			// },
+			// {
+			// 	name: "impact-stories",
+			// 	label: "Impact Stories",
+			// 	path: "/admin/stem-a-girl/impact-stories",
+			// },
+			// {
+			// 	name: "testimonials",
+			// 	label: "Testimonials",
+			// 	path: "/admin/stem-a-girl/testimonials",
+			// },
 		],
 	},
 	{

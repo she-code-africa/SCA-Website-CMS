@@ -722,12 +722,28 @@ export async function getSAGCourse(id) {
 	return await axios.get(`${sagBaseUrl}/course/${id}`);
 }
 
-export async function editSAGCourse({ id, data }) {
-	return await axios.put(`${sagBaseUrl}/course/${id}`, data);
+export async function editSAGCourse({ courseId, data }) {
+	return await axios.put(`${sagBaseUrl}/course/${courseId}`, data);
 }
 
-export async function deleteSAGCourse(id) {
-	return await axios.delete(`${sagBaseUrl}/course/${id}`);
+export async function deleteSAGCourse(courseId) {
+	return await axios.delete(`${sagBaseUrl}/course/${courseId}`);
+}
+
+export async function getOutreaches(){
+	return await axios.get(`${sagBaseUrl}/outreach`);
+}
+
+export async function getOutreach(id){
+	return await axios.get(`${sagBaseUrl}/outreach/${id}`);
+}
+
+export async function createOutreach(data){
+	return await axios.post(`${sagBaseUrl}/outreach`, data);
+}
+
+export async function updateOutreach({ id, data }) {
+	return await axios.put(`${sagBaseUrl}/outreach/${id}`, data);
 }
 
 export async function getSAGActivities() {

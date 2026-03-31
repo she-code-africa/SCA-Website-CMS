@@ -81,7 +81,7 @@ const ChapterModal = ({
 			onError: () => {
 				toast.error("Could not create Chapter");
 			},
-		}
+		},
 	);
 
 	const handleOnChange = (e) => {
@@ -105,7 +105,7 @@ const ChapterModal = ({
 			onError: () => {
 				toast.error("Could not update Chapter");
 			},
-		}
+		},
 	);
 
 	const updateChapterDetails = async () => {
@@ -138,7 +138,7 @@ const ChapterModal = ({
 				[name]: value,
 			}));
 		},
-		[setChapter]
+		[setChapter],
 	);
 
 	const handleSubmit = async (e) => {
@@ -158,7 +158,7 @@ const ChapterModal = ({
 	const handleCategoryChange = (event) => {
 		const selectedCategoryId = event.target.value;
 		const selectedCategory = categories.find(
-			(cat) => cat._id === selectedCategoryId
+			(cat) => cat._id === selectedCategoryId,
 		);
 		setChapter((prevChapter) => ({
 			...prevChapter,
