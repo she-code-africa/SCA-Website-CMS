@@ -31,7 +31,7 @@ import {
 import {
 	VolunteerRoleList,
 	AddVolunteerRole,
-	EditVolunteerRole
+	EditVolunteerRole,
 } from "views/admin/Volunteers/VolunteerRoles";
 import Jobs from "views/admin/Jobs/Jobs";
 import AddJob from "views/admin/Jobs/AddJob";
@@ -56,6 +56,11 @@ import ChapterEvents from "views/admin/Chapters/events";
 import ChapterLeads from "views/admin/Chapters/leads";
 import { Redirect } from "react-router-dom/cjs/react-router-dom";
 import MediaPage from "views/admin/Media";
+import AnnualReportLog from "views/admin/AnnualReportLog";
+import ContactSubmissionsPage from "views/admin/Stem-a-girl/contact-submissions";
+import CreateCoursesPage from "views/admin/Stem-a-girl/courses/create";
+import EditCoursePage from "views/admin/Stem-a-girl/courses/edit";
+import OutreachPage from "views/admin/Stem-a-girl/outreach";
 
 export default function Admin() {
 	return (
@@ -67,6 +72,11 @@ export default function Admin() {
 				<div className="px-4 flex md:px-10 mx-auto w-full -mt-20 mb-12">
 					<Switch>
 						<Route path={paths.dashboard} exact component={Dashboard} />
+						<Route
+							path="/admin/annual-report"
+							exact
+							component={AnnualReportLog}
+						/>
 						<Route path={paths.settings} exact component={Settings} />
 						<Route path={paths.team} exact component={TeamList} />
 						<Route path={paths.partners} exact component={PartnersList} />
@@ -92,6 +102,7 @@ export default function Admin() {
 						<Route path={paths.testimonials} exact component={Testimonials} />
 						<Route path={paths.courses} exact component={Courses} />
 						<Route path={paths.schools} exact component={School} />
+
 						<Route
 							path={paths.schoolPrograms}
 							exact
@@ -170,6 +181,13 @@ export default function Admin() {
 
 						<Route path={paths.sagSchools} exact component={Schools} />
 						<Route path={paths.sagCourses} exact component={SAGCourses} />
+						<Route
+							path="/admin/courses/create"
+							exact
+							component={CreateCoursesPage}
+						/>
+						<Route path="/admin/courses/:id" exact component={EditCoursePage} />
+
 						<Route path={paths.sagActivities} exact component={SAGActivities} />
 						<Route path={paths.sagEvents} exact component={SAGEvents} />
 						<Route
@@ -178,9 +196,19 @@ export default function Admin() {
 							component={SAGImpactStories}
 						/>
 						<Route
+							path={"/admin/stem-a-girl/outreach"}
+							exact
+							component={OutreachPage}
+						/>
+						<Route
 							path={paths.sagTestimonials}
 							exact
 							component={SAGTestimonials}
+						/>
+						<Route
+							path={paths.sagEnquiries}
+							exact
+							component={ContactSubmissionsPage}
 						/>
 
 						<Redirect from="/admin" to="/admin/dashboard" />

@@ -4,37 +4,72 @@ import { PiCaretDoubleLeftBold, PiCaretDoubleRightBold } from "react-icons/pi";
 function Pagination({ totalItems, itemsPerPage, currentPage, onPageChange }) {
 	const totalPages = Math.ceil(totalItems / itemsPerPage);
 
-	const handlePageChange = (page) => {
-		onPageChange(page);
-	};
+	if (totalPages <= 1) return null;
+
+	const maxVisiblePages = 5; // how many page numbers to show
+	const half = Math.floor(maxVisiblePages / 2);
+
+	let startPage = Math.max(currentPage - half, 1);
+	let endPage = Math.min(startPage + maxVisiblePages - 1, totalPages);
+
+	if (endPage - startPage < maxVisiblePages - 1) {
+		startPage = Math.max(endPage - maxVisiblePages + 1, 1);
+	}
+
+	const pages = [];
+	for (let i = startPage; i <= endPage; i++) {
+		pages.push(i);
+	}
 
 	return (
-		<div className="flex items-center justify-end space-x-2 mt-4 px-4">
+		<div className="flex flex-wrap items-center justify-end gap-2 mt-4 px-4">
 			{currentPage > 1 && (
 				<button
-					onClick={() => handlePageChange(currentPage - 1)}
-					className="px-3 py-2 rounded-md bg-pink-500 text-white hover:bg-pink-600 focus:outline-none">
+					onClick={() => onPageChange(currentPage - 1)}
+					className="px-3 py-2 rounded-md bg-pink-500 text-white hover:bg-pink-600">
 					<PiCaretDoubleLeftBold />
 				</button>
 			)}
 
-			{Array.from({ length: totalPages }).map((_, index) => (
+			{startPage > 1 && (
+				<>
+					<button
+						onClick={() => onPageChange(1)}
+						className="px-3 py-1 rounded-md bg-gray-200 hover:bg-pink-100">
+						1
+					</button>
+					{startPage > 2 && <span className="px-2">...</span>}
+				</>
+			)}
+
+			{pages.map((page) => (
 				<button
-					key={index}
-					onClick={() => handlePageChange(index + 1)}
+					key={page}
+					onClick={() => onPageChange(page)}
 					className={`px-3 py-1 rounded-md ${
-						index + 1 === currentPage
+						page === currentPage
 							? "bg-pink-500 text-white"
 							: "bg-gray-200 text-gray-700 hover:bg-pink-100"
-					} focus:outline-none`}>
-					{index + 1}
+					}`}>
+					{page}
 				</button>
 			))}
 
+			{endPage < totalPages && (
+				<>
+					{endPage < totalPages - 1 && <span className="px-2">...</span>}
+					<button
+						onClick={() => onPageChange(totalPages)}
+						className="px-3 py-1 rounded-md bg-gray-200 hover:bg-pink-100">
+						{totalPages}
+					</button>
+				</>
+			)}
+
 			{currentPage < totalPages && (
 				<button
-					onClick={() => handlePageChange(currentPage + 1)}
-					className="px-3 py-2 rounded-md bg-pink-500 text-white hover:bg-pink-600 focus:outline-none">
+					onClick={() => onPageChange(currentPage + 1)}
+					className="px-3 py-2 rounded-md bg-pink-500 text-white hover:bg-pink-600">
 					<PiCaretDoubleRightBold />
 				</button>
 			)}

@@ -168,6 +168,30 @@ export const enquiries = [
 	{ value: "updated", label: "Updated" },
 ];
 
+export const sagEnquiries = [
+	{
+		value: "fullName",
+		label: "Full Name",
+	},
+	{
+		value: "email",
+		label: "Email",
+	},
+	{
+		value: "subject",
+		label: "Subject",
+	},
+	{
+		value: "status",
+		label: "Status",
+	},
+	{
+		value: "created",
+		label: "Created",
+	},
+	{ value: "updated", label: "Updated" },
+];
+
 export const events = [
 	{ value: "title", label: "Title" },
 	{ value: "description", label: "Description" },
@@ -280,11 +304,11 @@ export const volunteer = [
 ];
 
 export const volunteerRoles = [
-  { value: "image", label: "Image" },
-  { value: "name", label: "Role Name" },
-  { value: "skills", label: "Skills" },
-  { value: "description", label: "Description" },
-  { value: "updatedAt", label: "Updated at" },
+	{ value: "image", label: "Image" },
+	{ value: "name", label: "Role Name" },
+	{ value: "skills", label: "Skills" },
+	{ value: "description", label: "Description" },
+	{ value: "updatedAt", label: "Updated at" },
 ];
 
 export const talentRequest = [

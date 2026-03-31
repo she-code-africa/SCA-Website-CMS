@@ -7,20 +7,18 @@ import {
 	Table,
 } from "components/Table/DisplayTable";
 import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "react-query";
+import { useQuery } from "react-query";
 import moment from "moment";
-import CourseModal from "components/Stem-a-girl/courses/CourseModal";
-import { ToastContainer, toast } from "react-toastify";
-import DeleteModal from "components/Modal/DeleteModal";
-import { getSAGCourses, deleteSAGCourse } from "services";
+
+import { ToastContainer } from "react-toastify";
+
+import { getSAGCourses } from "services";
+import { Link, useHistory } from "react-router-dom";
 
 const Courses = () => {
 	const [courses, setCourses] = useState([]);
-	const [selectedId, setSelectedId] = useState("");
-	const [isCourseModalOpen, setIsCourseModalOpen] = useState(false);
-	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-	const [newItem, setNewItem] = useState();
-	const queryClient = useQueryClient();
+
+	const history = useHistory();
 
 	const tableHeader = [
 		{
@@ -32,12 +30,12 @@ const Courses = () => {
 			label: "Description",
 		},
 		{
-			value: "link",
-			label: "Link",
+			value: "estimatedHours",
+			label: "Estimated Hours",
 		},
 		{
-			value: "activity",
-			label: "Activity",
+			value: "difficulty",
+			label: "Difficulty",
 		},
 		{
 			value: "state",
@@ -53,12 +51,8 @@ const Courses = () => {
 		},
 	];
 
-	const handleSchoolModal = () => {
-		setIsCourseModalOpen(!isCourseModalOpen);
-	};
-
-	const handleDeleteModal = () => {
-		setIsDeleteModalOpen(!isDeleteModalOpen);
+	const handleSchoolModal = (id) => {
+		history.push(`/admin/courses/${id}`);
 	};
 
 	const { isLoading } = useQuery("stem-a-girl-courses", getSAGCourses, {
@@ -70,48 +64,30 @@ const Courses = () => {
 		},
 	});
 
-	const { mutate } = useMutation(deleteSAGCourse, {
-		onSuccess: () => {
-			toast.success("Course Deleted Successfully");
-			queryClient.invalidateQueries(["stem-a-girl-courses"]);
-		},
-		onError: () => {
-			toast.error("Could not delete Course");
-		},
-	});
-	const handleDelete = () => {
-		mutate(selectedId);
-		handleDeleteModal();
-	};
+	console.log(courses);
 
 	return (
 		<>
 			<div className="bg-white rounded-md z-10 w-full">
 				<div className="flex items-center justify-between px-4 py-3">
 					<h5 className="font-medium text-xl mt-3">Courses</h5>
-					<button
-						className="rounded-md bg-pink-500 text-white text-xs  px-4 py-2"
-						onClick={() => {
-							setNewItem(true);
-							setSelectedId("");
-							handleSchoolModal();
-						}}>
+					<Link
+						to="/admin/courses/create"
+						className="rounded-md bg-pink-500 text-white text-xs  px-4 py-2">
 						Add
-					</button>
+					</Link>
 				</div>
 				<Table width="full">
 					<TableHeaderRow className="grid grid-cols-7">
-						{tableHeader.map(({ label, name }) => (
-							<TableHeader key={name}>{label}</TableHeader>
+						{tableHeader.map(({ label, name }, i) => (
+							<TableHeader key={i}>{label}</TableHeader>
 						))}
 					</TableHeaderRow>
 					<TableBody loading={isLoading}>
 						{courses?.map((course) => (
 							<TableDataRow
 								onClick={() => {
-									setSelectedId(course._id);
-									handleSchoolModal();
-									setNewItem(false);
+									handleSchoolModal(course._id);
 								}}
 								key={course._id}
 								className="grid grid-cols-7 px-4 py-3 bg-white">
@@ -126,8 +102,8 @@ const Courses = () => {
 									</div>
 								</TableData>
 								<TableData>{course.description.substring(0, 100)}...</TableData>
-								<TableData>{course.link}</TableData>
-								<TableData>{course.activity.title}</TableData>
+								<TableData>{course.estimatedHours || "N/A"}</TableData>
+								<TableData>{course.difficulty || "N/A"}</TableData>
 								<TableData>{course.state}</TableData>
 								<TableData>
 									{" "}
@@ -141,14 +117,14 @@ const Courses = () => {
 					</TableBody>
 				</Table>
 			</div>
-			{isDeleteModalOpen && (
+			{/* {isDeleteModalOpen && (
 				<DeleteModal
 					handleDelete={handleDelete}
 					isOpen={isDeleteModalOpen}
 					handleModal={handleDeleteModal}
 				/>
-			)}
-			{isCourseModalOpen && (
+			)} */}
+			{/* {isCourseModalOpen && (
 				<CourseModal
 					handleDeleteModal={() => setIsDeleteModalOpen(true)}
 					isOpen={isCourseModalOpen}
@@ -156,7 +132,7 @@ const Courses = () => {
 					id={selectedId}
 					newItem={newItem}
 				/>
-			)}
+			)} */}
 			<ToastContainer />
 		</>
 	);
