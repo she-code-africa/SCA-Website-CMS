@@ -7,21 +7,16 @@ import {
 	Table,
 } from "components/Table/DisplayTable";
 import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "react-query";
+import { useQuery } from "react-query";
 import moment from "moment";
-import CourseModal from "components/Stem-a-girl/courses/CourseModal";
-import { ToastContainer, toast } from "react-toastify";
-import DeleteModal from "components/Modal/DeleteModal";
-import { getSAGCourses, deleteSAGCourse } from "services";
+
+import { ToastContainer } from "react-toastify";
+
+import { getSAGCourses } from "services";
 import { Link, useHistory } from "react-router-dom";
 
 const Courses = () => {
 	const [courses, setCourses] = useState([]);
-	const [selectedId, setSelectedId] = useState("");
-	const [isCourseModalOpen, setIsCourseModalOpen] = useState(false);
-	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-	const [newItem, setNewItem] = useState();
-	const queryClient = useQueryClient();
 
 	const history = useHistory();
 

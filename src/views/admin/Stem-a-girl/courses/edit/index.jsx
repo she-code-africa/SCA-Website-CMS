@@ -252,12 +252,25 @@ const EditCoursePage = () => {
 		},
 	);
 
+	const sanitizeModules = (modules) =>
+		modules.map(({ _id, __v, createdAt, updatedAt, ...mod }) => ({
+			...mod,
+			lessons: mod.lessons.map(
+				({ _id, __v, createdAt, updatedAt, ...lesson }) => ({
+					...lesson,
+					resources: lesson.resources.map(
+						({ _id, __v, ...resource }) => resource,
+					),
+				}),
+			),
+		}));
+
 	const handleSubmit = () => {
 		const {
 			title,
 			description,
 			image,
-		
+
 			estimatedHours,
 			difficulty,
 			slug,
@@ -271,7 +284,7 @@ const EditCoursePage = () => {
 		formData.append("difficulty", difficulty);
 		formData.append("slug", slug);
 		formData.append("state", state);
-		formData.append("modules", JSON.stringify(modules));
+		formData.append("modules", JSON.stringify(sanitizeModules(modules)));
 		editCourse({ courseId, data: formData });
 	};
 
