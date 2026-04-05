@@ -17,8 +17,8 @@ const Modules = ({
 	openLessons,
 	handleLessonChange,
 	handleResourceChange,
-  removeResource,
-  isDisabled
+	removeResource,
+	isDisabled,
 }) => {
 	return (
 		<section className="w-full mt-6">
