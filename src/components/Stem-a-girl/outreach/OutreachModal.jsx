@@ -12,42 +12,47 @@ const defaultForm = {
 	description: "",
 	outreachDate: "",
 	galleryLink: "",
-	images: [],
 };
 
-const OutreachModal = ({ isOpen, handleModal, handleDeleteModal, id, newItem }) => {
+const OutreachModal = ({
+	isOpen,
+	handleModal,
+	handleDeleteModal,
+	id,
+	newItem,
+}) => {
 	const queryClient = useQueryClient();
 	const [formValues, setFormValues] = useState(defaultForm);
 	const [editMode, setEditMode] = useState(false);
-	// Holds base64 strings for new image uploads
 	const [imagePreviews, setImagePreviews] = useState([]);
+	// Holds actual File objects for new uploads
+	const [newImageFiles, setNewImageFiles] = useState([]);
+	// Holds existing image URLs from the server (edit mode)
+	const [existingImages, setExistingImages] = useState([]);
 
-	// ── Fetch existing outreach when editing ────────────────────────
-	const { isLoading } = useQuery(
-		["outreach", id],
-		() => getOutreach(id),
-		{
-			enabled: !!id && !newItem,
-			onSuccess: ({ data }) => {
-				const d = data.data;
-				setFormValues({
-					state: d.state || "",
-					description: d.description || "",
-					outreachDate: d.outreachDate
-						? d.outreachDate.substring(0, 10)
-						: "",
-					galleryLink: d.galleryLink || "",
-					images: d.previewImages || [],
-				});
-				setImagePreviews(d.previewImages || []);
-			},
-		}
-	);
+	const { isLoading } = useQuery(["outreach", id], () => getOutreach(id), {
+		enabled: !!id && !newItem,
+		onSuccess: ({ data }) => {
+			console.log(data);
+			const d = data.data;
+			setFormValues({
+				state: d.state || "",
+				description: d.description || "",
+				outreachDate: d.outreachDate ? d.outreachDate.substring(0, 10) : "",
+				galleryLink: d.galleryLink || "",
+			});
+			setExistingImages(d.images || []);
+			setImagePreviews(d.images || []);
+			setNewImageFiles([]);
+		},
+	});
 
 	useEffect(() => {
 		if (newItem) {
 			setFormValues(defaultForm);
 			setImagePreviews([]);
+			setNewImageFiles([]);
+			setExistingImages([]);
 			setEditMode(true);
 		}
 	}, [newItem]);
@@ -57,32 +62,31 @@ const OutreachModal = ({ isOpen, handleModal, handleDeleteModal, id, newItem }) 
 		setFormValues((prev) => ({ ...prev, [name]: value }));
 	};
 
-	// Convert uploaded files to base64 strings
 	const handleImageUpload = (e) => {
 		const files = Array.from(e.target.files);
 		files.forEach((file) => {
 			const reader = new FileReader();
 			reader.onloadend = () => {
-				const base64 = reader.result;
-				setImagePreviews((prev) => [...prev, base64]);
-				setFormValues((prev) => ({
-					...prev,
-					images: [...prev.images, base64],
-				}));
+				setImagePreviews((prev) => [...prev, reader.result]);
 			};
 			reader.readAsDataURL(file);
 		});
+		setNewImageFiles((prev) => [...prev, ...files]);
 	};
 
 	const removeImage = (index) => {
+		const isExisting = index < existingImages.length;
+
+		if (isExisting) {
+			setExistingImages((prev) => prev.filter((_, i) => i !== index));
+		} else {
+			const newIndex = index - existingImages.length;
+			setNewImageFiles((prev) => prev.filter((_, i) => i !== newIndex));
+		}
+
 		setImagePreviews((prev) => prev.filter((_, i) => i !== index));
-		setFormValues((prev) => ({
-			...prev,
-			images: prev.images.filter((_, i) => i !== index),
-		}));
 	};
 
-	// ── Create ──────────────────────────────────────────────────────
 	const { mutate: addOutreach, isLoading: creating } = useMutation(
 		createOutreach,
 		{
@@ -94,38 +98,46 @@ const OutreachModal = ({ isOpen, handleModal, handleDeleteModal, id, newItem }) 
 			onError: () => {
 				toast.error("Could not create Outreach");
 			},
-		}
+		},
 	);
 
-	// ── Update ──────────────────────────────────────────────────────
 	const { mutate: editOutreach, isLoading: updating } = useMutation(
-		(payload) => updateOutreach(id, payload),
+		updateOutreach,
 		{
 			onSuccess: () => {
 				toast.success("Outreach updated successfully");
 				queryClient.invalidateQueries(["outreaches"]);
 				queryClient.invalidateQueries(["outreach", id]);
 				setEditMode(false);
+				handleModal();
 			},
 			onError: () => {
 				toast.error("Could not update Outreach");
 			},
-		}
+		},
 	);
 
 	const handleSubmit = () => {
-		const payload = {
-			state: formValues.state,
-			description: formValues.description,
-			outreachDate: formValues.outreachDate,
-			galleryLink: formValues.galleryLink,
-			images: formValues.images,
-		};
+		const formData = new FormData();
+		formData.append("state", formValues.state);
+		formData.append("description", formValues.description);
+		formData.append("outreachDate", formValues.outreachDate);
+		formData.append("galleryLink", formValues.galleryLink);
 
 		if (newItem) {
-			addOutreach(payload);
+			newImageFiles.forEach((file) => {
+				formData.append("images", file);
+			});
+
+			addOutreach(formData);
 		} else {
-			editOutreach(payload);
+			const imagesData = [...existingImages, ...newImageFiles];
+			// Append new image files
+			imagesData.forEach((file) => {
+				formData.append("images", file);
+			});
+
+			editOutreach({ outreachId: id, data: formData });
 		}
 	};
 
@@ -135,7 +147,9 @@ const OutreachModal = ({ isOpen, handleModal, handleDeleteModal, id, newItem }) 
 
 	return (
 		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-			<div className="bg-white rounded-lg shadow-xl w-full max-w-xl mx-4 max-h-[90vh] overflow-y-auto">
+			<div
+				className="bg-white rounded-lg shadow-xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+				style={{ maxWidth: "750px" }}>
 				{/* Header */}
 				<div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
 					<h5 className="font-medium text-lg text-slate-700">
@@ -229,7 +243,7 @@ const OutreachModal = ({ isOpen, handleModal, handleDeleteModal, id, newItem }) 
 
 						{/* Images */}
 						<div className="relative w-full">
-							<label className={labelClass}>Images *</label>
+							<label className={labelClass}>Images</label>
 
 							{editMode && (
 								<input
@@ -264,7 +278,9 @@ const OutreachModal = ({ isOpen, handleModal, handleDeleteModal, id, newItem }) 
 							)}
 
 							{imagePreviews.length === 0 && !editMode && (
-								<p className="text-slate-400 text-xs mt-1">No images uploaded.</p>
+								<p className="text-slate-400 text-xs mt-1">
+									No images uploaded.
+								</p>
 							)}
 						</div>
 
@@ -279,8 +295,8 @@ const OutreachModal = ({ isOpen, handleModal, handleDeleteModal, id, newItem }) 
 									{isBusy
 										? "Saving..."
 										: newItem
-										? "Create Outreach"
-										: "Save Changes"}
+											? "Create Outreach"
+											: "Save Changes"}
 								</button>
 							</div>
 						)}

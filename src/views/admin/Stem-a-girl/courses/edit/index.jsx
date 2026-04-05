@@ -36,14 +36,6 @@ const defaultModule = () => ({
 	lessons: [defaultLesson()],
 });
 
-const EditCoursePage = () => {
-	const { id } = useParams();
-	const queryClient = useQueryClient();
-
-	const [editMode, setEditMode] = useState(false);
-	const handleSetEditMode = () => setEditMode((prev) => !prev);
-	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-
 	const initialValues = {
 		title: "",
 		slug: "",
@@ -53,6 +45,16 @@ const EditCoursePage = () => {
 		state: "",
 		image: "",
 	};
+
+const EditCoursePage = () => {
+	const { id } = useParams();
+	const queryClient = useQueryClient();
+
+	const [editMode, setEditMode] = useState(false);
+	const handleSetEditMode = () => setEditMode((prev) => !prev);
+	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+
 
 	const [formValues, setFormValues] = useState(initialValues);
 	const [modules, setModules] = useState([defaultModule()]);
@@ -236,7 +238,7 @@ const EditCoursePage = () => {
 
 	//  Submit
 	const history = useHistory();
-	const courseId = id;
+
 	const { mutate: editCourse, isLoading: updating } = useMutation(
 		editSAGCourse,
 		{
@@ -285,7 +287,7 @@ const EditCoursePage = () => {
 		formData.append("slug", slug);
 		formData.append("state", state);
 		formData.append("modules", JSON.stringify(sanitizeModules(modules)));
-		editCourse({ courseId, data: formData });
+		editCourse({ courseId:id, data: formData });
 	};
 
 	//  Shared label style
@@ -486,7 +488,7 @@ const EditCoursePage = () => {
 
 			{isDeleteModalOpen && (
 				<DeleteModal
-					title="Delete Outreach"
+					title="Delete Course"
 					isOpen={isDeleteModalOpen}
 					handleModal={() => setIsDeleteModalOpen(false)}
 					handleDelete={handleDelete}
