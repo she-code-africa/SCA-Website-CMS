@@ -35,27 +35,29 @@ const OutreachPage = () => {
 	const { isLoading } = useQuery("outreaches", getOutreaches, {
 		onSuccess: ({ data }) => {
 			setOutreaches(data.data);
-			console.log(data);
+			
 		},
 		onError: () => {
 			toast.error("Could not fetch Outreaches");
 		},
 	});
 
-	// const { mutate: removeOutreach } = useMutation(deleteOutreach, {
-	// 	onSuccess: () => {
-	// 		queryClient.invalidateQueries(["outreaches"]);
-	// 		setIsDeleteModalOpen(false);
-	// 		toast.success("Outreach deleted successfully");
-	// 	},
-	// 	onError: () => {
-	// 		setIsDeleteModalOpen(false);
-	// 		toast.error("Could not delete Outreach");
-	// 	},
-	// });
+	const { mutate: removeOutreach } = useMutation(deleteOutreach, {
+		onSuccess: () => {
+			queryClient.invalidateQueries(["outreaches"]);
+			setIsDeleteModalOpen(false);
+			toast.success("Outreach deleted successfully");
+		},
+		onError: () => {
+			setIsDeleteModalOpen(false);
+			toast.error("Could not delete Outreach");
+		},
+	});
 
 	const handleDelete = () => {
-		// removeOutreach({ id: selectedId });
+		const outreachId = selectedId;
+
+		removeOutreach(outreachId);
 	};
 	const handleOpenCreateModal = () => {
 		console.log(6);
