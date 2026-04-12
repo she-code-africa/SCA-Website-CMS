@@ -22,7 +22,7 @@ const defaultLesson = () => ({
 	thumbnail: "",
 	durationMinutes: "",
 	order: "",
-	isPreview: false,
+	// isPreview: false,
 	practiceTask: "",
 	resources: [{ title: "", url: "" }],
 });
@@ -36,15 +36,15 @@ const defaultModule = () => ({
 	lessons: [defaultLesson()],
 });
 
-	const initialValues = {
-		title: "",
-		slug: "",
-		description: "",
-		difficulty: "",
-		estimatedHours: "",
-		state: "",
-		image: "",
-	};
+const initialValues = {
+	title: "",
+	slug: "",
+	description: "",
+	difficulty: "",
+	estimatedHours: "",
+	state: "",
+	image: "",
+};
 
 const EditCoursePage = () => {
 	const { id } = useParams();
@@ -53,8 +53,6 @@ const EditCoursePage = () => {
 	const [editMode, setEditMode] = useState(false);
 	const handleSetEditMode = () => setEditMode((prev) => !prev);
 	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-
-
 
 	const [formValues, setFormValues] = useState(initialValues);
 	const [modules, setModules] = useState([defaultModule()]);
@@ -258,7 +256,7 @@ const EditCoursePage = () => {
 		modules.map(({ _id, __v, createdAt, updatedAt, ...mod }) => ({
 			...mod,
 			lessons: mod.lessons.map(
-				({ _id, __v, createdAt, updatedAt, ...lesson }) => ({
+				({ _id, __v, createdAt, updatedAt, isPreview, ...lesson }) => ({
 					...lesson,
 					resources: lesson.resources.map(
 						({ _id, __v, ...resource }) => resource,
@@ -287,7 +285,8 @@ const EditCoursePage = () => {
 		formData.append("slug", slug);
 		formData.append("state", state);
 		formData.append("modules", JSON.stringify(sanitizeModules(modules)));
-		editCourse({ courseId:id, data: formData });
+
+		editCourse({ courseId: id, data: formData });
 	};
 
 	//  Shared label style

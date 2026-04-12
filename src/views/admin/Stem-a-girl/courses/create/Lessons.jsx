@@ -1,4 +1,4 @@
-import React from 'react'
+import React from "react";
 
 const Lessons = ({
 	addLesson,
@@ -11,9 +11,9 @@ const Lessons = ({
 	labelClass,
 	inputClass,
 	handleResourceChange,
-  addResource,
-  removeResource,
-  isDisabled
+	addResource,
+	removeResource,
+	isDisabled,
 }) => {
 	return (
 		<div className="mt-2">
@@ -160,7 +160,7 @@ const Lessons = ({
 										disabled={isDisabled}
 									/>
 								</div>
-								<div className="relative w-full flex items-center gap-2 mt-4">
+								{/* <div className="relative w-full flex items-center gap-2 mt-4">
 									<input
 										type="checkbox"
 										id={`preview-${mi}-${li}`}
@@ -176,7 +176,7 @@ const Lessons = ({
 										className="text-xs font-bold uppercase text-slate-600 cursor-pointer">
 										Is Preview?
 									</label>
-								</div>
+								</div> */}
 							</div>
 
 							<div className="relative w-full mb-3">
@@ -256,4 +256,4 @@ const Lessons = ({
 	);
 };
 
-export default Lessons
+export default Lessons;
