@@ -1,8 +1,9 @@
-// src/app/admin/jobs/page.tsx
 "use client";
 
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
 import { getJobs } from "@/features/jobs/api";
 import type { Job, JobFilters } from "@/features/jobs/types";
 import { JobFilters as Filters } from "@/features/jobs/components/job-filters";
@@ -24,26 +25,18 @@ function extractId(val: string | { _id: string } | null | undefined): string {
 
 function applyClientFilters(rows: Job[], f: JobFilters) {
   let out = [...rows];
-
   const q = f.search?.trim().toLowerCase();
-  if (q) {
-    out = out.filter((j) => {
-      return j.title?.toLowerCase().includes(q);
-    });
-  }
-
+  if (q) out = out.filter((j) => j.title?.toLowerCase().includes(q));
   if (f.state) out = out.filter((j) => j.state === f.state);
   if (f.jobType && f.jobType !== "")
     out = out.filter((j) => extractId(j.jobType) === f.jobType);
   if (f.jobCategory && f.jobCategory !== "")
     out = out.filter((j) => extractId(j.jobCategory) === f.jobCategory);
-
   if (f.sortBy) {
     const key = f.sortBy;
-    out.sort((a: Job, b: Job) => {
+    out.sort((a, b) => {
       const av = a?.[key];
       const bv = b?.[key];
-
       if (key === "createdAt" || key === "updatedAt" || key === "deadline") {
         return new Date(bv ?? 0).getTime() - new Date(av ?? 0).getTime();
       }
@@ -56,7 +49,6 @@ function applyClientFilters(rows: Job[], f: JobFilters) {
         new Date(a.createdAt ?? 0).getTime()
     );
   }
-
   return out;
 }
 
@@ -68,20 +60,14 @@ export default function JobsPage() {
     jobCategory: "",
     sortBy: ""
   });
-
   const [page, setPage] = React.useState(1);
   const limit = 10;
-
   const [modalOpen, setModalOpen] = React.useState(false);
   const [modalMode, setModalMode] = React.useState<"create" | "view">("create");
   const [selected, setSelected] = React.useState<Job | null>(null);
 
-  /**
-   * HYDRATION GUARD: Prevents window access during build-time dry runs.
-   */
   React.useEffect(() => {
     if (typeof window === "undefined") return;
-
     const handler = () => {
       setSelected(null);
       setModalMode("create");
@@ -111,7 +97,6 @@ export default function JobsPage() {
     () => applyClientFilters((query.data ?? []) as Job[], filters),
     [query.data, filters]
   );
-
   const totalPages = Math.max(1, Math.ceil(rows.length / limit));
   const paged = rows.slice((page - 1) * limit, page * limit);
 
@@ -122,95 +107,94 @@ export default function JobsPage() {
   };
 
   return (
-    <TableShell
-      title="Jobs"
-      description="Manage job postings, categories, and job types."
-      right={
-        <div className="text-sm text-muted-foreground">
-          {query.isLoading ? "Loading…" : `${rows.length} job(s)`}
-        </div>
-      }
-    >
-      <div className="space-y-4">
-        <div className="grid grid-cols-12 gap-4">
-          <div className="col-span-12 lg:col-span-9 space-y-3">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-              <Filters
-                value={filters}
-                onChange={setFilters}
-                onReset={() =>
-                  setFilters({
-                    search: "",
-                    state: "",
-                    jobType: "",
-                    jobCategory: "",
-                    sortBy: ""
-                  })
-                }
-              />
-
-              <JobPagination
-                currentPage={page}
-                totalPages={totalPages}
-                onPrevious={() => setPage((p) => Math.max(1, p - 1))}
-                onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
-                isLoading={query.isFetching}
-              />
-            </div>
-
-            <div className="grid gap-3 md:hidden">
-              {query.isLoading ? (
-                // UNIQUE KEYS: Prefixed for stable hydration
-                Array.from({ length: 6 }).map((_, i) => (
-                  <MobileJobSkeletonCard key={`job-skeleton-${i}`} />
-                ))
-              ) : query.isError ? (
-                <div className="rounded-xl border bg-background p-6 text-center text-sm text-red-500">
-                  Failed to load jobs.
-                </div>
-              ) : paged.length ? (
-                paged.map((j) => (
-                  <button
-                    key={j._id}
-                    type="button"
-                    onClick={() => openView(j)}
-                    className="text-left w-full"
-                  >
-                    <MobileJobCard job={j} />
-                  </button>
-                ))
-              ) : (
-                <div className="rounded-xl border bg-background p-6 text-center text-sm text-muted-foreground">
-                  No jobs found.
-                </div>
-              )}
-            </div>
-
-            <div className="hidden md:block">
-              <TableFrame>
-                <JobTable
-                  rows={paged}
-                  isLoading={query.isLoading}
-                  isError={query.isError}
-                  onRowClick={openView}
+    <PermissionGate permission={PERMISSIONS.VIEW_JOB}>
+      <TableShell
+        title="Jobs"
+        description="Manage job postings, categories, and job types."
+        right={
+          <div className="text-sm text-muted-foreground">
+            {query.isLoading ? "Loading…" : `${rows.length} job(s)`}
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <div className="grid grid-cols-12 gap-4">
+            <div className="col-span-12 lg:col-span-9 space-y-3">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <Filters
+                  value={filters}
+                  onChange={setFilters}
+                  onReset={() =>
+                    setFilters({
+                      search: "",
+                      state: "",
+                      jobType: "",
+                      jobCategory: "",
+                      sortBy: ""
+                    })
+                  }
                 />
-              </TableFrame>
+                <JobPagination
+                  currentPage={page}
+                  totalPages={totalPages}
+                  onPrevious={() => setPage((p) => Math.max(1, p - 1))}
+                  onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  isLoading={query.isFetching}
+                />
+              </div>
+
+              <div className="grid gap-3 md:hidden">
+                {query.isLoading ? (
+                  Array.from({ length: 6 }).map((_, i) => (
+                    <MobileJobSkeletonCard key={`job-skeleton-${i}`} />
+                  ))
+                ) : query.isError ? (
+                  <div className="rounded-xl border bg-background p-6 text-center text-sm text-red-500">
+                    Failed to load jobs.
+                  </div>
+                ) : paged.length ? (
+                  paged.map((j) => (
+                    <button
+                      key={j._id}
+                      type="button"
+                      onClick={() => openView(j)}
+                      className="text-left w-full"
+                    >
+                      <MobileJobCard job={j} />
+                    </button>
+                  ))
+                ) : (
+                  <div className="rounded-xl border bg-background p-6 text-center text-sm text-muted-foreground">
+                    No jobs found.
+                  </div>
+                )}
+              </div>
+
+              <div className="hidden md:block">
+                <TableFrame>
+                  <JobTable
+                    rows={paged}
+                    isLoading={query.isLoading}
+                    isError={query.isError}
+                    onRowClick={openView}
+                  />
+                </TableFrame>
+              </div>
+            </div>
+
+            <div className="col-span-12 lg:col-span-3 space-y-4">
+              <JobCategoriesPanel />
+              <JobTypesPanel />
             </div>
           </div>
-
-          <div className="col-span-12 lg:col-span-3 space-y-4">
-            <JobCategoriesPanel />
-            <JobTypesPanel />
-          </div>
+          <JobSheet
+            open={modalOpen}
+            onOpenChange={setModalOpen}
+            mode={modalMode}
+            jobId={selected?._id}
+          />
         </div>
-
-        <JobSheet
-          open={modalOpen}
-          onOpenChange={setModalOpen}
-          mode={modalMode}
-          jobId={selected?._id}
-        />
-      </div>
-    </TableShell>
+      </TableShell>
+    </PermissionGate>
   );
 }

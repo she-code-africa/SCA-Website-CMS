@@ -1,94 +1,76 @@
 // src/features/auth/api/api.ts
-// ─────────────────────────────────────────────────────────────────────────────
-// Auth Feature API
-// ─────────────────────────────────────────────────────────────────────────────
-
 import { api } from "@/lib/api/client";
-import { LoginPayload, LoginResponse } from "@/features/auth";
 import { logout as authLogout } from "@/lib/auth/logout";
+import type {
+  LoginPayload,
+  LoginResponse,
+  AcceptInvitePayload,
+  DeclineInvitePayload
+  // InviteTokenStatus,
+  // InviteVerifyResponse,
+} from "@/features/auth/types";
 
-/**
- * Executes login request and extracts the token.
- * Note: Browser storage (Cookies/LocalStorage) is managed in the UI component
- * to handle 'Remember Me' preferences.
- */
+// ── Login ─────────────────────────────────────────────────────────────────────
 export async function login(payload: LoginPayload): Promise<string> {
-  // interceptor returns `response.data?.data ?? response.data`
   const res = (await api.post<LoginResponse>(
     "/auth/login",
     payload
   )) as unknown;
-
-  // if interceptor returned token directly
   if (typeof res === "string") return res;
-
-  // if interceptor returned full object { success, data }
   const token = (res as LoginResponse).data;
   if (typeof token === "string" && token.length > 10) return token;
-
   throw new Error("Login failed: token not returned from backend");
 }
 
-/**
- * Triggers the core logout utility to clear cookies,
- * local storage, and redirect the user.
- */
+// ── Logout ────────────────────────────────────────────────────────────────────
 export async function logout(): Promise<void> {
   authLogout();
 }
 
-export type InviteTokenStatus =
-  | { valid: true; email: string; name?: string }
-  | { valid: false; expired: boolean; reason: string };
-
-export type AcceptInvitePayload = {
-  token: string;
-  password: string;
-};
-
-// ── Mock implementations ──────────────────────────────────────────────────────
-const IS_MOCK = true;
-
-export async function verifyInviteToken(
-  token: string
-): Promise<InviteTokenStatus> {
-  if (IS_MOCK) {
-    await new Promise((r) => setTimeout(r, 800));
-    if (token === "expired") {
+// ── Invite — Verify token (READ‑ONLY) ───────────────────────────────────────
+// GET /users/invite/verify?token=xxx
+// NOTE: This endpoint is not yet available on the backend. Uncomment when ready.
+/*
+export async function verifyInviteToken(token: string): Promise<InviteTokenStatus> {
+  try {
+    const res = await api.get<InviteVerifyResponse>(`/users/invite/verify?token=${token}`);
+    const payload = (res as any)?.data ?? res;
+    if (!payload?.valid) {
       return {
         valid: false,
-        expired: true,
-        reason: "This invitation link has expired."
-      };
-    }
-    if (token === "invalid") {
-      return {
-        valid: false,
-        expired: false,
-        reason: "This invitation link is invalid or has already been used."
+        expired: payload?.expired === true,
+        reason: payload?.reason || "Invalid invitation link.",
       };
     }
     return {
       valid: true,
-      email: "invited.user@shecodeafrica.org",
-      name: "Invited User"
+      email: payload.email || "",
+      name: payload.name,
     };
+  } catch (err: any) {
+    const status = err?.response?.status;
+    if (status === 410) {
+      return { valid: false, expired: true, reason: "This invitation link has expired." };
+    }
+    if (status === 404 || status === 400) {
+      return { valid: false, expired: false, reason: "Invalid or already used link." };
+    }
+    return { valid: false, expired: false, reason: "Verification failed. Please try again." };
   }
-
-  // REAL:
-  // return api.get<InviteTokenStatus>(`/auth/invite/verify?token=${token}`);
-  throw new Error("Not implemented");
 }
+*/
 
+// ── Invite — Accept ───────────────────────────────────────────────────────────
 export async function acceptInvite(
   payload: AcceptInvitePayload
 ): Promise<void> {
-  if (IS_MOCK) {
-    await new Promise((r) => setTimeout(r, 1000));
-    return;
-  }
+  await api.post("/users/accept", payload);
+}
 
-  // REAL:
-  // return api.post("/auth/invite/accept", payload);
-  throw new Error("Not implemented");
+// ── Invite — Decline ──────────────────────────────────────────────────────────
+// POST /users/decline
+// Body: { token }
+export async function declineInvite(token: string): Promise<void> {
+  const payload: DeclineInvitePayload = { token };
+  await api.post("/users/decline", payload);
 }

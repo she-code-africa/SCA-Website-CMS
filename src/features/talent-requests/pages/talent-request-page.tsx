@@ -1,8 +1,11 @@
-// src/app/admin/talent-request/page.tsx
+// app/admin/talent-request/page.tsx
 "use client";
 
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
 
 import { getTalentRequests } from "@/features/talent-requests/api";
 import type {
@@ -34,6 +37,50 @@ function applyClientFilters(rows: TalentRequest[], f: TalentRequestFilters) {
   return out;
 }
 
+function toCSV(data: TalentRequest[]): string {
+  const headers = [
+    "Full Name",
+    "Email",
+    "Company",
+    "Role",
+    "Experience Level",
+    "Skills",
+    "Portfolio",
+    "LinkedIn",
+    "GitHub",
+    "Status",
+    "Created At",
+    "Updated At"
+  ];
+  const rows = data.map((t) => [
+    t.fullname ?? "",
+    t.email ?? "",
+    t.company ?? "",
+    t.role ?? "",
+    t.experienceLevel ?? "",
+    (t.skills ?? []).join("; "),
+    t.portfolio ?? "",
+    t.linkedin ?? "",
+    t.github ?? "",
+    t.status ?? "Pending",
+    t.createdAt ? new Date(t.createdAt).toLocaleString() : "",
+    t.updatedAt ? new Date(t.updatedAt).toLocaleString() : ""
+  ]);
+  return [headers, ...rows].map((row) => row.join(",")).join("\n");
+}
+
+function downloadCSV(csv: string, filename: string) {
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  const url = URL.createObjectURL(blob);
+  link.href = url;
+  link.setAttribute("download", filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
 export default function TalentRequestPage() {
   const [filters, setFilters] = React.useState<TalentRequestFilters>({
     search: "",
@@ -44,8 +91,9 @@ export default function TalentRequestPage() {
 
   const [page, setPage] = React.useState(1);
   const limit = 10;
-  const [detailsOpen, setDetailsOpen] = React.useState(false);
+  const [sheetOpen, setSheetOpen] = React.useState(false);
   const [selected, setSelected] = React.useState<TalentRequest | null>(null);
+  const [exporting, setExporting] = React.useState(false);
 
   React.useEffect(() => setPage(1), [filters]);
 
@@ -63,72 +111,101 @@ export default function TalentRequestPage() {
   const totalPages = Math.max(1, Math.ceil(rows.length / limit));
   const paged = rows.slice((page - 1) * limit, page * limit);
 
+  const handleExport = async () => {
+    if (!query.data || query.data.length === 0) {
+      toast.error("No data to export.");
+      return;
+    }
+    setExporting(true);
+    try {
+      const allData = query.data as TalentRequest[];
+      const csv = toCSV(allData);
+      const filename = `talent_requests_${new Date().toISOString().slice(0, 19).replace(/:/g, "-")}.csv`;
+      downloadCSV(csv, filename);
+      toast.success("Exported successfully.");
+    } catch (error) {
+      toast.error("Failed to export.");
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleCreate = () => {
+    setSelected(null);
+    setSheetOpen(true);
+  };
+
+  const handleRowClick = (t: TalentRequest) => {
+    setSelected(t);
+    setSheetOpen(true);
+  };
+
   return (
-    <TableShell title="Talent Requests" description="Review talent requests.">
-      <div className="space-y-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <Filters
-            value={filters}
-            onChange={setFilters}
-            onReset={() =>
-              setFilters({
-                search: "",
-                status: "",
-                experienceLevel: "",
-                sortBy: ""
-              })
-            }
-          />
-          <TalentRequestPagination
-            currentPage={page}
-            totalPages={totalPages}
-            onPrevious={() => setPage((p) => Math.max(1, p - 1))}
-            onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
-            isLoading={query.isFetching}
+    <PermissionGate permission={PERMISSIONS.VIEW_TALENT_REQUEST}>
+      <TableShell title="Talent Requests" description="Review talent requests.">
+        <div className="space-y-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <Filters
+              value={filters}
+              onChange={setFilters}
+              onReset={() =>
+                setFilters({
+                  search: "",
+                  status: "",
+                  experienceLevel: "",
+                  sortBy: ""
+                })
+              }
+              onExport={handleExport}
+              onCreate={handleCreate}
+            />
+            <TalentRequestPagination
+              currentPage={page}
+              totalPages={totalPages}
+              onPrevious={() => setPage((p) => Math.max(1, p - 1))}
+              onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
+              isLoading={query.isFetching}
+            />
+          </div>
+
+          <div className="space-y-3">
+            <div className="grid gap-3 md:hidden">
+              {query.isLoading
+                ? Array.from({ length: 6 }).map((_, i) => (
+                    <MobileTalentSkeletonCard key={`talent-skel-${i}`} />
+                  ))
+                : paged.map((t) => (
+                    <button
+                      key={t._id}
+                      type="button"
+                      onClick={() => handleRowClick(t)}
+                      className="text-left w-full"
+                    >
+                      <MobileTalentCard row={t} />
+                    </button>
+                  ))}
+            </div>
+            <div className="hidden md:block">
+              <TableFrame>
+                <TalentTable
+                  rows={paged}
+                  isLoading={query.isLoading}
+                  isError={query.isError}
+                  onRowClick={handleRowClick}
+                />
+              </TableFrame>
+            </div>
+          </div>
+
+          <TalentRequestDetailsSheet
+            open={sheetOpen}
+            onOpenChange={setSheetOpen}
+            row={selected}
+            onUpdate={() => query.refetch()}
+            onDelete={() => query.refetch()}
           />
         </div>
-
-        <div className="space-y-3">
-          <div className="grid gap-3 md:hidden">
-            {query.isLoading
-              ? Array.from({ length: 6 }).map((_, i) => (
-                  <MobileTalentSkeletonCard key={`talent-skel-${i}`} />
-                ))
-              : paged.map((t) => (
-                  <button
-                    key={t._id}
-                    type="button"
-                    onClick={() => {
-                      setSelected(t);
-                      setDetailsOpen(true);
-                    }}
-                    className="text-left w-full"
-                  >
-                    <MobileTalentCard row={t} />
-                  </button>
-                ))}
-          </div>
-          <div className="hidden md:block">
-            <TableFrame>
-              <TalentTable
-                rows={paged}
-                isLoading={query.isLoading}
-                isError={query.isError}
-                onRowClick={(t) => {
-                  setSelected(t);
-                  setDetailsOpen(true);
-                }}
-              />
-            </TableFrame>
-          </div>
-        </div>
-
-        <TalentRequestDetailsSheet
-          open={detailsOpen}
-          onOpenChange={setDetailsOpen}
-          row={selected}
-        />
-      </div>
-    </TableShell>
+      </TableShell>
+    </PermissionGate>
   );
 }

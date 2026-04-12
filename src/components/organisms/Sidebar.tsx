@@ -32,6 +32,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { LogOut, AlertTriangle } from "lucide-react";
+import { useRoleStore } from "@/lib/store/useRoleStore";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
 
 type RouteItem = {
   name: string;
@@ -63,9 +65,10 @@ export function Sidebar({ variant = "desktop" }: SidebarProps) {
   const router = useRouter();
   const { user } = useAuth();
   const { can } = usePermissions();
-  
+  const { currentRole } = useRoleStore();
+
   const [logoutOpen, setLogoutOpen] = React.useState(false);
-  
+
   // STATE FOR MANUAL TOGGLING
   // initialized to empty string to keep Accordion "controlled"
   const [openItem, setOpenItem] = React.useState<string>("");
@@ -99,7 +102,10 @@ export function Sidebar({ variant = "desktop" }: SidebarProps) {
 
         const hasParentAccess = !item.permission || can(item.permission);
 
-        if (hasParentAccess || (visibleSubItems && visibleSubItems.length > 0)) {
+        if (
+          hasParentAccess ||
+          (visibleSubItems && visibleSubItems.length > 0)
+        ) {
           return { ...item, items: visibleSubItems } as RouteItem;
         }
         return null;
@@ -112,11 +118,17 @@ export function Sidebar({ variant = "desktop" }: SidebarProps) {
       ? "hidden md:flex h-screen w-64 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground"
       : "flex h-full w-full flex-col bg-sidebar text-sidebar-foreground";
 
-      
-console.log("--- SIDEBAR DEBUG ---");
-  console.log("Current Role:", user?.role.name); 
-  console.log("Filtered Route Count:", filteredRoutes.length);
-  console.log("Can see Admin Settings?", can("VIEW_USER"));
+
+  // console.log("--- SIDEBAR DEBUG ---");
+  // console.log("Current Role from Global Store:", currentRole);
+  // console.log("Filtered Route Count:", filteredRoutes.length);
+  // console.log("User permissions:", user?.permissions);
+  // console.log(
+  //   "Has VIEW_TESTIMONIALS:",
+  //   user?.permissionSet.has(PERMISSIONS.VIEW_TESTIMONIALS)
+  // );
+
+
   return (
     <aside className={wrapperClass}>
       {variant === "desktop" ? <SidebarLogo /> : null}
@@ -206,7 +218,8 @@ console.log("--- SIDEBAR DEBUG ---");
             }
 
             // ✅ SINGLE ITEM
-            const isActive = pathname === item.path || pathname.startsWith(item.path + "/");
+            const isActive =
+              pathname === item.path || pathname.startsWith(item.path + "/");
             return (
               <Link
                 key={item.name}
@@ -244,9 +257,12 @@ console.log("--- SIDEBAR DEBUG ---");
                 <AlertTriangle className="h-5 w-5 text-primary" />
               </div>
               <div className="space-y-1">
-                <AlertDialogTitle className="text-base">Sign out</AlertDialogTitle>
+                <AlertDialogTitle className="text-base">
+                  Sign out
+                </AlertDialogTitle>
                 <AlertDialogDescription>
-                  You’ll be signed out of the admin dashboard and may need to log in again.
+                  You’ll be signed out of the admin dashboard and may need to
+                  log in again.
                 </AlertDialogDescription>
               </div>
             </div>

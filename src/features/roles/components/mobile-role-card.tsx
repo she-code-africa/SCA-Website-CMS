@@ -12,10 +12,10 @@ export function MobileRoleCard({ role }: { role: RoleDetail }) {
           </p>
         </div>
         <Badge
-          variant={role.isDefault ? "secondary" : "outline"}
+          variant={role.is_system_role ? "secondary" : "outline"}
           className="shrink-0 text-xs"
         >
-          {role.isDefault ? "System" : "Custom"}
+          {role.is_system_role ? "System" : "Custom"}
         </Badge>
       </div>
 

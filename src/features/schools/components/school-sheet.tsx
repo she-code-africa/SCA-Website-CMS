@@ -9,6 +9,8 @@ import {
   deleteSchool
 } from "@/features/schools/api";
 import type { School, SchoolUpsertInput } from "@/features/schools/types";
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
 
 import {
   Sheet,
@@ -44,12 +46,7 @@ type Props = {
   schoolId?: string;
 };
 
-export function SchoolSheet({
-  open,
-  onOpenChange,
-  mode,
-  schoolId
-}: Props) {
+export function SchoolSheet({ open, onOpenChange, mode, schoolId }: Props) {
   const qc = useQueryClient();
   const [editing, setEditing] = React.useState(mode === "create");
 
@@ -161,49 +158,52 @@ export function SchoolSheet({
             {/* Top actions row */}
             {mode === "view" && (
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <Button
-                  variant="outline"
-                  className="w-full sm:w-auto"
-                  onClick={() => setEditing((v) => !v)}
-                >
-                  {editing ? "View" : "Edit"}
-                </Button>
+                <PermissionGate permission={PERMISSIONS.UPDATE_SCHOOL}>
+                  <Button
+                    variant="outline"
+                    className="w-full sm:w-auto"
+                    onClick={() => setEditing((v) => !v)}
+                  >
+                    {editing ? "View" : "Edit"}
+                  </Button>
+                </PermissionGate>
 
                 <div className="flex gap-2 w-full sm:w-auto">
-                  {/* Delete with confirmation */}
                   {!editing && (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="destructive"
-                          className="flex-1 sm:flex-none"
-                        >
-                          Delete
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete school?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => {
-                              if (!schoolId) return;
-                              deleteMut.mutate(schoolId);
-                            }}
-                            className={cn(
-                              "bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            )}
+                    <PermissionGate permission={PERMISSIONS.DELETE_SCHOOL}>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="destructive"
+                            className="flex-1 sm:flex-none"
                           >
                             Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete school?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => {
+                                if (!schoolId) return;
+                                deleteMut.mutate(schoolId);
+                              }}
+                              className={cn(
+                                "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              )}
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </PermissionGate>
                   )}
                 </div>
               </div>
@@ -237,26 +237,40 @@ export function SchoolSheet({
           </div>
         </ScrollArea>
 
-        {/* Bottom action bar - Fixed */}
-        {(mode === "create" || editing) && (
-          <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={saving}
-            >
-              Cancel
-            </Button>
-            <Button variant="default" onClick={submit} disabled={saving}>
-              {saving
-                ? "Saving…"
-                : mode === "create"
-                  ? "Add School"
-                  : "Save Changes"}
-            </Button>
-          </div>
-        )}
+        {/* Bottom action bar - only visible if user has permission */}
+        {(mode === "create" && (
+          <PermissionGate permission={PERMISSIONS.CREATE_SCHOOL}>
+            <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
+              <Button
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={saving}
+              >
+                Cancel
+              </Button>
+              <Button variant="default" onClick={submit} disabled={saving}>
+                {saving ? "Saving…" : "Add School"}
+              </Button>
+            </div>
+          </PermissionGate>
+        )) ||
+          (mode === "view" && editing && (
+            <PermissionGate permission={PERMISSIONS.UPDATE_SCHOOL}>
+              <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
+                <Button
+                  variant="outline"
+                  onClick={() => onOpenChange(false)}
+                  disabled={saving}
+                >
+                  Cancel
+                </Button>
+                <Button variant="default" onClick={submit} disabled={saving}>
+                  {saving ? "Saving…" : "Save Changes"}
+                </Button>
+              </div>
+            </PermissionGate>
+          ))}
       </SheetContent>
     </Sheet>
   );
-} 
+}

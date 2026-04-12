@@ -16,15 +16,18 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
+import { Download } from "lucide-react";
 
 type Props = {
   value: TestimonialFilters;
   onChange: (next: TestimonialFilters) => void;
   onReset: () => void;
+  onExport: () => void;
 };
 
-export function TestimonialFilters({ value, onChange, onReset }: Props) {
-  // Fixed: Using !! avoids the "unintentional comparison" error with ""
+export function TestimonialFilters({ value, onChange, onReset, onExport }: Props) {
   const activeCount =
     Number(!!value.search?.trim()) +
     Number(!!value.state) +
@@ -60,11 +63,7 @@ export function TestimonialFilters({ value, onChange, onReset }: Props) {
                   onValueChange={(v) =>
                     onChange({
                       ...value,
-                      // Fixed: Cast to the specific union type instead of 'any'
-                      state:
-                        v === "all"
-                          ? undefined
-                          : (v as TestimonialFilters["state"])
+                      state: v === "all" ? undefined : (v as TestimonialFilters["state"])
                     })
                   }
                 >
@@ -87,11 +86,7 @@ export function TestimonialFilters({ value, onChange, onReset }: Props) {
                   onValueChange={(v) =>
                     onChange({
                       ...value,
-                      // Fixed: Cast to the specific union type instead of 'any'
-                      sortBy:
-                        v === "all"
-                          ? undefined
-                          : (v as TestimonialFilters["sortBy"])
+                      sortBy: v === "all" ? undefined : (v as TestimonialFilters["sortBy"])
                     })
                   }
                 >
@@ -115,15 +110,26 @@ export function TestimonialFilters({ value, onChange, onReset }: Props) {
           </PopoverContent>
         </Popover>
 
-        <Button
-          variant="default"
-          className="w-full sm:w-auto"
-          onClick={() =>
-            window.dispatchEvent(new CustomEvent("testimonial:add"))
-          }
-        >
-          Add Testimonial
-        </Button>
+        <PermissionGate permission={PERMISSIONS.EXPORT_TESTIMONIALS}>
+          <Button
+            variant="default"
+            className="w-full sm:w-auto"
+            onClick={onExport}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Export
+          </Button>
+        </PermissionGate>
+
+        <PermissionGate permission={PERMISSIONS.CREATE_TESTIMONIALS}>
+          <Button
+            variant="default"
+            className="w-full sm:w-auto"
+            onClick={() => window.dispatchEvent(new CustomEvent("testimonial:add"))}
+          >
+            Add Testimonial
+          </Button>
+        </PermissionGate>
       </div>
     </div>
   );

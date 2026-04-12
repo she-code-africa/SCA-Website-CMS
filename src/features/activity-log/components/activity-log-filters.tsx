@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
 
 const calendarClassNames = {
   months: "flex flex-col sm:flex-row gap-4",
@@ -138,7 +139,7 @@ export function ActivityLogFilters({
         >
           Reset
         </Button>
-        <PermissionGate permission="EXPORT_DASHBOARD_DATA">
+        <PermissionGate permission={PERMISSIONS.EXPORT_DASHBOARD_DATA}>
           <Button
             variant="default"
             onClick={onExportClick}
@@ -146,7 +147,7 @@ export function ActivityLogFilters({
           >
             Export
           </Button>
-      </PermissionGate>
+        </PermissionGate>
       </div>
     </div>
   );

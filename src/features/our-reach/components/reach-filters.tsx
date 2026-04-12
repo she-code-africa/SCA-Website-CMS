@@ -1,4 +1,3 @@
-// src/features/our-reach/components/reach-filters.tsx
 "use client";
 
 import * as React from "react";
@@ -17,6 +16,8 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
 
 type Props = {
   value: ReachFilters;
@@ -25,9 +26,9 @@ type Props = {
 };
 
 export function ReachFilters({ value, onChange, onReset }: Props) {
-const activeCount = [!!value.search?.trim(), !!value.sortBy].filter(
-  Boolean
-).length;
+  const activeCount = [!!value.search?.trim(), !!value.sortBy].filter(
+    Boolean
+  ).length;
 
   return (
     <div className="flex w-full flex-col gap-2 lg:w-auto lg:flex-row lg:items-center">
@@ -84,13 +85,15 @@ const activeCount = [!!value.search?.trim(), !!value.sortBy].filter(
           </PopoverContent>
         </Popover>
 
-        <Button
-          variant="default"
-          className="w-full sm:w-auto bg-pink-600 hover:bg-pink-700"
-          onClick={() => window.dispatchEvent(new CustomEvent("reach:add"))}
-        >
-          Add Reach Stat
-        </Button>
+        <PermissionGate permission={PERMISSIONS.CREATE_OUR_REACH}>
+          <Button
+            variant="default"
+            className="w-full sm:w-auto"
+            onClick={() => window.dispatchEvent(new CustomEvent("reach:add"))}
+          >
+            Add Reach Stat
+          </Button>
+        </PermissionGate>
       </div>
     </div>
   );

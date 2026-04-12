@@ -2,13 +2,13 @@
 
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
-
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
 import { getSchoolPrograms } from "@/features/school-programs/api";
 import type {
   SchoolProgram,
   SchoolProgramsFilters
 } from "@/features/school-programs/types";
-
 import { SchoolProgramFilters } from "@/features/school-programs/components/school-program-filters";
 import { SchoolProgramTable } from "@/features/school-programs/components/school-program-table";
 import { SchoolProgramSheet } from "@/features/school-programs/components/school-program-sheet";
@@ -23,14 +23,13 @@ export default function SchoolProgramsPage() {
     school: ""
   });
 
-  // client-side pagination
   const [page, setPage] = React.useState(1);
   const limit = 10;
-
   const [modalOpen, setModalOpen] = React.useState(false);
   const [modalMode, setModalMode] = React.useState<"create" | "view">("create");
   const [selected, setSelected] = React.useState<SchoolProgram | null>(null);
 
+  // Listen for custom add event (optional, kept for compatibility)
   React.useEffect(() => {
     const handler = () => {
       setSelected(null);
@@ -41,7 +40,6 @@ export default function SchoolProgramsPage() {
     return () => window.removeEventListener("school-program:add", handler);
   }, []);
 
-  // reset to page 1 when filters change
   React.useEffect(() => {
     setPage(1);
   }, [filters.search, filters.state, filters.school]);
@@ -53,7 +51,6 @@ export default function SchoolProgramsPage() {
   });
 
   const rows = React.useMemo(() => query.data ?? [], [query.data]);
-
   const totalPages = Math.max(1, Math.ceil(rows.length / limit));
   const paged = rows.slice((page - 1) * limit, page * limit);
 
@@ -64,65 +61,63 @@ export default function SchoolProgramsPage() {
   };
 
   return (
-    <TableShell
-      title="School Programs"
-      description="Manage school programs and cohorts."
-      right={
-        <div className="text-sm text-muted-foreground">
-          {query.isLoading ? "Loading…" : `${rows.length} program(s)`}
-        </div>
-      }
-    >
-      <div className="space-y-4">
-        {/* Controls */}
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <SchoolProgramFilters
-            value={filters}
-            onChange={setFilters}
-            onReset={() => setFilters({ search: "", state: "", school: "" })}
-          />
-
-          <SchoolProgramPagination
-            currentPage={page}
-            totalPages={totalPages}
-            onPrevious={() => setPage((p) => Math.max(1, p - 1))}
-            onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
-            isLoading={query.isFetching}
-          />
-        </div>
-
-        {/* Responsive table wrapper */}
-        <div className="space-y-3">
-          {/* Mobile list */}
-          <div className="md:hidden">
-            <SchoolProgramTable
-              rows={paged}
-              isLoading={query.isLoading}
-              isError={query.isError}
-              onRowClick={openView}
+    <PermissionGate permission={PERMISSIONS.VIEW_SCHOOLPROGRAM}>
+      <TableShell
+        title="School Programs"
+        description="Manage school programs and cohorts."
+        right={
+          <div className="flex items-center gap-2">
+            <div className="text-sm text-muted-foreground">
+              {query.isLoading ? "Loading…" : `${rows.length} program(s)`}
+            </div>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <SchoolProgramFilters
+              value={filters}
+              onChange={setFilters}
+              onReset={() => setFilters({ search: "", state: "", school: "" })}
+            />
+            <SchoolProgramPagination
+              currentPage={page}
+              totalPages={totalPages}
+              onPrevious={() => setPage((p) => Math.max(1, p - 1))}
+              onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
+              isLoading={query.isFetching}
             />
           </div>
 
-          {/* Tablet + Desktop table */}
-          <div className="hidden md:block">
-            <TableFrame>
+          <div className="space-y-3">
+            <div className="md:hidden">
               <SchoolProgramTable
                 rows={paged}
                 isLoading={query.isLoading}
                 isError={query.isError}
                 onRowClick={openView}
               />
-            </TableFrame>
+            </div>
+            <div className="hidden md:block">
+              <TableFrame>
+                <SchoolProgramTable
+                  rows={paged}
+                  isLoading={query.isLoading}
+                  isError={query.isError}
+                  onRowClick={openView}
+                />
+              </TableFrame>
+            </div>
           </div>
-        </div>
 
-        <SchoolProgramSheet
-          open={modalOpen}
-          onOpenChange={setModalOpen}
-          mode={modalMode}
-          programId={selected?._id}
-        />
-      </div>
-    </TableShell>
+          <SchoolProgramSheet
+            open={modalOpen}
+            onOpenChange={setModalOpen}
+            mode={modalMode}
+            programId={selected?._id}
+          />
+        </div>
+      </TableShell>
+    </PermissionGate>
   );
 }

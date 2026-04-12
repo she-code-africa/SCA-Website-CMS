@@ -87,7 +87,7 @@ export function ReportTable({
                   href={r.link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline"
+                  className="flex items-center gap-1 text-white hover:text-primary hover:underline"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <span className="truncate">{r.link ?? "—"}</span>

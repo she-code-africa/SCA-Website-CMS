@@ -2,10 +2,10 @@
 
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
-
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
 import { getSchools } from "@/features/schools/api";
 import type { School, SchoolsFilters } from "@/features/schools/types";
-
 import { SchoolFilters } from "@/features/schools/components/school-filters";
 import { SchoolTable } from "@/features/schools/components/school-table";
 import { SchoolSheet } from "@/features/schools/components/school-sheet";
@@ -18,10 +18,8 @@ export default function SchoolsPage() {
     search: ""
   });
 
-  // client-side pagination
   const [page, setPage] = React.useState(1);
   const limit = 10;
-
   const [modalOpen, setModalOpen] = React.useState(false);
   const [modalMode, setModalMode] = React.useState<"create" | "view">("create");
   const [selected, setSelected] = React.useState<School | null>(null);
@@ -36,7 +34,6 @@ export default function SchoolsPage() {
     return () => window.removeEventListener("school:add", handler);
   }, []);
 
-  // reset to page 1 when filters change
   React.useEffect(() => {
     setPage(1);
   }, [filters.search]);
@@ -48,7 +45,6 @@ export default function SchoolsPage() {
   });
 
   const rows = React.useMemo(() => query.data ?? [], [query.data]);
-
   const totalPages = Math.max(1, Math.ceil(rows.length / limit));
   const paged = rows.slice((page - 1) * limit, page * limit);
 
@@ -58,66 +54,65 @@ export default function SchoolsPage() {
     setModalOpen(true);
   };
 
+
   return (
-    <TableShell
-      title="Schools"
-      description="Manage schools in the system."
-      right={
-        <div className="text-sm text-muted-foreground">
-          {query.isLoading ? "Loading…" : `${rows.length} school(s)`}
-        </div>
-      }
-    >
-      <div className="space-y-4">
-        {/* Controls */}
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <SchoolFilters
-            value={filters}
-            onChange={setFilters}
-            onReset={() => setFilters({ search: "" })}
-          />
-
-          <SchoolPagination
-            currentPage={page}
-            totalPages={totalPages}
-            onPrevious={() => setPage((p) => Math.max(1, p - 1))}
-            onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
-            isLoading={query.isFetching}
-          />
-        </div>
-
-        {/* Responsive table wrapper */}
-        <div className="space-y-3">
-          {/* Mobile list */}
-          <div className="md:hidden">
-            <SchoolTable
-              rows={paged}
-              isLoading={query.isLoading}
-              isError={query.isError}
-              onRowClick={openView}
+    <PermissionGate permission={PERMISSIONS.VIEW_SCHOOL}>
+      <TableShell
+        title="Schools"
+        description="Manage schools in the system."
+        right={
+          <div className="flex items-center gap-2">
+            <div className="text-sm text-muted-foreground">
+              {query.isLoading ? "Loading…" : `${rows.length} school(s)`}
+            </div>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <SchoolFilters
+              value={filters}
+              onChange={setFilters}
+              onReset={() => setFilters({ search: "" })}
+            />
+            <SchoolPagination
+              currentPage={page}
+              totalPages={totalPages}
+              onPrevious={() => setPage((p) => Math.max(1, p - 1))}
+              onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
+              isLoading={query.isFetching}
             />
           </div>
 
-          {/* Tablet + Desktop table */}
-          <div className="hidden md:block">
-            <TableFrame>
+          <div className="space-y-3">
+            <div className="md:hidden">
               <SchoolTable
                 rows={paged}
                 isLoading={query.isLoading}
                 isError={query.isError}
                 onRowClick={openView}
               />
-            </TableFrame>
+            </div>
+            <div className="hidden md:block">
+              <TableFrame>
+                <SchoolTable
+                  rows={paged}
+                  isLoading={query.isLoading}
+                  isError={query.isError}
+                  onRowClick={openView}
+                />
+              </TableFrame>
+            </div>
           </div>
-        </div>
 
-        <SchoolSheet
-          open={modalOpen}
-          onOpenChange={setModalOpen}
-          mode={modalMode}
-          schoolId={selected?._id}
-        />
-      </div>
-    </TableShell>
+          <SchoolSheet
+            open={modalOpen}
+            onOpenChange={setModalOpen}
+            mode={modalMode}
+            schoolId={selected?._id}
+          />
+        </div>
+      </TableShell>
+    </PermissionGate>
   );
 }

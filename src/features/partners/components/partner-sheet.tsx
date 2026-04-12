@@ -11,6 +11,8 @@ import {
   deletePartner
 } from "@/features/partners/api";
 import type { Partner, PartnerUpsertInput } from "@/features/partners/types";
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
 
 import {
   Sheet,
@@ -86,7 +88,6 @@ export function PartnerSheet({ open, onOpenChange, mode, partnerId }: Props) {
       setEditing(false);
       setImageFile(null);
 
-      // Set existing image preview if available
       if (p.image) {
         setImagePreview(p.image);
       } else {
@@ -194,48 +195,52 @@ export function PartnerSheet({ open, onOpenChange, mode, partnerId }: Props) {
             {/* Top actions row */}
             {mode === "view" && (
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <Button
-                  variant="outline"
-                  className="w-full sm:w-auto"
-                  onClick={() => setEditing((v) => !v)}
-                >
-                  {editing ? "View" : "Edit"}
-                </Button>
+                <PermissionGate permission={PERMISSIONS.UPDATE_PARTNER}>
+                  <Button
+                    variant="outline"
+                    className="w-full sm:w-auto"
+                    onClick={() => setEditing((v) => !v)}
+                  >
+                    {editing ? "View" : "Edit"}
+                  </Button>
+                </PermissionGate>
 
                 {/* Delete with confirmation */}
                 {!editing && (
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="destructive"
-                        className="w-full sm:w-auto"
-                      >
-                        Delete
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete partner?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => {
-                            if (!partnerId) return;
-                            deleteMut.mutate(partnerId);
-                          }}
-                          className={cn(
-                            "bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          )}
+                  <PermissionGate permission={PERMISSIONS.DELETE_PARTNER}>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="destructive"
+                          className="w-full sm:w-auto"
                         >
                           Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete partner?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => {
+                              if (!partnerId) return;
+                              deleteMut.mutate(partnerId);
+                            }}
+                            className={cn(
+                              "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            )}
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </PermissionGate>
                 )}
               </div>
             )}
@@ -245,7 +250,6 @@ export function PartnerSheet({ open, onOpenChange, mode, partnerId }: Props) {
               <label className="text-sm font-medium">Partner Logo</label>
 
               <div className="flex flex-col sm:flex-row gap-4 items-center">
-                {/* Image Preview */}
                 <div className="relative group">
                   <div
                     className={cn(
@@ -268,7 +272,6 @@ export function PartnerSheet({ open, onOpenChange, mode, partnerId }: Props) {
                     )}
                   </div>
 
-                  {/* Remove button */}
                   {editing && imagePreview && (
                     <button
                       type="button"
@@ -280,7 +283,6 @@ export function PartnerSheet({ open, onOpenChange, mode, partnerId }: Props) {
                   )}
                 </div>
 
-                {/* Upload Controls */}
                 <div className="flex-1 space-y-3">
                   <div className="space-y-2">
                     <p className="text-xs text-muted-foreground">
@@ -301,7 +303,6 @@ export function PartnerSheet({ open, onOpenChange, mode, partnerId }: Props) {
                     </Button>
                   )}
 
-                  {/* Hidden file input */}
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -343,29 +344,46 @@ export function PartnerSheet({ open, onOpenChange, mode, partnerId }: Props) {
           </div>
         </ScrollArea>
 
-        {/* Bottom action bar - Fixed */}
-        {(mode === "create" || editing) && (
-          <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={saving}
-            >
-              Cancel
-            </Button>
-            <Button
-              className="bg-pink-600 hover:bg-pink-700"
-              onClick={submit}
-              disabled={saving}
-            >
-              {saving
-                ? "Saving…"
-                : mode === "create"
-                  ? "Add Partner"
-                  : "Save Changes"}
-            </Button>
-          </div>
-        )}
+        {/* Bottom action bar */}
+        {(mode === "create" && (
+          <PermissionGate permission={PERMISSIONS.CREATE_PARTNER}>
+            <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
+              <Button
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={saving}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="bg-pink-600 hover:bg-pink-700"
+                onClick={submit}
+                disabled={saving}
+              >
+                {saving ? "Saving…" : "Add Partner"}
+              </Button>
+            </div>
+          </PermissionGate>
+        )) ||
+          (mode === "view" && editing && (
+            <PermissionGate permission={PERMISSIONS.UPDATE_PARTNER}>
+              <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
+                <Button
+                  variant="outline"
+                  onClick={() => onOpenChange(false)}
+                  disabled={saving}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  variant="default" 
+                  onClick={submit} 
+                  disabled={saving}>
+                  {saving ? "Saving…" : "Save Changes"}
+                </Button>
+              </div>
+            </PermissionGate>
+          ))}
       </SheetContent>
     </Sheet>
   );

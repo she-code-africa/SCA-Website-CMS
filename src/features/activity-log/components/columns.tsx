@@ -1,73 +1,57 @@
 // src/features/activity-log/components/columns.tsx
-import { ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
-import type { ActivityLogRow } from "@/features/activity-log/types";
+import type { AuditLogEntry } from "@/features/activity-log/types";
+import {
+  getFriendlyAction,
+  getFriendlyResource
+} from "@/features/activity-log/utils";
 
-export const columns: ColumnDef<ActivityLogRow>[] = [
+export const columns: ColumnDef<AuditLogEntry>[] = [
   {
     id: "user",
     header: "User",
-    cell: ({ row }) => {
-      const u = row.original.user;
-      return (
-        <div className="font-medium">
-          {u?.firstName} {u?.lastName}
-        </div>
-      );
-    }
+    cell: ({ row }) => (
+      <div className="font-medium">
+        {row.original.user?.email ?? (
+          <span className="text-muted-foreground italic">System</span>
+        )}
+      </div>
+    )
   },
   {
-    id: "role",
-    header: "Role",
-    cell: ({ row }) => {
-      const role = row.original.user?.role ?? "";
-      const pretty = role ? role.charAt(0).toUpperCase() + role.slice(1) : "";
-      return <div className="text-muted-foreground">{pretty}</div>;
-    }
-  },
-  {
-    accessorKey: "action",
+    id: "action",
     header: "Action",
-    cell: ({ row }) => {
-      const action = row.original.action ?? "";
-      const pretty = action
-        ? action.charAt(0).toUpperCase() + action.slice(1)
-        : "";
-      return <div>{pretty}</div>;
-    }
-  },
-  { accessorKey: "page", header: "Page" },
-  {
-    id: "oldDoc",
-    header: "Old",
-    cell: ({ row }) => <div>{row.original.oldDoc?.name ?? "N/A"}</div>
+    cell: ({ row }) => <div>{getFriendlyAction(row.original)}</div>
   },
   {
-    id: "newDoc",
-    header: "New",
-    cell: ({ row }) => <div>{row.original.newDoc?.name ?? ""}</div>
-  },
-  {
-    accessorKey: "createdAt",
-    header: "Created",
+    id: "resource",
+    header: "Resource",
     cell: ({ row }) => (
-      <div className="text-muted-foreground">
-        {row.original.createdAt
-          ? format(new Date(row.original.createdAt), "dd MMM, yyyy")
-          : ""}
+      <div className="max-w-xs truncate">
+        {getFriendlyResource(row.original)}
       </div>
     )
   },
   {
-    id: "updatedAt",
-    accessorKey: "updatedAt",
-    header: "Updated",
+    id: "resourceId",
+    header: "Record ID",
     cell: ({ row }) => (
-      <div className="text-muted-foreground">
-        {row.original.updatedAt
-          ? format(new Date(row.original.updatedAt), "dd MMM, yyyy")
-          : ""}
+      <div className="font-mono text-xs text-muted-foreground max-w-35 truncate">
+        {row.original.resourceId ?? <span className="italic">—</span>}
       </div>
     )
+  },
+  {
+    accessorKey: "timestamp",
+    header: "Timestamp",
+    cell: ({ row }) =>
+      row.original.timestamp ? (
+        <div className="text-muted-foreground whitespace-nowrap">
+          {format(new Date(row.original.timestamp), "dd MMM yyyy, HH:mm:ss")}
+        </div>
+      ) : (
+        "—"
+      )
   }
 ];

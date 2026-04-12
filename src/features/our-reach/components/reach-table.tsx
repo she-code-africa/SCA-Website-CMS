@@ -89,7 +89,7 @@ export function ReachTable({
               </TableCell>
 
               <TableCell className="whitespace-nowrap">
-                <span className="text-lg font-semibold text-pink-600">
+                <span className="text-lg font-semibold text-primary">
                   {formatNumber(r.value ?? 0)}
                 </span>
               </TableCell>

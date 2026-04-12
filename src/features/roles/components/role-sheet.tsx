@@ -7,11 +7,7 @@ import { Info, Lock, Search, X } from "lucide-react";
 
 import { createRole, updateRole } from "@/features/roles/api";
 import type { RoleDetail } from "@/features/roles/types";
-import {
-  PERMISSION_MODULES,
-  ACTION_COLUMNS,
-  ACTION_LABELS
-} from "@/features/roles/mock";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
 
 import {
   Sheet,
@@ -22,11 +18,12 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+// import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils/utils";
+import { PermissionGate } from "@/components/PermissionGate";
 
 type Props = {
   open: boolean;
@@ -34,6 +31,49 @@ type Props = {
   mode: "create" | "view";
   role?: RoleDetail | null;
 };
+
+// ─── Constants & Dynamic Module Generators ───────────────────────────────────
+
+const ACTION_COLUMNS = [
+  "VIEW",
+  "CREATE",
+  "UPDATE",
+  "DELETE",
+  "EXPORT"
+] as const;
+
+const ACTION_LABELS: Record<string, string> = {
+  VIEW: "View",
+  CREATE: "Create",
+  UPDATE: "Update",
+  DELETE: "Delete",
+  EXPORT: "Export"
+};
+
+// Groups the flat object by splitting string (e.g. "VIEW_TEAM" -> "TEAM")
+const PERMISSION_MODULES = (() => {
+  const map: Record<string, string[]> = {};
+
+  Object.values(PERMISSIONS).forEach((perm) => {
+    if (!perm.includes("_")) {
+      if (!map["GENERAL"]) map["GENERAL"] = [];
+      map["GENERAL"].push(perm);
+      return;
+    }
+
+    const parts = perm.split("_");
+    const moduleName = parts.slice(1).join(" ");
+
+    if (!map[moduleName]) map[moduleName] = [];
+    map[moduleName].push(perm);
+  });
+
+  return Object.entries(map).map(([key, perms]) => ({
+    key: key.toUpperCase(),
+    label: key.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()),
+    permissions: perms
+  }));
+})();
 
 // ─── Memoized Checkbox Atom ──────────────────────────────────────────────────
 
@@ -46,7 +86,7 @@ const PermCheckbox = React.memo(function PermCheckbox({
   id: string;
   checked: boolean;
   disabled: boolean;
-  onChange: (id: string, v: boolean) => void;
+  onChange: (id: string, on: boolean) => void;
 }) {
   return (
     <div className="flex items-center justify-center">
@@ -87,6 +127,17 @@ function PermissionMatrix({
     );
   }, [searchQuery]);
 
+  // Precompute column permissions dynamically mapping the API strings to save performance
+  const columnPermsMap = React.useMemo(() => {
+    const map: Record<string, string[]> = {};
+    ACTION_COLUMNS.forEach((action) => {
+      map[action] = PERMISSION_MODULES.flatMap(({ permissions }) =>
+        permissions.filter((p) => p.startsWith(action))
+      );
+    });
+    return map;
+  }, []);
+
   const toggle = React.useCallback(
     (perm: string, on: boolean) => {
       const next = new Set(selected);
@@ -105,11 +156,8 @@ function PermissionMatrix({
 
   const toggleColumn = (action: string, on: boolean) => {
     const next = new Set(selected);
-    PERMISSION_MODULES.forEach(({ permissions }) => {
-      permissions
-        .filter((p) => p.startsWith(action + "_") || p.endsWith("_" + action))
-        .forEach((p) => (on ? next.add(p) : next.delete(p)));
-    });
+    const colPerms = columnPermsMap[action] || [];
+    colPerms.forEach((p) => (on ? next.add(p) : next.delete(p)));
     onChange(next);
   };
 
@@ -134,21 +182,15 @@ function PermissionMatrix({
       </div>
 
       <div className="rounded-md border overflow-hidden">
-        <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
+        <div className="overflow-x-auto max-h-125 overflow-y-auto">
           <table className="w-full text-sm border-separate border-spacing-0">
             <thead className="sticky top-0 z-20 shadow-sm">
               <tr className="bg-muted/90 backdrop-blur-sm">
-                <th className="py-2.5 px-3 text-left font-medium text-muted-foreground min-w-[180px] border-b">
+                <th className="py-2.5 px-3 text-left font-medium text-muted-foreground min-w-45 border-b">
                   Module
                 </th>
                 {ACTION_COLUMNS.map((action) => {
-                  const colPerms = PERMISSION_MODULES.flatMap(
-                    ({ permissions }) =>
-                      permissions.filter(
-                        (p) =>
-                          p.startsWith(action + "_") || p.endsWith("_" + action)
-                      )
-                  );
+                  const colPerms = columnPermsMap[action] || [];
                   const allOn =
                     colPerms.length > 0 &&
                     colPerms.every((p) => selected.has(p));
@@ -163,17 +205,22 @@ function PermissionMatrix({
                         <span className="text-xs uppercase tracking-wider">
                           {ACTION_LABELS[action]}
                         </span>
-                        {!readOnly && colPerms.length > 0 && (
+                        {/* 👇 CHANGED: Removed !readOnly check, added disabled={readOnly} */}
+                        {colPerms.length > 0 && (
                           <input
                             type="checkbox"
                             checked={allOn}
+                            disabled={readOnly}
                             ref={(el) => {
                               if (el) el.indeterminate = someOn && !allOn;
                             }}
                             onChange={(e) =>
                               toggleColumn(action, e.target.checked)
                             }
-                            className="h-3.5 w-3.5 accent-primary cursor-pointer"
+                            className={cn(
+                              "h-3.5 w-3.5 accent-primary cursor-pointer",
+                              readOnly && "cursor-not-allowed opacity-60"
+                            )}
                           />
                         )}
                       </div>
@@ -199,19 +246,22 @@ function PermissionMatrix({
                     >
                       <td className="py-2.5 px-3 border-r">
                         <div className="flex items-center gap-2">
-                          {!readOnly && (
-                            <input
-                              type="checkbox"
-                              checked={allOn}
-                              ref={(el) => {
-                                if (el) el.indeterminate = someOn && !allOn;
-                              }}
-                              onChange={(e) =>
-                                toggleModule(permissions, e.target.checked)
-                              }
-                              className="h-3.5 w-3.5 accent-primary cursor-pointer shrink-0"
-                            />
-                          )}
+                          {/* 👇 REMOVED the !readOnly wrapper and added disabled={readOnly} */}
+                          <input
+                            type="checkbox"
+                            checked={allOn}
+                            disabled={readOnly}
+                            ref={(el) => {
+                              if (el) el.indeterminate = someOn && !allOn;
+                            }}
+                            onChange={(e) =>
+                              toggleModule(permissions, e.target.checked)
+                            }
+                            className={cn(
+                              "h-3.5 w-3.5 accent-primary cursor-pointer shrink-0",
+                              readOnly && "cursor-not-allowed opacity-60"
+                            )}
+                          />
                           <span className="text-xs font-semibold text-foreground">
                             {label}
                           </span>
@@ -219,10 +269,8 @@ function PermissionMatrix({
                       </td>
 
                       {ACTION_COLUMNS.map((action) => {
-                        const perm = permissions.find(
-                          (p) =>
-                            p.startsWith(action + "_") ||
-                            p.endsWith("_" + action)
+                        const perm = permissions.find((p) =>
+                          p.startsWith(action)
                         );
                         return (
                           <td key={action} className="py-2.5 px-2 text-center">
@@ -275,24 +323,96 @@ export function RoleSheet({ open, onOpenChange, mode, role }: Props) {
   );
   const [nameError, setNameError] = React.useState("");
 
-  React.useEffect(() => {
-    if (!open) {
-      setNameError("");
-      return;
-    }
-    if (mode === "create") {
-      setEditing(true);
-      setName("");
-      setDescription("");
-      setSelectedPerms(new Set());
-    }
-    if (mode === "view" && role) {
-      setEditing(false);
-      setName(role.name);
-      setDescription(role.description);
-      setSelectedPerms(new Set(role.permissions));
-    }
-  }, [open, mode, role]);
+React.useEffect(() => {
+  if (!open) {
+    setNameError("");
+    return;
+  }
+  if (mode === "create") {
+    setEditing(true);
+    setName("");
+    setDescription("");
+    setSelectedPerms(new Set());
+  }
+  if (mode === "view" && role) {
+    setEditing(false);
+    setName(role.name);
+    setDescription(role.description);
+
+    const rawPerms = role.permissions as Array<string | { name: string }>;
+    const mappedPerms = new Set<string>();
+
+    rawPerms.forEach((p) => {
+      const str = typeof p === "string" ? p : p?.name;
+      if (!str) return;
+
+      const perm = str.trim();
+
+      // 1. If it's already uppercase (Custom Roles), just add it
+      if (
+        perm === perm.toUpperCase() &&
+        !perm.startsWith("read_") &&
+        !perm.startsWith("manage_")
+      ) {
+        mappedPerms.add(perm);
+        return;
+      }
+
+      // 2. Determine action and entity
+      let action = "";
+      let rawEntity = "";
+
+      if (perm.startsWith("read_")) {
+        action = "VIEW";
+        rawEntity = perm.replace("read_", "");
+      } else if (perm.startsWith("manage_")) {
+        action = "MANAGE"; // We'll expand this to VIEW, CREATE, UPDATE, DELETE
+        rawEntity = perm.replace("manage_", "");
+      }
+
+      if (!action) return;
+
+      // 3. Convert camelCase to SNAKE_CASE (e.g., talentRequests -> TALENT_REQUESTS)
+      let entity = rawEntity.replace(/([A-Z])/g, "_$1").toUpperCase();
+
+      // 4. Normalize plurals and specific edge cases to match your constants
+      const pluralMappings: Record<string, string> = {
+        USERS: "USER",
+        PROGRAMS: "PROGRAM",
+        EVENTS: "EVENT",
+        JOBS: "JOB",
+        CHAPTERS: "CHAPTER",
+        COMPANIES: "COMPANY",
+        SCHOOLS: "SCHOOL",
+        COURSES: "COURSE",
+        PARTNERS: "PARTNER",
+        ENQUIRIES: "ENQUIRY",
+        TEAMS: "TEAM",
+        VOLUNTEER_REQUESTS: "VOLUNTEER_REQUEST",
+        TALENT_REQUESTS: "TALENT_REQUEST",
+        TESTIMONIALS: "TESTIMONIALS", // Keep plural if your constant has it
+        SUCCESS_STORIES: "SUCCESS_STORY",
+        OUR_REACH: "OUR_REACH"
+      };
+
+      if (pluralMappings[entity]) {
+        entity = pluralMappings[entity];
+      }
+
+      // 5. Hydrate the permission set
+      if (action === "VIEW") {
+        mappedPerms.add(`VIEW_${entity}`);
+      } else if (action === "MANAGE") {
+        mappedPerms.add(`VIEW_${entity}`);
+        mappedPerms.add(`CREATE_${entity}`);
+        mappedPerms.add(`UPDATE_${entity}`);
+        mappedPerms.add(`DELETE_${entity}`);
+      }
+    });
+
+    setSelectedPerms(mappedPerms);
+  }
+}, [open, mode, role]);
 
   const createMut = useMutation({
     mutationFn: createRole,
@@ -334,17 +454,27 @@ export function RoleSheet({ open, onOpenChange, mode, role }: Props) {
       toast.error("Please select at least one permission.");
       return;
     }
+
+    // 💡 Much cleaner! Since we sanitized state on load, this is already an array of strings.
     const permissions = Array.from(selectedPerms);
+
     if (mode === "create") {
       createMut.mutate({ name, description, permissions });
     } else if (role) {
-      updateMut.mutate({ id: role.id, name, description, permissions });
+      const roleId = role.id || role._id;
+
+      if (!roleId) {
+        toast.error("Failed to update: Role ID is missing.");
+        return;
+      }
+
+      updateMut.mutate({ id: roleId, name, description, permissions });
     }
   };
 
   const saving = createMut.isPending || updateMut.isPending;
-  const isReadOnly = mode === "view" && (role?.isDefault || !editing);
-  const canEdit = mode === "view" && !role?.isDefault;
+  const isReadOnly = mode === "view" && (role?.is_system_role || !editing);
+  const canEdit = mode === "view" && !role?.is_system_role;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -361,17 +491,17 @@ export function RoleSheet({ open, onOpenChange, mode, role }: Props) {
               <SheetDescription>
                 {mode === "create"
                   ? "Define a custom role with specific permissions."
-                  : role?.isDefault
+                  : role?.is_system_role
                     ? "System roles cannot be edited or deleted."
                     : "Edit this role's name and permissions."}
               </SheetDescription>
             </div>
             {mode === "view" && role && (
               <Badge
-                variant={role.isDefault ? "secondary" : "outline"}
+                variant={role.is_system_role ? "secondary" : "outline"}
                 className="shrink-0 mt-1"
               >
-                {role.isDefault ? (
+                {role.is_system_role ? (
                   <>
                     <Lock className="h-3 w-3 mr-1" /> System
                   </>
@@ -387,24 +517,37 @@ export function RoleSheet({ open, onOpenChange, mode, role }: Props) {
           <div className="py-6 space-y-6">
             {mode === "view" && canEdit && (
               <div className="flex items-center justify-end">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    if (editing) {
-                      setName(role!.name);
-                      setDescription(role!.description);
-                      setSelectedPerms(new Set(role!.permissions));
-                    }
-                    setEditing((v) => !v);
-                  }}
-                >
-                  {editing ? "Cancel editing" : "Edit role"}
-                </Button>
+                <PermissionGate permission={PERMISSIONS.UPDATE_ROLE}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      if (editing) {
+                        setName(role!.name);
+                        setDescription(role!.description);
+                        const rawPerms = role!.permissions as Array<
+                          string | { name: string }
+                        >;
+                        const permissionStrings = rawPerms
+                          .map((p) => {
+                            if (typeof p === "string") return p;
+                            if (p && typeof p === "object" && "name" in p)
+                              return p.name;
+                            return "";
+                          })
+                          .filter(Boolean);
+                        setSelectedPerms(new Set(permissionStrings));
+                      }
+                      setEditing((v) => !v);
+                    }}
+                  >
+                    {editing ? "Cancel editing" : "Edit role"}
+                  </Button>
+                </PermissionGate>
               </div>
             )}
 
-            {mode === "view" && role?.isDefault && (
+            {mode === "view" && role?.is_system_role && (
               <div className="flex items-start gap-2 rounded-lg border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
                 <Info className="h-4 w-4 shrink-0 mt-0.5" />
                 <span>
@@ -414,95 +557,91 @@ export function RoleSheet({ open, onOpenChange, mode, role }: Props) {
               </div>
             )}
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="grid gap-2">
-                <label className="text-sm font-medium">
-                  Role name{" "}
-                  {!isReadOnly && <span className="text-destructive">*</span>}
+            {/* 👇 THE FIX: Your preferred layout loaded up right here */}
+            <section className="grid gap-6">
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  General Information
                 </label>
-                {isReadOnly ? (
-                  <p className="text-sm py-2">{name || "—"}</p>
-                ) : (
-                  <>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">
+                      Role Name <span className="text-destructive">*</span>
+                    </label>
                     <Input
+                      disabled={isReadOnly}
                       value={name}
                       onChange={(e) => {
                         setName(e.target.value);
-                        if (nameError) setNameError("");
+                        setNameError("");
                       }}
-                      placeholder="e.g. Content Editor"
                       className={nameError ? "border-destructive" : ""}
                     />
                     {nameError && (
-                      <p className="text-xs text-destructive">{nameError}</p>
+                      <p className="text-[10px] text-destructive font-medium uppercase tracking-tighter">
+                        {nameError}
+                      </p>
                     )}
-                  </>
-                )}
-              </div>
-              {mode === "view" && role && (
-                <div className="grid gap-2">
-                  <label className="text-sm font-medium text-muted-foreground">
-                    Users assigned
-                  </label>
-                  <p className="text-sm py-2">
-                    {role.usersCount} user{role.usersCount !== 1 ? "s" : ""}
-                  </p>
-                </div>
-              )}
-            </div>
-
-            <div className="grid gap-2">
-              <label className="text-sm font-medium">Description</label>
-              {isReadOnly ? (
-                <p className="text-sm text-muted-foreground py-1">
-                  {description || "No description."}
-                </p>
-              ) : (
-                <Textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Briefly describe what this role is for…"
-                  rows={2}
-                />
-              )}
-            </div>
-
-            <Separator />
-
-            <div className="space-y-3">
-              <div className="flex items-center justify-between gap-2">
-                <div>
-                  <p className="text-sm font-medium">Permissions</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {isReadOnly
-                      ? `${selectedPerms.size} permissions granted.`
-                      : "Select actions for each module."}
-                  </p>
-                </div>
-                {!isReadOnly && (
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Badge variant="secondary" className="text-xs">
-                      {selectedPerms.size} selected
-                    </Badge>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-xs h-7"
-                      onClick={() => setSelectedPerms(new Set())}
-                      disabled={selectedPerms.size === 0}
-                    >
-                      Clear all
-                    </Button>
                   </div>
-                )}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-muted-foreground">
+                      Active Members
+                    </label>
+                    <div className="h-10 flex items-center px-3 rounded-md bg-muted/30 border border-dashed text-sm font-medium">
+                      {role?.usersCount || 0} user(s) assigned
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                    Scope Description
+                  </label>
+                  <Input
+                    disabled={isReadOnly}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="What can users with this role do?"
+                  />
+                </div>
               </div>
 
-              <PermissionMatrix
-                selected={selectedPerms}
-                onChange={setSelectedPerms}
-                readOnly={isReadOnly}
-              />
-            </div>
+              <Separator />
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-medium">Permissions</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {isReadOnly
+                        ? `${selectedPerms.size} permissions granted.`
+                        : "Select actions for each module."}
+                    </p>
+                  </div>
+                  {!isReadOnly && (
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Badge variant="secondary" className="text-xs">
+                        {selectedPerms.size} selected
+                      </Badge>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs h-7"
+                        onClick={() => setSelectedPerms(new Set())}
+                        disabled={selectedPerms.size === 0}
+                      >
+                        Clear all
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
+                <PermissionMatrix
+                  selected={selectedPerms}
+                  onChange={setSelectedPerms}
+                  readOnly={isReadOnly}
+                />
+              </div>
+            </section>
           </div>
         </ScrollArea>
 
@@ -515,7 +654,20 @@ export function RoleSheet({ open, onOpenChange, mode, role }: Props) {
                   setEditing(false);
                   setName(role!.name);
                   setDescription(role!.description);
-                  setSelectedPerms(new Set(role!.permissions));
+
+                  const rawPerms = role!.permissions as Array<
+                    string | { name: string }
+                  >;
+                  const permissionStrings = rawPerms
+                    .map((p) => {
+                      if (typeof p === "string") return p;
+                      if (p && typeof p === "object" && "name" in p)
+                        return p.name;
+                      return "";
+                    })
+                    .filter(Boolean);
+
+                  setSelectedPerms(new Set(permissionStrings));
                 } else {
                   onOpenChange(false);
                 }

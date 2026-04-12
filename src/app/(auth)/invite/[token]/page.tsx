@@ -1,3 +1,4 @@
+//src/app/(auth)/invite/[token]/page.tsx
 import { InviteAcceptanceForm } from "@/features/auth/components/invite-acceptance-form";
 
 interface PageProps {

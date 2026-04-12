@@ -1,4 +1,3 @@
-// src/features/volunteers/components/volunteer-details-sheet.tsx
 "use client";
 
 import * as React from "react";
@@ -11,6 +10,9 @@ import {
   getVolunteerRequest,
   updateVolunteerStatus
 } from "@/features/volunteer-requests/api";
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
+
 import {
   Sheet,
   SheetContent,
@@ -28,6 +30,7 @@ import {
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 type Props = {
   open: boolean;
@@ -90,13 +93,15 @@ export function VolunteerDetailsSheet({ open, onOpenChange, id }: Props) {
           <div className="py-6 space-y-6">
             {/* Top actions row */}
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <Button
-                variant="outline"
-                className="w-full sm:w-auto"
-                onClick={() => setEditing((v) => !v)}
-              >
-                {editing ? "View" : "Edit"}
-              </Button>
+              <PermissionGate permission={PERMISSIONS.UPDATE_VOLUNTEER_REQUEST}>
+                <Button
+                  variant="outline"
+                  className="w-full sm:w-auto"
+                  onClick={() => setEditing((v) => !v)}
+                >
+                  {editing ? "View" : "Edit"}
+                </Button>
+              </PermissionGate>
             </div>
 
             {memberQuery.isLoading ? (
@@ -107,7 +112,6 @@ export function VolunteerDetailsSheet({ open, onOpenChange, id }: Props) {
               </p>
             ) : (
               <>
-                {/* Form Fields */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="grid gap-2">
                     <label className="text-sm font-medium">Full Name</label>
@@ -115,21 +119,18 @@ export function VolunteerDetailsSheet({ open, onOpenChange, id }: Props) {
                       {v.fullname ?? "—"}
                     </div>
                   </div>
-
                   <div className="grid gap-2">
                     <label className="text-sm font-medium">Email</label>
                     <div className="rounded-md border px-3 py-2 text-sm bg-muted/50">
                       {v.email ?? "—"}
                     </div>
                   </div>
-
                   <div className="grid gap-2">
                     <label className="text-sm font-medium">Current Role</label>
                     <div className="rounded-md border px-3 py-2 text-sm bg-muted/50">
                       {v.currentRole ?? "—"}
                     </div>
                   </div>
-
                   <div className="grid gap-2">
                     <label className="text-sm font-medium">
                       Volunteer Role
@@ -169,24 +170,25 @@ export function VolunteerDetailsSheet({ open, onOpenChange, id }: Props) {
           </div>
         </ScrollArea>
 
-        {/* Bottom action bar - Fixed */}
+        {/* Bottom action bar */}
         {editing && (
-          <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={saving}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="default"
-              onClick={submit}
-              disabled={saving}
-            >
-              {saving ? "Saving…" : "Save Changes"}
-            </Button>
-          </div>
+          <PermissionGate permission={PERMISSIONS.UPDATE_VOLUNTEER_REQUEST}>
+            <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
+              <Button
+                variant="outline"
+                onClick={() => setEditing(false)}
+                disabled={saving}
+              >
+                Cancel
+              </Button>
+              <Button variant="default" onClick={submit} disabled={saving}>
+                {saving ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : null}
+                Save Changes
+              </Button>
+            </div>
+          </PermissionGate>
         )}
       </SheetContent>
     </Sheet>

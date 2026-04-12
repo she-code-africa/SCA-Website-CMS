@@ -1,4 +1,4 @@
-// src/features/volunteers/components/volunteer-filters.tsx
+// src/features/volunteer-requests/components/volunteer-filters.tsx
 "use client";
 
 import type { VolunteerFilters } from "@/features/volunteer-requests/types";
@@ -16,14 +16,23 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
+import { Download } from "lucide-react";
 
 type Props = {
   value: VolunteerFilters;
   onChange: (next: VolunteerFilters) => void;
   onReset: () => void;
+  onExport: () => void;
 };
 
-export function VolunteerFilters({ value, onChange, onReset }: Props) {
+export function VolunteerFilters({
+  value,
+  onChange,
+  onReset,
+  onExport
+}: Props) {
   const activeCount =
     Number(!!value.search?.trim()) +
     Number(!!value.status) +
@@ -60,7 +69,8 @@ export function VolunteerFilters({ value, onChange, onReset }: Props) {
                   onValueChange={(v: string) =>
                     onChange({
                       ...value,
-                      status: v === "all" ? "" : (v as VolunteerFilters['status'])
+                      status:
+                        v === "all" ? "" : (v as VolunteerFilters["status"])
                     })
                   }
                 >
@@ -83,7 +93,10 @@ export function VolunteerFilters({ value, onChange, onReset }: Props) {
                   onValueChange={(v: string) =>
                     onChange({
                       ...value,
-                      volunteerRole: v === "all" ? "" : (v as VolunteerFilters['volunteerRole'])
+                      volunteerRole:
+                        v === "all"
+                          ? ""
+                          : (v as VolunteerFilters["volunteerRole"])
                     })
                   }
                 >
@@ -99,7 +112,6 @@ export function VolunteerFilters({ value, onChange, onReset }: Props) {
                   </SelectContent>
                 </Select>
 
-                {/* Clear volunteer role only */}
                 <Button
                   type="button"
                   variant="ghost"
@@ -117,7 +129,8 @@ export function VolunteerFilters({ value, onChange, onReset }: Props) {
                   onValueChange={(v: string) =>
                     onChange({
                       ...value,
-                      sortBy: v === "all" ? "" : (v as VolunteerFilters['sortBy'])
+                      sortBy:
+                        v === "all" ? "" : (v as VolunteerFilters["sortBy"])
                     })
                   }
                 >
@@ -140,6 +153,17 @@ export function VolunteerFilters({ value, onChange, onReset }: Props) {
             </div>
           </PopoverContent>
         </Popover>
+
+        <PermissionGate permission={PERMISSIONS.EXPORT_VOLUNTEER_REQUEST}>
+          <Button
+            variant="default"
+            className="w-full sm:w-auto"
+            onClick={onExport}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Export
+          </Button>
+        </PermissionGate>
       </div>
     </div>
   );

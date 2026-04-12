@@ -1,9 +1,12 @@
+// src/features/activity-log/components/activity-log-details-drawer.tsx
 "use client";
 
-import * as React from "react";
 import { format } from "date-fns";
-
-import type { ActivityLogRow } from "@/features/activity-log/types";
+import type { AuditLogEntry } from "@/features/activity-log/types";
+import {
+  getFriendlyAction,
+  getFriendlyResource
+} from "@/features/activity-log/utils";
 import {
   Sheet,
   SheetContent,
@@ -14,16 +17,13 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 
-function pretty(s?: string) {
-  if (!s) return "—";
-  return s.charAt(0).toUpperCase() + s.slice(1);
-}
-
-function fmtDate(v?: string) {
-  if (!v) return "—";
-  const d = new Date(v);
-  if (Number.isNaN(d.getTime())) return "—";
-  return format(d, "dd MMM, yyyy • p");
+function Row({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div>
+      <p className="text-xs text-muted-foreground mb-0.5">{label}</p>
+      <p className="text-sm break-all">{value}</p>
+    </div>
+  );
 }
 
 export function ActivityLogDetailsDrawer({
@@ -33,23 +33,12 @@ export function ActivityLogDetailsDrawer({
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  row: ActivityLogRow | null;
+  row: AuditLogEntry | null;
 }) {
-  const user = row?.user
-    ? `${row.user.firstName ?? ""} ${row.user.lastName ?? ""}`.trim()
-    : "—";
-
-  const role = pretty(row?.user?.role);
-  const action = pretty(row?.action);
-  const page = row?.page ?? "—";
-
-  const oldDoc = row?.oldDoc?.name ?? "N/A";
-  const newDoc = row?.newDoc?.name ?? "—";
+  if (!row) return null;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      {/* For mobile you can use side="bottom" if you prefer.
-          Right-side drawer works well on tablet/desktop. */}
       <SheetContent side="right" className="w-full sm:max-w-md">
         <SheetHeader>
           <SheetTitle>Activity Details</SheetTitle>
@@ -59,43 +48,39 @@ export function ActivityLogDetailsDrawer({
         </SheetHeader>
 
         <div className="mt-6 space-y-4 text-sm">
-          <div className="space-y-1">
-            <p className="text-muted-foreground">User</p>
-            <p className="font-medium">{user}</p>
-            <div className="flex flex-wrap gap-2 pt-2">
-              <Badge variant="secondary">{role}</Badge>
-              <Badge>{action}</Badge>
-              <Badge variant="outline">{page}</Badge>
-            </div>
+          <Row label="User" value={row.user?.email ?? "System (no user)"} />
+
+          <div className="flex flex-wrap gap-2">
+            <Badge>{getFriendlyAction(row)}</Badge>
+            <Badge variant="secondary">{row.resourceType}</Badge>
           </div>
 
           <Separator />
 
-          <div className="grid gap-3">
-            <div className="flex items-center justify-between gap-4">
-              <span className="text-muted-foreground">Old</span>
-              <span className="max-w-[70%] truncate text-right">{oldDoc}</span>
-            </div>
-
-            <div className="flex items-center justify-between gap-4">
-              <span className="text-muted-foreground">New</span>
-              <span className="max-w-[70%] truncate text-right">{newDoc}</span>
-            </div>
-          </div>
+          <Row label="Description" value={getFriendlyResource(row)} />
+          <Row
+            label="Record ID"
+            value={
+              row.resourceId ? (
+                <span className="font-mono text-xs">{row.resourceId}</span>
+              ) : (
+                <span className="text-muted-foreground italic">
+                  Not applicable
+                </span>
+              )
+            }
+          />
 
           <Separator />
 
-          <div className="grid gap-3">
-            <div className="flex items-center justify-between gap-4">
-              <span className="text-muted-foreground">Created</span>
-              <span className="text-right">{fmtDate(row?.createdAt)}</span>
-            </div>
-
-            <div className="flex items-center justify-between gap-4">
-              <span className="text-muted-foreground">Updated</span>
-              <span className="text-right">{fmtDate(row?.updatedAt)}</span>
-            </div>
-          </div>
+          <Row
+            label="Timestamp"
+            value={
+              row.timestamp
+                ? format(new Date(row.timestamp), "dd MMM yyyy • HH:mm:ss")
+                : "—"
+            }
+          />
         </div>
       </SheetContent>
     </Sheet>

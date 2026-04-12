@@ -1,11 +1,15 @@
+// src/features/users/components/mobile-user-card.tsx
+"use client";
+
 import { format } from "date-fns";
 import type { AdminUser } from "@/features/users/types";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils/utils";
 
 function fmtDate(v?: string) {
   if (!v) return "—";
   const d = new Date(v);
-  if (Number.isNaN(d.getTime())) return "—";
+  if (isNaN(d.getTime())) return "—";
   return format(d, "dd MMM, yyyy");
 }
 
@@ -15,28 +19,47 @@ function initials(user: AdminUser) {
   return (a + b).toUpperCase() || "?";
 }
 
-const statusConfig: Record<
-  string,
-  {
-    label: string;
-    variant: "default" | "secondary" | "outline" | "destructive";
+// Same status badge logic as UserTable
+function getStatusBadge(user: AdminUser) {
+  if (user.status === "pending") {
+    return <Badge variant="outline">Pending</Badge>;
   }
-> = {
-  active: { label: "Active", variant: "default" },
-  inactive: { label: "Inactive", variant: "destructive" },
-  pending: { label: "Pending", variant: "outline" }
+  const isActive = user.isActive ?? user.status === "active";
+  return (
+    <Badge variant={isActive ? "default" : "destructive"}>
+      {isActive ? "Active" : "Deactivated"}
+    </Badge>
+  );
+}
+
+type Props = {
+  user: AdminUser;
+  roles: any[];
+  onClick?: () => void;
 };
 
-export function MobileUserCard({ user }: { user: AdminUser }) {
-  const st = statusConfig[user.status] ?? {
-    label: user.status,
-    variant: "outline" as const
+export function MobileUserCard({ user, roles, onClick }: Props) {
+  const resolveRoleName = () => {
+    const roleValue = user.role || (Array.isArray(user.role) ? user.role[0] : null);
+    if (!roleValue) return "User";
+    if (typeof roleValue === "object") return roleValue.name || "User";
+    if (roleValue === "ADMINISTRATOR") return "Super Admin";
+    const matchedRole = roles.find(
+      (r) => r._id === roleValue || r.id === roleValue
+    );
+    return matchedRole?.name || (roleValue.length > 20 ? `ID: ${roleValue.substring(0, 6)}` : roleValue);
   };
-  const fullName =
-    [user.firstName, user.lastName].filter(Boolean).join(" ") || "—";
+
+  const fullName = [user.firstName, user.lastName].filter(Boolean).join(" ") || "—";
 
   return (
-    <div className="rounded-xl border bg-background p-4 shadow-sm hover:bg-muted/50 transition-colors">
+    <div
+      className={cn(
+        "rounded-xl border bg-background p-4 shadow-sm transition-colors",
+        onClick && "cursor-pointer hover:bg-muted/50"
+      )}
+      onClick={onClick}
+    >
       <div className="flex items-start gap-3">
         <div className="h-10 w-10 shrink-0 rounded-full bg-primary/20 flex items-center justify-center text-xs font-semibold text-primary">
           {initials(user)}
@@ -50,24 +73,22 @@ export function MobileUserCard({ user }: { user: AdminUser }) {
                 {user.email}
               </p>
             </div>
-            <Badge variant={st.variant} className="shrink-0 text-xs">
-              {st.label}
-            </Badge>
+            {getStatusBadge(user)}
           </div>
 
           <div className="mt-2">
             <Badge variant="secondary" className="text-xs">
-              {user.role.name}
+              {resolveRoleName()}
             </Badge>
           </div>
         </div>
       </div>
 
       <div className="mt-3 grid gap-1.5 text-xs">
-        <div className="flex items-center justify-between">
+        {/* <div className="flex items-center justify-between">
           <span className="text-muted-foreground">Last login</span>
           <span>{fmtDate(user.lastLogin)}</span>
-        </div>
+        </div> */}
         <div className="flex items-center justify-between">
           <span className="text-muted-foreground">Joined</span>
           <span>{fmtDate(user.createdAt)}</span>

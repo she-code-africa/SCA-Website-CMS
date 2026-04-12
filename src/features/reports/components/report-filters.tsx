@@ -127,7 +127,7 @@ export function ReportFilters({
 
         <Button
           variant="default"
-          className="w-full sm:w-auto bg-primary hover:bg-pink-700"
+          className="w-full sm:w-auto bg-primary hover:bg"
           onClick={() => window.dispatchEvent(new CustomEvent("report:add"))}
         >
           Add Report

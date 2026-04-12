@@ -1,114 +1,104 @@
 // src/features/users/api.ts
-// ─────────────────────────────────────────────────────────────────────────────
-// All functions currently use mock data.
-// When the backend is ready, replace each function body with the real api call.
-// ───────────────────────────────────────────────────────────────────────────── 
+import { api } from "@/lib/api/client";
 import type {
   AdminUser,
-  InviteUserInput,
-  UpdateUserInput,
-  UsersFilters
+  UserRole,
+  UsersFilters,
+  PaginatedUsers,
+  Invitation,
+  InviteUserInput
 } from "./types";
-import { MOCK_USERS, MOCK_ROLES } from "./mock";
-// import { api } from "@/lib/api/client";    ← uncomment when backend is ready
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-function delay(ms = 400) {
-  return new Promise((r) => setTimeout(r, ms));
+function normalizeUser(raw: any): AdminUser {
+  let roleValue = raw.role;
+  if (!roleValue && Array.isArray(raw.roles) && raw.roles.length > 0) {
+    roleValue = raw.roles[0];
+  }
+  return {
+    _id: raw._id,
+    id: raw._id,
+    firstName: raw.firstName || "",
+    lastName: raw.lastName || "",
+    email: raw.email,
+    role: roleValue,
+    status: raw.status || (raw.isActive ? "active" : "deactivated"),
+    isActive: raw.isActive ?? true,
+    lastLogin: raw.lastLogin,
+    createdAt: raw.createdAt
+  };
 }
 
-let _users = [...MOCK_USERS] as AdminUser[]; // Explicitly type the mutable store
+export async function getUsers(
+  filters?: UsersFilters
+): Promise<PaginatedUsers> {
+  const params = new URLSearchParams();
+  if (filters?.search) params.set("search", filters.search);
+  if (filters?.roleId) params.set("roleId", filters.roleId);
+  if (filters?.status) params.set("status", filters.status);
+  if (filters?.page) params.set("page", String(filters.page));
+  if (filters?.limit) params.set("limit", String(filters.limit));
 
-// ── Queries ──────────────────────────────────────────────────────────────────
+  const response = await api.get(`/users?${params.toString()}`);
+  const payload = response as any; // cast to any to handle unknown response shape
 
-export async function getUsers(filters?: UsersFilters): Promise<AdminUser[]> {
-  await delay();
-  // REAL: return api.get("/admin/users", { params: filters });
-  let list = [..._users];
-  if (filters?.search?.trim()) {
-    const q = filters.search.toLowerCase();
-    list = list.filter(
-      (u) =>
-        u.firstName.toLowerCase().includes(q) ||
-        u.lastName.toLowerCase().includes(q) ||
-        u.email.toLowerCase().includes(q)
-    );
+  const usersArray = Array.isArray(payload) ? payload : payload.data || [];
+  const normalizedUsers = usersArray.map(normalizeUser);
+
+  let totalPages = 1,
+    totalCount = normalizedUsers.length,
+    currentPage = filters?.page || 1;
+  if (!Array.isArray(payload)) {
+    totalPages = payload.totalPages || 1;
+    totalCount = payload.totalUsers ?? normalizedUsers.length;
+    currentPage = payload.currentPage || 1;
   }
-  if (filters?.roleId) {
-    list = list.filter((u) => u.role.id === filters.roleId);
-  }
-  if (filters?.status) {
-    list = list.filter((u) => u.status === filters.status);
-  }
-  return list;
+  return { users: normalizedUsers, totalPages, totalCount, currentPage };
 }
 
-export async function getRolesForSelect() {
-  await delay(200);
-  // REAL: return api.get("/admin/roles/simple");
-  return MOCK_ROLES;
+export async function getCurrentUser(userId: string): Promise<AdminUser> {
+  const response = await api.get(`/users/${userId}`);
+  return normalizeUser(response as any);
 }
 
-// ── Mutations ─────────────────────────────────────────────────────────────────
+export async function getInvitations(): Promise<Invitation[]> {
+  const response = await api.get("/users/invitations");
+  const payload = response as any;
+  const invites = payload.data || payload || [];
+  return (Array.isArray(invites) ? invites : []).map((inv: any) => ({
+    ...inv,
+    status: (inv.status || "").toLowerCase()
+  }));
+}
+
+export async function getRoles(): Promise<UserRole[]> {
+  const response = await api.get("/roles");
+  const roles = response as any;
+  return Array.isArray(roles) ? roles : [];
+}
 
 export async function inviteUser(input: InviteUserInput): Promise<void> {
-  await delay(600);
-  // REAL: return api.post("/admin/users/invite", input);
-  const role = MOCK_ROLES.find((r) => r.id === input.roleId);
-  if (!role) throw new Error("Role not found");
-  const newUser: AdminUser = {
-    id: `usr_${Date.now()}`,
-    firstName: input.email.split("@")[0],
-    lastName: "",
-    email: input.email,
-    role,
-    status: "pending", // Valid status
-    createdAt: new Date().toISOString()
-  };
-  _users = [..._users, newUser];
-}
-
-export async function updateUser(
-  id: string,
-  input: UpdateUserInput
-): Promise<AdminUser> {
-  await delay(500);
-  // REAL: return api.patch(`/admin/users/${id}`, input);
-  _users = _users.map((u) => {
-    if (u.id !== id) return u;
-    const role = input.roleId
-      ? (MOCK_ROLES.find((r) => r.id === input.roleId) ?? u.role)
-      : u.role;
-    return { 
-      ...u, 
-      role, 
-      status: (input.status as AdminUser["status"]) ?? u.status 
-    };
+  await api.post("/users/invite", {
+    ...input,
+    email: input.email.trim().toLowerCase()
   });
-  return _users.find((u) => u.id === id)!;
 }
 
-export async function deactivateUser(id: string): Promise<void> {
-  await delay(400);
-  // REAL: return api.patch(`/admin/users/${id}/deactivate`);
-  _users = _users.map((u) =>
-    
-    u.id === id ? { ...u, status: "deactivated" as const } : u
-  );
+export async function updateUserRole(
+  userId: string,
+  roleId: string
+): Promise<AdminUser> {
+  const response = await api.patch(`/users/${userId}/role`, { roleId });
+  return normalizeUser(response as any);
 }
 
-export async function activateUser(id: string): Promise<void> {
-  await delay(400);
-  // REAL: return api.patch(`/admin/users/${id}/activate`);
-  _users = _users.map((u) =>
-    // Fixed: Using "active" status
-    u.id === id ? { ...u, status: "active" as const } : u
-  );
+export async function activateUser(userId: string): Promise<void> {
+  await api.patch(`/users/${userId}/activate`);
 }
 
-export async function deleteUser(id: string): Promise<void> {
-  await delay(500);
-  // REAL: return api.delete(`/admin/users/${id}`);
-  _users = _users.filter((u) => u.id !== id);
+export async function deactivateUser(userId: string): Promise<void> {
+  await api.patch(`/users/${userId}/deactivate`);
+}
+
+export async function deleteUser(userId: string): Promise<void> {
+  await api.delete(`/users/${userId}`);
 }

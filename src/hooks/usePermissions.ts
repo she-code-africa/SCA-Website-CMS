@@ -3,9 +3,9 @@
 // src/hooks/usePermissions.ts
 // ─────────────────────────────────────────────────────────────────────────────
 // Usage:
-//   const { can, canAny, canAll, isAdmin } = usePermissions()
+//   const { can, canAny, canAll } = usePermissions()
 //
-//   can("DELETE_TEAM")                          → true/false
+//   can("DELETE_TEAM")                     → true/false
 //   canAny(["CREATE_EVENT", "UPDATE_EVENT"])    → true if user has at least one
 //   canAll(["VIEW_ROLE", "CREATE_ROLE"])        → true only if user has all
 // ─────────────────────────────────────────────────────────────────────────────
@@ -20,9 +20,7 @@ interface UsePermissionsReturn {
   canAny: (permissions: Permission[]) => boolean;
   /** Check if the current user has ALL of the given permissions */
   canAll: (permissions: Permission[]) => boolean;
-  /** Whether the current user is an Administrator (all permissions) */
-  isAdmin: boolean;
-  /** The full Set of permissions the current user has — for advanced checks */
+  /** The full Set of permissions the current user has — for O(1) lookups */
   permissionSet: Set<Permission>;
 
   isLoading: boolean;
@@ -31,28 +29,23 @@ interface UsePermissionsReturn {
 export function usePermissions(): UsePermissionsReturn {
   const { user, isLoading } = useAuth();
 
-  // Determine admin status strictly by the verified name or role ID
-  const isAdmin =
-    user?.role?.id === "role_administrator" ||
-    user?.role?.name?.toLowerCase() === "administrator";
-
-  // AuthContext should provide a Set for O(1) lookups
+  // AuthContext provides a Set for fast O(1) lookups
   const permissionSet: Set<Permission> = user?.permissionSet ?? new Set();
 
+  // 1. Check single permission
   const can = (permission: Permission): boolean => {
-    if (isAdmin) return true;
     return permissionSet.has(permission);
   };
 
+  // 2. Check if user has at least one in the list
   const canAny = (permissions: Permission[]): boolean => {
-    if (isAdmin) return true;
     return permissions.some((p) => permissionSet.has(p));
   };
 
+  // 3. Check if user has ALL in the list
   const canAll = (permissions: Permission[]): boolean => {
-    if (isAdmin) return true;
     return permissions.every((p) => permissionSet.has(p));
   };
 
-  return { can, canAny, canAll, isAdmin, permissionSet, isLoading };
+  return { can, canAny, canAll, permissionSet, isLoading };
 }

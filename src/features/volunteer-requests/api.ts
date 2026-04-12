@@ -1,26 +1,35 @@
-// src/features/volunteers/api.ts
+// src/features/volunteer-requests/api.ts
 import { api } from "@/lib/api/client";
 import type {
   VolunteerRequest,
   VolunteerStatus
-} from "@/features/volunteer-requests/types";
+} from "./types";
 
 export async function getVolunteerRequests(): Promise<VolunteerRequest[]> {
-  // interceptor returns response.data?.data ?? response.data
-  return api.get(`/volunteer-request/`);
+  return api.get("/volunteer-request");
 }
 
-export async function getVolunteerRequest(
-  id: string
-): Promise<VolunteerRequest> {
+export async function getVolunteerRequest(id: string): Promise<VolunteerRequest> {
   return api.get(`/volunteer-request/${id}`);
 }
 
-export async function updateVolunteerStatus(payload: {
+export async function updateVolunteerRequest(
+  id: string,
+  data: Partial<VolunteerRequest>
+): Promise<VolunteerRequest> {
+  return api.put(`/volunteer-request/${id}`, data);
+}
+
+// Convenience function to update only status
+export async function updateVolunteerStatus(args: {
   id: string;
   status: VolunteerStatus;
-}) {
-  return api.patch(`/volunteer-request/${payload.id}/status`, {
-    status: payload.status
-  });
+}): Promise<VolunteerRequest> {
+  return updateVolunteerRequest(args.id, { status: args.status });
 }
+
+
+// THIS ENDPOINT DOES NOT EXIST YET, BUT WE CAN IMPLEMENT IT IN THE FUTURE IF NEEDED
+// export async function deleteVolunteerRequest(id: string): Promise<void> {
+//   return api.delete(`/volunteer-request/${id}`);
+// }

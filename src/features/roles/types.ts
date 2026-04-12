@@ -4,9 +4,10 @@ export type PermissionKey = string;
 
 export interface RoleDetail {
   id: string;
+  _id?: string;
   name: string;
   description: string;
-  isDefault: boolean;
+  is_system_role: boolean;
   permissions: PermissionKey[];
   usersCount: number;
   createdAt: string;
@@ -18,7 +19,8 @@ export interface CreateRoleInput {
   permissions: PermissionKey[];
 }
 
-export interface UpdateRoleInput extends CreateRoleInput {}
+// export interface UpdateRoleInput extends CreateRoleInput {}
+export type UpdateRoleInput = CreateRoleInput;
 
 export interface RolesFilters {
   search?: string;

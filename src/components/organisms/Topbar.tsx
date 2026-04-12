@@ -136,7 +136,7 @@ export function Topbar() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleLogout}
-              className="bg-amber-600 hover:bg-amber-700 focus:ring-amber-600"
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               Yes, sign out
             </AlertDialogAction>

@@ -1,31 +1,28 @@
-"use client";
+// "use client";
 
-// src/components/PermissionGate.tsx
-// ─────────────────────────────────────────────────────────────────────────────
-// Conditionally renders children based on the current user's permissions.
-//
-// Examples:
-//
-//   // Single permission check
-//   <PermissionGate permission="DELETE_TEAM">
-//     <Button variant="destructive">Delete</Button>
-//   </PermissionGate>
-//
-//   // With fallback when permission denied
-//   <PermissionGate permission="CREATE_USER" fallback={<p>No access</p>}>
-//     <InviteUserButton />
-//   </PermissionGate>
-//
-//   // At least one of several permissions
-//   <PermissionGate anyOf={["CREATE_EVENT", "UPDATE_EVENT"]}>
-//     <EventFormButton />
-//   </PermissionGate>
-//
-//   // All permissions required
-//   <PermissionGate allOf={["VIEW_ROLE", "CREATE_ROLE"]}>
-//     <RoleManager />
-//   </PermissionGate>
-// ─────────────────────────────────────────────────────────────────────────────
+// // src/components/PermissionGate.tsx
+// // ─────────────────────────────────────────────────────────────────────────────
+// // Conditionally renders children based on the current user's permissions.
+// //
+// // Examples:
+// //
+// //   // Single permission check
+// //   <PermissionGate permission={PERMISSIONS.DELETE_TEAM}>
+// //     <Button variant="destructive">Delete</Button>
+// //   </PermissionGate>
+// //
+// //   // With fallback when permission denied
+// //   <PermissionGate permission={PERMISSIONS.CREATE_USER} fallback={<p>No access</p>}>
+// //     <InviteUserButton />
+// //   </PermissionGate>
+// //
+// //   // At least one of several permissions
+// //   <PermissionGate anyOf={[PERMISSIONS.CREATE_EVENT, PERMISSIONS.UPDATE_EVENT]}>
+// //     <EventFormButton />
+// //   </PermissionGate>
+// // ─────────────────────────────────────────────────────────────────────────────
+
+"use client";
 
 import type { ReactNode } from "react";
 import type { Permission } from "@/lib/rbac/permissions";
@@ -33,13 +30,9 @@ import { usePermissions } from "@/hooks/usePermissions";
 
 interface PermissionGateProps {
   children: ReactNode;
-  /** Shown when permission is denied. Defaults to null (renders nothing). */
   fallback?: ReactNode;
-  /** Single permission — user must have this */
   permission?: Permission;
-  /** User must have at least ONE of these */
   anyOf?: Permission[];
-  /** User must have ALL of these */
   allOf?: Permission[];
 }
 
@@ -50,9 +43,14 @@ export function PermissionGate({
   anyOf,
   allOf
 }: PermissionGateProps) {
-  const { can, canAny, canAll } = usePermissions();
+  // 1. Pull isLoading directly from usePermissions hook!
+  const { can, canAny, canAll, isLoading } = usePermissions(); // 2. If Auth is still fetching, do not evaluate permissions yet.
+  // You can return null or a loading spinner here.
 
-  // If no props are passed, default to access granted
+  if (isLoading) {
+    return null; // Or <div className="animate-pulse">Loading...</div>
+  }
+
   if (!permission && !anyOf && !allOf) return <>{children}</>;
 
   const hasSingle = permission ? can(permission) : true;

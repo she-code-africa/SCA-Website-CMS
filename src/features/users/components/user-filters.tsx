@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import type { UsersFilters } from "@/features/users/types";
-import { usePermissions } from "@/hooks/usePermissions"; // 1. Import the hook
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +16,8 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
 
 type Role = { id: string; name: string };
 
@@ -28,8 +29,13 @@ type Props = {
   onInvite: () => void;
 };
 
-export function UserFilters({ value, onChange, onReset, roles, onInvite }: Props) {
-  const { can } = usePermissions(); // 2. Initialize permissions
+export function UserFilters({
+  value,
+  onChange,
+  onReset,
+  roles,
+  onInvite
+}: Props) {
 
   const activeCount =
     Number(!!value.search?.trim()) +
@@ -97,7 +103,8 @@ export function UserFilters({ value, onChange, onReset, roles, onInvite }: Props
                   <SelectContent>
                     <SelectItem value="all">Any status</SelectItem>
                     <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
+                    {/* Updated from 'inactive' to 'deactivated' to match backend */}
+                    <SelectItem value="deactivated">Deactivated</SelectItem>
                     <SelectItem value="pending">Pending</SelectItem>
                   </SelectContent>
                 </Select>
@@ -110,8 +117,8 @@ export function UserFilters({ value, onChange, onReset, roles, onInvite }: Props
           </PopoverContent>
         </Popover>
 
-        {/* 3. Wrap Invite Button in Permission Check */}
-        {can("CREATE_USER") && (
+        <PermissionGate permission={PERMISSIONS.CREATE_USER}>
+
           <Button
             variant="default"
             className="w-full sm:w-auto"
@@ -119,7 +126,7 @@ export function UserFilters({ value, onChange, onReset, roles, onInvite }: Props
           >
             Invite User
           </Button>
-        )}
+        </PermissionGate>
       </div>
     </div>
   );

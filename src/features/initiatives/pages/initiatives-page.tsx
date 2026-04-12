@@ -1,8 +1,9 @@
-// src/app/admin/initiatives/page.tsx
 "use client";
 
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
 
 import { getInitiatives } from "@/features/initiatives/api";
 import type {
@@ -110,83 +111,85 @@ export default function InitiativesPage() {
   };
 
   return (
-    <TableShell
-      title="Initiatives"
-      description="Manage initiatives and their availability."
-      right={
-        <div className="text-sm text-muted-foreground">
-          {query.isLoading ? "Loading…" : `${rows.length} initiative(s)`}
-        </div>
-      }
-    >
-      <div className="space-y-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <Filters
-            value={filters}
-            onChange={setFilters}
-            onReset={() =>
-              setFilters({ search: "", isAvailable: "", sortBy: "" })
-            }
-          />
+    <PermissionGate permission={PERMISSIONS.VIEW_INITIATIVE}>
+      <TableShell
+        title="Initiatives"
+        description="Manage initiatives and their availability."
+        right={
+          <div className="text-sm text-muted-foreground">
+            {query.isLoading ? "Loading…" : `${rows.length} initiative(s)`}
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <Filters
+              value={filters}
+              onChange={setFilters}
+              onReset={() =>
+                setFilters({ search: "", isAvailable: "", sortBy: "" })
+              }
+            />
 
-          <InitiativePagination
-            currentPage={page}
-            totalPages={totalPages}
-            onPrevious={() => setPage((p) => Math.max(1, p - 1))}
-            onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
-            isLoading={query.isFetching}
-          />
-        </div>
+            <InitiativePagination
+              currentPage={page}
+              totalPages={totalPages}
+              onPrevious={() => setPage((p) => Math.max(1, p - 1))}
+              onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
+              isLoading={query.isFetching}
+            />
+          </div>
 
-        <div className="grid grid-cols-12 gap-4">
-          <div className="col-span-12 lg:col-span-12 space-y-3">
-            <div className="grid gap-3 md:hidden">
-              {query.isLoading ? (
-                Array.from({ length: 6 }).map((_, i) => (
-                  <MobileInitiativeSkeletonCard key={`init-skeleton-${i}`} />
-                ))
-              ) : query.isError ? (
-                <div className="rounded-xl border bg-background p-6 text-center text-sm text-red-500">
-                  Failed to load initiatives.
-                </div>
-              ) : paged.length ? (
-                paged.map((i) => (
-                  <button
-                    key={i._id}
-                    type="button"
-                    onClick={() => openView(i)}
-                    className="text-left w-full"
-                  >
-                    <MobileInitiativeCard initiative={i} />
-                  </button>
-                ))
-              ) : (
-                <div className="rounded-xl border bg-background p-6 text-center text-sm text-muted-foreground">
-                  No initiatives found.
-                </div>
-              )}
-            </div>
+          <div className="grid grid-cols-12 gap-4">
+            <div className="col-span-12 lg:col-span-12 space-y-3">
+              <div className="grid gap-3 md:hidden">
+                {query.isLoading ? (
+                  Array.from({ length: 6 }).map((_, i) => (
+                    <MobileInitiativeSkeletonCard key={`init-skeleton-${i}`} />
+                  ))
+                ) : query.isError ? (
+                  <div className="rounded-xl border bg-background p-6 text-center text-sm text-red-500">
+                    Failed to load initiatives.
+                  </div>
+                ) : paged.length ? (
+                  paged.map((i) => (
+                    <button
+                      key={i._id}
+                      type="button"
+                      onClick={() => openView(i)}
+                      className="text-left w-full"
+                    >
+                      <MobileInitiativeCard initiative={i} />
+                    </button>
+                  ))
+                ) : (
+                  <div className="rounded-xl border bg-background p-6 text-center text-sm text-muted-foreground">
+                    No initiatives found.
+                  </div>
+                )}
+              </div>
 
-            <div className="hidden md:block">
-              <TableFrame>
-                <InitiativeTable
-                  rows={paged}
-                  isLoading={query.isLoading}
-                  isError={query.isError}
-                  onRowClick={openView}
-                />
-              </TableFrame>
+              <div className="hidden md:block">
+                <TableFrame>
+                  <InitiativeTable
+                    rows={paged}
+                    isLoading={query.isLoading}
+                    isError={query.isError}
+                    onRowClick={openView}
+                  />
+                </TableFrame>
+              </div>
             </div>
           </div>
-        </div>
 
-        <InitiativeSheet
-          open={modalOpen}
-          onOpenChange={setModalOpen}
-          mode={modalMode}
-          initiativeId={selected?._id}
-        />
-      </div>
-    </TableShell>
+          <InitiativeSheet
+            open={modalOpen}
+            onOpenChange={setModalOpen}
+            mode={modalMode}
+            initiativeId={selected?._id}
+          />
+        </div>
+      </TableShell>
+    </PermissionGate>
   );
 }

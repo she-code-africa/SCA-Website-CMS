@@ -2,6 +2,8 @@
 
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
 
 import { getMembers } from "@/features/team/api";
 import type { TeamMember, TeamMembersFilters } from "@/features/team/types";
@@ -12,11 +14,9 @@ import { MobileTeamCard } from "@/features/team/components/mobile-team-card";
 import { MobileTeamSkeletonCard } from "@/features/team/components/mobile-team-skeleton-card";
 import { TeamCategoriesPanel } from "@/features/team/components/team-categories";
 import { TeamMemberSheet } from "@/features/team/components/team-member-sheet";
-// import { TeamMemberModal } from "@/features/team/components/team-member-sheet";
 import { TeamPagination } from "@/features/team/components/team-pagination";
 import { TableShell } from "@/components/templates/table-shell";
 import { TableFrame } from "@/components/templates/table-frame";
-import { PermissionGate } from "@/components/PermissionGate";
 
 export default function TeamPage() {
   const [filters, setFilters] = React.useState<TeamMembersFilters>({
@@ -26,10 +26,8 @@ export default function TeamPage() {
     team: ""
   });
 
-  // client-side pagination (mirrors activity log layout; you can switch to server later)
   const [page, setPage] = React.useState(1);
   const limit = 10;
-
   const [modalOpen, setModalOpen] = React.useState(false);
   const [modalMode, setModalMode] = React.useState<"create" | "view">("create");
   const [selected, setSelected] = React.useState<TeamMember | null>(null);
@@ -44,7 +42,6 @@ export default function TeamPage() {
     return () => window.removeEventListener("team:add-member", handler);
   }, []);
 
-  // reset to page 1 when filters change (matches activity log behavior)
   React.useEffect(() => {
     setPage(1);
   }, [filters.search, filters.isLeader, filters.state, filters.team]);
@@ -56,7 +53,6 @@ export default function TeamPage() {
   });
 
   const rows = React.useMemo(() => query.data ?? [], [query.data]);
-
   const totalPages = Math.max(1, Math.ceil(rows.length / limit));
   const paged = rows.slice((page - 1) * limit, page * limit);
 
@@ -67,7 +63,7 @@ export default function TeamPage() {
   };
 
   return (
-    <PermissionGate permission="VIEW_TEAM">
+    <PermissionGate permission={PERMISSIONS.VIEW_TEAM}>
       <TableShell
         title="Team"
         description="Manage members and categories."
@@ -78,7 +74,6 @@ export default function TeamPage() {
         }
       >
         <div className="space-y-4">
-          {/* Controls */}
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <TeamFilters
               value={filters}
@@ -87,7 +82,6 @@ export default function TeamPage() {
                 setFilters({ search: "", isLeader: "", state: "", team: "" })
               }
             />
-
             <TeamPagination
               currentPage={page}
               totalPages={totalPages}
@@ -97,11 +91,8 @@ export default function TeamPage() {
             />
           </div>
 
-          {/* Responsive list/table wrapper */}
           <div className="grid grid-cols-12 gap-4">
-            {/* Left: table/cards */}
             <div className="col-span-12 lg:col-span-9 space-y-3">
-              {/* Mobile list */}
               <div className="grid gap-3 md:hidden">
                 {query.isLoading ? (
                   Array.from({ length: 6 }).map((_, i) => (
@@ -129,7 +120,6 @@ export default function TeamPage() {
                 )}
               </div>
 
-              {/* Tablet + Desktop table */}
               <div className="hidden md:block">
                 <TableFrame>
                   <TeamTable
@@ -142,9 +132,8 @@ export default function TeamPage() {
               </div>
             </div>
 
-            {/* Right: categories panel */}
             <div className="col-span-12 lg:col-span-3">
-              <PermissionGate permission="VIEW_TEAMCATEGORIES">
+              <PermissionGate permission={PERMISSIONS.VIEW_TEAMCATEGORIES}>
                 <TeamCategoriesPanel />
               </PermissionGate>
             </div>

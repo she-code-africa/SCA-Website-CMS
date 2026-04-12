@@ -1,44 +1,24 @@
+// src/features/users/components/user-table.tsx
 "use client";
 
-import * as React from "react";
 import { format } from "date-fns";
-import { MoreHorizontal } from "lucide-react";
 import type { AdminUser } from "@/features/users/types";
 import { cn } from "@/lib/utils/utils";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
 import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
-  TableRow
+  TableRow,
 } from "@/components/ui/table";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger
-} from "@/components/ui/alert-dialog";
 
 function fmtDate(v?: string) {
   if (!v) return "—";
   const d = new Date(v);
-  if (Number.isNaN(d.getTime())) return "—";
+  if (isNaN(d.getTime())) return "—";
   return format(d, "dd MMM, yyyy");
 }
 
@@ -48,37 +28,50 @@ function initials(user: AdminUser) {
   return (a + b).toUpperCase() || "?";
 }
 
-const statusConfig: Record<
-  string,
-  {
-    label: string;
-    variant: "default" | "secondary" | "outline" | "destructive";
+function getStatusBadge(user: AdminUser) {
+  if (user.status === "pending") {
+    return <Badge variant="outline">Pending</Badge>;
   }
-> = {
-  active: { label: "Active", variant: "default" },
-  inactive: { label: "Deactivated", variant: "destructive" },
-  pending: { label: "Pending", variant: "outline" }
-};
+  const isActive = user.isActive ?? user.status === "active";
+  return (
+    <Badge variant={isActive ? "default" : "destructive"}>
+      {isActive ? "Active" : "Deactivated"}
+    </Badge>
+  );
+}
 
 type Props = {
   rows: AdminUser[];
+  roles: any[];
   isLoading: boolean;
   isError: boolean;
+  canEdit?: boolean;
   onRowClick: (u: AdminUser) => void;
-  onToggleStatus: (u: AdminUser) => void;
-  onDelete: (u: AdminUser) => void;
 };
 
-const headers = ["User", "Role", "Status", "Last Login", "Joined", ""];
+const headers = ["User", "Role", "Status", "Joined"];
 
 export function UserTable({
   rows,
+  roles,
   isLoading,
   isError,
+  canEdit = true,
   onRowClick,
-  onToggleStatus,
-  onDelete
 }: Props) {
+  const resolveRoleName = (user: any) => {
+    const roleValue =
+      user.role || (Array.isArray(user.roles) ? user.roles[0] : null);
+    if (!roleValue) return "User";
+    if (typeof roleValue === "object") return roleValue.name || "User";
+    if (roleValue === "ADMINISTRATOR") return "Super Admin";
+    const matchedRole = roles.find(
+      (r) => r._id === roleValue || r.id === roleValue
+    );
+    return matchedRole?.name ||
+      (roleValue.length > 20 ? `ID: ${roleValue.substring(0, 6)}` : roleValue);
+  };
+
   return (
     <div className="rounded-md border">
       <div className="overflow-x-auto">
@@ -92,7 +85,6 @@ export function UserTable({
               ))}
             </TableRow>
           </TableHeader>
-
           <TableBody>
             {isLoading ? (
               Array.from({ length: 8 }).map((_, idx) => (
@@ -124,20 +116,20 @@ export function UserTable({
               </TableRow>
             ) : (
               rows.map((u) => {
-                const st = statusConfig[u.status] ?? {
-                  label: u.status,
-                  variant: "outline" as const
-                };
+                const userId = u._id || u.id;
                 const fullName =
                   [u.firstName, u.lastName].filter(Boolean).join(" ") || "—";
 
                 return (
                   <TableRow
-                    key={u.id}
-                    onClick={() => onRowClick(u)}
-                    className={cn("cursor-pointer hover:bg-muted/50")}
+                    key={userId}
+                    onClick={() => canEdit && onRowClick(u)}
+                    className={cn(
+                      canEdit
+                        ? "cursor-pointer hover:bg-muted/50"
+                        : "cursor-default"
+                    )}
                   >
-                    {/* User cell */}
                     <TableCell className="whitespace-nowrap">
                       <div className="flex items-center gap-3">
                         <div className="h-8 w-8 shrink-0 rounded-full bg-primary/20 flex items-center justify-center text-xs font-semibold text-primary">
@@ -152,91 +144,31 @@ export function UserTable({
                       </div>
                     </TableCell>
 
-                    <TableCell className="whitespace-nowrap">
-                      <Badge variant="secondary">{u.role.name}</Badge>
+                    {/* Clickable Role Cell – opens the sheet */}
+                    <TableCell
+                      className="whitespace-nowrap cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (canEdit) onRowClick(u);
+                      }}
+                    >
+                      <Badge
+                        variant={
+                          u.role === "ADMINISTRATOR" ? "default" : "secondary"
+                        }
+                      >
+                        {resolveRoleName(u)}
+                      </Badge>
                     </TableCell>
 
                     <TableCell className="whitespace-nowrap">
-                      <Badge variant={st.variant}>{st.label}</Badge>
+                      {getStatusBadge(u)}
                     </TableCell>
-
-                    <TableCell className="whitespace-nowrap text-muted-foreground">
+                    {/* <TableCell className="whitespace-nowrap text-muted-foreground">
                       {fmtDate(u.lastLogin)}
-                    </TableCell>
-
+                    </TableCell> */}
                     <TableCell className="whitespace-nowrap text-muted-foreground">
                       {fmtDate(u.createdAt)}
-                    </TableCell>
-
-                    {/* Actions — stop row click propagation */}
-                    <TableCell
-                      className="whitespace-nowrap text-right"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <AlertDialog>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                            >
-                              <MoreHorizontal className="h-4 w-4" />
-                              <span className="sr-only">Open menu</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-
-                          <DropdownMenuContent align="end" className="w-44">
-                            <DropdownMenuItem onClick={() => onRowClick(u)}>
-                              View / Edit
-                            </DropdownMenuItem>
-
-                            <DropdownMenuItem
-                              onClick={() => onToggleStatus(u)}
-                              className={
-                                u.status === "active"
-                                  ? "text-amber-500 focus:text-amber-500"
-                                  : "text-emerald-500 focus:text-emerald-500"
-                              }
-                            >
-                              {u.status === "active"
-                                ? "Deactivate"
-                                : "Activate"}
-                            </DropdownMenuItem>
-
-                            <DropdownMenuSeparator />
-
-                            <AlertDialogTrigger asChild>
-                              <DropdownMenuItem
-                                className="text-red-500 focus:text-red-500"
-                                onSelect={(e) => e.preventDefault()}
-                              >
-                                Delete user
-                              </DropdownMenuItem>
-                            </AlertDialogTrigger>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete user?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This will permanently remove{" "}
-                              <strong>{fullName}</strong> from the system. This
-                              action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => onDelete(u)}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
                     </TableCell>
                   </TableRow>
                 );

@@ -16,6 +16,8 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
 
 type Props = {
   value: EventFilters;
@@ -106,13 +108,15 @@ export function EventFilters({ value, onChange, onReset }: Props) {
           </PopoverContent>
         </Popover>
 
-        <Button
-          variant="default"
-          className="w-full sm:w-auto bg-pink-600 hover:bg-pink-700"
-          onClick={() => window.dispatchEvent(new CustomEvent("event:add"))}
-        >
-          Add Event
-        </Button>
+        <PermissionGate permission={PERMISSIONS.CREATE_EVENT}>
+          <Button
+            variant="default"
+            className="w-full sm:w-auto"
+            onClick={() => window.dispatchEvent(new CustomEvent("event:add"))}
+          >
+            Add Event
+          </Button>
+        </PermissionGate>
       </div>
     </div>
   );

@@ -3,175 +3,343 @@
 import * as React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-
-import {
-  getUsers,
-  getRolesForSelect,
-  deactivateUser,
-  activateUser,
-  deleteUser
-} from "@/features/users/api";
-import type { AdminUser, UsersFilters } from "@/features/users/types";
-
-import { UserFilters } from "@/features/users/components/user-filters";
+import { AxiosError } from "axios";
 import { UserTable } from "@/features/users/components/user-table";
+import { UserSheet } from "@/features/users/components/user-invite-sheet";
+import { UserFilters } from "@/features/users/components/user-filters";
+import { UserPagination } from "@/features/users/components/user-pagination";
 import { MobileUserCard } from "@/features/users/components/mobile-user-card";
 import { MobileUserSkeletonCard } from "@/features/users/components/mobile-user-skeleton-card";
-import { UserPagination } from "@/features/users/components/user-pagination";
-import { UserSheet } from "@/features/users/components/user-invite-sheet";
-import { TableShell } from "@/components/templates/table-shell";
-import { TableFrame } from "@/components/templates/table-frame";
+import {
+  getUsers,
+  getRoles,
+  getInvitations,
+  inviteUser,
+  updateUserRole,
+  activateUser,
+  deactivateUser,
+  deleteUser
+} from "@/features/users/api";
+import type {
+  AdminUser,
+  UsersFilters,
+  Invitation,
+  InviteUserInput
+} from "@/features/users/types";
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
+
+// API error response shape (adjust based on your backend)
+interface ApiErrorResponse {
+  message?: string;
+  error?: string;
+}
+
+const getErrorMessage = (error: unknown): string => {
+  if (error instanceof AxiosError) {
+    const data = error.response?.data as ApiErrorResponse;
+    return data?.message || data?.error || error.message || "An error occurred";
+  }
+  if (error instanceof Error) return error.message;
+  return "An unexpected error occurred";
+};
 
 export default function UsersPage() {
   const qc = useQueryClient();
 
   const [filters, setFilters] = React.useState<UsersFilters>({
+    page: 1,
+    limit: 10,
     search: "",
     roleId: "",
     status: ""
   });
-  const [page, setPage] = React.useState(1);
-  const limit = 10;
 
   const [sheetOpen, setSheetOpen] = React.useState(false);
-  const [sheetMode, setSheetMode] = React.useState<"invite" | "view">("invite");
-  const [selected, setSelected] = React.useState<AdminUser | null>(null);
+  const [selectedUser, setSelectedUser] = React.useState<AdminUser | null>(
+    null
+  );
+  const [sheetMode, setSheetMode] = React.useState<"invite" | "view">("view");
 
-  // Listen for invite button in filters
-  const handleOpenInvite = () => {
-    setSelected(null);
-    setSheetMode("invite");
-    setSheetOpen(true);
-  };
-
-  // Reset to page 1 on filter change
+  // Reset page when role or status changes (search is client‑side)
   React.useEffect(() => {
-    setPage(1);
-  }, [filters.search, filters.roleId, filters.status]);
+    setFilters((prev) => ({ ...prev, page: 1 }));
+  }, [filters.roleId, filters.status]);
 
+  // Queries
   const usersQuery = useQuery({
-    queryKey: ["users", filters],
-    queryFn: () => getUsers(filters),
-    staleTime: 30_000
+    queryKey: [
+      "users",
+      {
+        roleId: filters.roleId,
+        status: filters.status,
+        page: filters.page,
+        limit: filters.limit
+      }
+    ],
+    queryFn: () => getUsers({ ...filters, search: "" })
   });
-
   const rolesQuery = useQuery({
-    queryKey: ["roles-select"],
-    queryFn: getRolesForSelect,
-    staleTime: 60_000
+    queryKey: ["roles"],
+    queryFn: getRoles
+  });
+  const invitationsQuery = useQuery({
+    queryKey: ["invitations"],
+    queryFn: getInvitations
   });
 
-  const toggleStatusMut = useMutation({
-    mutationFn: (u: AdminUser) =>
-      u.status === "active" ? deactivateUser(u.id) : activateUser(u.id),
-    onSuccess: (_, u) => {
-      toast.success(
-        u.status === "active" ? "User deactivated." : "User activated."
+  const totalPages = usersQuery.data?.totalPages ?? 1;
+
+  // Merge active users + pending invitations
+  const allRows = React.useMemo(() => {
+    const users = usersQuery.data?.users ?? [];
+    const roles = rolesQuery.data ?? [];
+    const invitations = invitationsQuery.data ?? [];
+
+    const pendingInvites = invitations.filter(
+      (inv: Invitation) => inv.status === "pending"
+    );
+    const inviteRows: AdminUser[] = pendingInvites.map((inv) => {
+      const roleObj = roles.find((r) => r._id === inv.roleId);
+      return {
+        _id: inv._id,
+        id: inv._id,
+        firstName: "",
+        lastName: "",
+        email: inv.email,
+        role: roleObj ? roleObj._id : inv.roleId,
+        status: "pending",
+        isActive: false,
+        createdAt: inv.invitedAt,
+        lastLogin: null
+      };
+    });
+    return [...users, ...inviteRows];
+  }, [usersQuery.data, rolesQuery.data, invitationsQuery.data]);
+
+  // Client‑side search filtering
+  const filteredRows = React.useMemo(() => {
+    if (!filters.search?.trim()) return allRows;
+    const searchLower = filters.search.toLowerCase().trim();
+    return allRows.filter((user) => {
+      const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
+      return (
+        user.email.toLowerCase().includes(searchLower) ||
+        user.firstName.toLowerCase().includes(searchLower) ||
+        user.lastName.toLowerCase().includes(searchLower) ||
+        fullName.includes(searchLower)
       );
-      qc.invalidateQueries({ queryKey: ["users"] });
-    },
-    onError: () => toast.error("Could not update user status.")
-  });
+    });
+  }, [allRows, filters.search]);
 
-  const deleteMut = useMutation({
-    mutationFn: (u: AdminUser) => deleteUser(u.id),
+  // Pagination: if search is active, show all results on one page
+  const paginatedRows = React.useMemo(() => {
+    if (filters.search?.trim()) return filteredRows;
+    const start = ((filters.page ?? 1) - 1) * (filters.limit ?? 10);
+    const end = start + (filters.limit ?? 10);
+    return filteredRows.slice(start, end);
+  }, [filteredRows, filters.page, filters.limit, filters.search]);
+
+  const displayedTotalPages = filters.search?.trim() ? 1 : totalPages;
+
+  // Mutations with proper error handling
+  const inviteMutation = useMutation({
+    mutationFn: (input: InviteUserInput) => inviteUser(input),
     onSuccess: () => {
-      toast.success("User deleted.");
+      toast.success("Invitation sent successfully");
       qc.invalidateQueries({ queryKey: ["users"] });
+      qc.invalidateQueries({ queryKey: ["invitations"] });
+      setSheetOpen(false);
     },
-    onError: () => toast.error("Could not delete user.")
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error));
+    }
   });
 
-  const rows = usersQuery.data ?? [];
-  const totalPages = Math.max(1, Math.ceil(rows.length / limit));
-  const paged = rows.slice((page - 1) * limit, page * limit);
-  const roles = rolesQuery.data ?? [];
+  const roleUpdateMutation = useMutation({
+    mutationFn: ({ userId, roleId }: { userId: string; roleId: string }) =>
+      updateUserRole(userId, roleId),
+    onSuccess: () => {
+      toast.success("Role updated");
+      qc.invalidateQueries({ queryKey: ["users"] });
+    },
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error));
+    }
+  });
 
-  const openView = (u: AdminUser) => {
-    setSelected(u);
-    setSheetMode("view");
+  const toggleStatusMutation = useMutation({
+    mutationFn: async (user: AdminUser) => {
+      const userId = user._id;
+      if (user.isActive) await deactivateUser(userId);
+      else await activateUser(userId);
+    },
+    onSuccess: (_, user) => {
+      toast.success(user.isActive ? "User deactivated" : "User activated");
+      qc.invalidateQueries({ queryKey: ["users"] });
+    },
+    onError: () => toast.error("Status change failed")
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (userId: string) => deleteUser(userId),
+    onSuccess: () => {
+      toast.success("User deleted");
+      qc.invalidateQueries({ queryKey: ["users"] });
+      qc.invalidateQueries({ queryKey: ["invitations"] });
+    },
+    onError: () => toast.error("Delete failed")
+  });
+
+  // Handlers
+  const handleInvite = async (email: string, roleId: string) => {
+    const roles = rolesQuery.data ?? [];
+    const selectedRole = roles.find((r) => r._id === roleId);
+    if (!selectedRole) {
+      toast.error("Please select a valid role");
+      return;
+    }
+    await inviteMutation.mutateAsync({
+      email,
+      roleName: selectedRole.name,
+      roleId: selectedRole._id
+    });
+  };
+
+  const handleRoleUpdate = async (userId: string, newRoleId: string) => {
+    await roleUpdateMutation.mutateAsync({ userId, roleId: newRoleId });
+  };
+
+const handleToggleStatus = async (user: AdminUser) => {
+  if (user.status === "pending") {
+    toast.warning("Cannot activate/deactivate pending invitation.");
+    return;
+  }
+  await toggleStatusMutation.mutateAsync(user);
+};
+
+const handleDelete = (user: AdminUser) => {
+  if (window.confirm(`Delete ${user.email} permanently?`)) {
+    deleteMutation.mutate(user._id);
+  }
+};
+
+  const openSheet = (user: AdminUser | null, mode: "invite" | "view") => {
+    setSelectedUser(user);
+    setSheetMode(mode);
     setSheetOpen(true);
   };
+
+  const handleFilterChange = (newFilters: UsersFilters) => {
+    setFilters((prev) => ({ ...prev, ...newFilters, page: 1 }));
+  };
+
+  const handleResetFilters = () => {
+    setFilters({
+      page: 1,
+      limit: 10,
+      search: "",
+      roleId: "",
+      status: ""
+    });
+  };
+
+  const goToPreviousPage = () => {
+    setFilters((prev) => ({
+      ...prev,
+      page: Math.max(1, (prev.page ?? 1) - 1)
+    }));
+  };
+
+  const goToNextPage = () => {
+    setFilters((prev) => ({
+      ...prev,
+      page: Math.min(displayedTotalPages, (prev.page ?? 1) + 1)
+    }));
+  };
+
+  const rolesForFilters = React.useMemo(() => {
+    const roles = rolesQuery.data ?? [];
+    return roles.map((r) => ({ id: r._id, name: r.name }));
+  }, [rolesQuery.data]);
+
+  const isLoading =
+    usersQuery.isLoading || rolesQuery.isLoading || invitationsQuery.isLoading;
+  const isError = usersQuery.isError || rolesQuery.isError;
 
   return (
-    <TableShell
-      title="Users"
-      description="Manage admin portal users and their role assignments."
-      right={
-        <div className="text-sm text-muted-foreground">
-          {usersQuery.isLoading ? "Loading…" : `${rows.length} user(s)`}
-        </div>
-      }
-    >
-      <div className="space-y-4">
-        {/* Controls */}
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <UserFilters
-            value={filters}
-            onChange={setFilters}
-            onReset={() => setFilters({ search: "", roleId: "", status: "" })}
-            roles={roles}
-            onInvite={handleOpenInvite}
-          />
-          <UserPagination
-            currentPage={page}
-            totalPages={totalPages}
-            onPrevious={() => setPage((p) => Math.max(1, p - 1))}
-            onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
-            isLoading={usersQuery.isFetching}
-          />
-        </div>
-
-        {/* Mobile cards */}
-        <div className="grid gap-3 md:hidden">
-          {usersQuery.isLoading ? (
-            Array.from({ length: 6 }).map((_, i) => (
-              <MobileUserSkeletonCard key={i} />
-            ))
-          ) : usersQuery.isError ? (
-            <div className="rounded-xl border bg-background p-6 text-center text-sm text-red-500">
-              Failed to load users.
-            </div>
-          ) : paged.length ? (
-            paged.map((u) => (
-              <button
-                key={u.id}
-                type="button"
-                onClick={() => openView(u)}
-                className="text-left w-full"
-              >
-                <MobileUserCard user={u} />
-              </button>
-            ))
-          ) : (
-            <div className="rounded-xl border bg-background p-6 text-center text-sm text-muted-foreground">
-              No users found.
-            </div>
-          )}
-        </div>
-
-        {/* Desktop table */}
-        <div className="hidden md:block">
-          <TableFrame>
-            <UserTable
-              rows={paged}
-              isLoading={usersQuery.isLoading}
-              isError={usersQuery.isError}
-              onRowClick={openView}
-              onToggleStatus={(u) => toggleStatusMut.mutate(u)}
-              onDelete={(u) => deleteMut.mutate(u)}
+    <PermissionGate permission={PERMISSIONS.VIEW_USER}>
+      <div className="container py-8">
+        <div className="space-y-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <UserFilters
+              value={filters}
+              onChange={handleFilterChange}
+              onReset={handleResetFilters}
+              roles={rolesForFilters}
+              onInvite={() => openSheet(null, "invite")}
             />
-          </TableFrame>
-        </div>
-      </div>
+            <UserPagination
+              currentPage={filters.page ?? 1}
+              totalPages={displayedTotalPages}
+              onPrevious={goToPreviousPage}
+              onNext={goToNextPage}
+              isLoading={isLoading}
+            />
+          </div>
 
-      <UserSheet
-        open={sheetOpen}
-        onOpenChange={setSheetOpen}
-        mode={sheetMode}
-        user={selected}
-        roles={roles}
-      />
-    </TableShell>
+          {/* Mobile cards */}
+          <div className="grid gap-3 md:hidden">
+            {isLoading ? (
+              Array.from({ length: 6 }).map((_, i) => (
+                <MobileUserSkeletonCard key={i} />
+              ))
+            ) : isError ? (
+              <div className="rounded-xl border bg-background p-6 text-center text-sm text-red-500">
+                Failed to load users.
+              </div>
+            ) : paginatedRows.length ? (
+              paginatedRows.map((u) => (
+                <MobileUserCard
+                  key={u._id || u.id}
+                  user={u}
+                  roles={rolesQuery.data ?? []}
+                  onClick={() => openSheet(u, "view")}
+                />
+              ))
+            ) : (
+              <div className="rounded-xl border bg-background p-6 text-center text-sm text-muted-foreground">
+                No users found.
+              </div>
+            )}
+          </div>
+
+          {/* Desktop table */}
+          <div className="hidden md:block">
+            <UserTable
+              rows={paginatedRows}
+              roles={rolesQuery.data ?? []}
+              isLoading={isLoading}
+              isError={isError}
+              canEdit={true}
+              onRowClick={(user) => openSheet(user, "view")}
+            />
+          </div>
+        </div>
+
+        <UserSheet
+          open={sheetOpen}
+          onOpenChange={setSheetOpen}
+          mode={sheetMode}
+          user={selectedUser}
+          roles={rolesQuery.data ?? []}
+          onInvite={handleInvite}
+          onRoleUpdate={handleRoleUpdate}
+          onToggleStatus={handleToggleStatus}
+          onDelete={handleDelete}
+          isSaving={inviteMutation.isPending || roleUpdateMutation.isPending}
+        />
+      </div>
+    </PermissionGate>
   );
 }

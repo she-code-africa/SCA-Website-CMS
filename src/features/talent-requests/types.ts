@@ -7,7 +7,12 @@ export type TalentRequest = {
   email?: string;
   company?: string;
   companyLink?: string;
+  role?: string;
+  github?: string;
+  linkedin?: string;
   jobRole?: string;
+  portfolio?: string;
+  skills?: string[];
   experienceLevel?: string;
   jobDescription?: string;
   status?: TalentRequestStatus;

@@ -16,6 +16,8 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
 
 type Props = {
   value: InitiativeFilters;
@@ -24,10 +26,10 @@ type Props = {
 };
 
 export function InitiativeFilters({ value, onChange, onReset }: Props) {
-const activeCount =
-  Number(!!value.search?.trim()) +
-  Number(!!value.isAvailable) + // Checks if it's "true" or "false" vs undefined/empty
-  Number(!!value.sortBy);
+  const activeCount =
+    Number(!!value.search?.trim()) +
+    Number(!!value.isAvailable) +
+    Number(!!value.sortBy);
 
   return (
     <div className="flex w-full flex-col gap-2 lg:w-auto lg:flex-row lg:items-center">
@@ -81,7 +83,10 @@ const activeCount =
                   onValueChange={(v) =>
                     onChange({
                       ...value,
-                      sortBy: v === "all" ? "" : (v as "createdAt" | "updatedAt" | "title")
+                      sortBy:
+                        v === "all"
+                          ? ""
+                          : (v as "createdAt" | "updatedAt" | "title")
                     })
                   }
                 >
@@ -104,15 +109,17 @@ const activeCount =
           </PopoverContent>
         </Popover>
 
-        <Button
-          variant="default"
-          className="w-full sm:w-auto bg-pink-600 hover:bg-pink-700"
-          onClick={() =>
-            window.dispatchEvent(new CustomEvent("initiative:add"))
-          }
-        >
-          Add Initiative
-        </Button>
+        <PermissionGate permission={PERMISSIONS.CREATE_INITIATIVE}>
+          <Button
+            variant="default"
+            className="w-full sm:w-auto"
+            onClick={() =>
+              window.dispatchEvent(new CustomEvent("initiative:add"))
+            }
+          >
+            Add Initiative
+          </Button>
+        </PermissionGate>
       </div>
     </div>
   );

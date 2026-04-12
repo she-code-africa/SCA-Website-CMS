@@ -3,6 +3,10 @@
 
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Plus } from "lucide-react";
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
+import { Button } from "@/components/ui/button";
 
 import { getEvents } from "@/features/events/api";
 import type { Event, EventFilters } from "@/features/events/types";
@@ -65,10 +69,6 @@ export default function EventsPage() {
   const [modalMode, setModalMode] = React.useState<"create" | "view">("create");
   const [selected, setSelected] = React.useState<Event | null>(null);
 
-  /**
-   * HYDRATION SAFE EFFECT: Prevents window access errors during
-   * the Next.js build-time "dry run."
-   */
   React.useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -105,83 +105,89 @@ export default function EventsPage() {
     setModalOpen(true);
   };
 
+
   return (
-    <TableShell
-      title="Events"
-      description="Manage events, publish/archive status, and event dates."
-      right={
-        <div className="text-sm text-muted-foreground">
-          {query.isLoading ? "Loading…" : `${rows.length} event(s)`}
-        </div>
-      }
-    >
-      <div className="space-y-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <Filters
-            value={filters}
-            onChange={setFilters}
-            onReset={() => setFilters({ search: "", state: "", sortBy: "" })}
-          />
-
-          <EventPagination
-            currentPage={page}
-            totalPages={totalPages}
-            onPrevious={() => setPage((p) => Math.max(1, p - 1))}
-            onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
-            isLoading={query.isFetching}
-          />
-        </div>
-
-        <div className="grid grid-cols-12 gap-4">
-          <div className="col-span-12 lg:col-span-12 space-y-3">
-            <div className="grid gap-3 md:hidden">
-              {query.isLoading ? (
-                // UNIQUE KEYS: Fixed with a specific prefix
-                Array.from({ length: 6 }).map((_, i) => (
-                  <MobileEventSkeletonCard key={`event-skeleton-${i}`} />
-                ))
-              ) : query.isError ? (
-                <div className="rounded-xl border bg-background p-6 text-center text-sm text-red-500">
-                  Failed to load events.
-                </div>
-              ) : paged.length ? (
-                paged.map((e) => (
-                  <button
-                    key={e._id}
-                    type="button"
-                    onClick={() => openView(e)}
-                    className="text-left w-full"
-                  >
-                    <MobileEventCard event={e} />
-                  </button>
-                ))
-              ) : (
-                <div className="rounded-xl border bg-background p-6 text-center text-sm text-muted-foreground">
-                  No events found.
-                </div>
-              )}
+    <PermissionGate permission={PERMISSIONS.VIEW_EVENT}>
+      <TableShell
+        title="Events"
+        description="Manage events, publish/archive status, and event dates."
+        right={
+          <div className="text-sm text-muted-foreground">
+            {query.isLoading ? "Loading…" : `${rows.length} event(s)`}
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-wrap items-center gap-2">
+              <Filters
+                value={filters}
+                onChange={setFilters}
+                onReset={() =>
+                  setFilters({ search: "", state: "", sortBy: "" })
+                }
+              />
             </div>
 
-            <div className="hidden md:block">
-              <TableFrame>
-                <EventTable
-                  rows={paged}
-                  isLoading={query.isLoading}
-                  isError={query.isError}
-                  onRowClick={openView}
-                />
-              </TableFrame>
+            <EventPagination
+              currentPage={page}
+              totalPages={totalPages}
+              onPrevious={() => setPage((p) => Math.max(1, p - 1))}
+              onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
+              isLoading={query.isFetching}
+            />
+          </div>
+
+          <div className="grid grid-cols-12 gap-4">
+            <div className="col-span-12 lg:col-span-12 space-y-3">
+              <div className="grid gap-3 md:hidden">
+                {query.isLoading ? (
+                  Array.from({ length: 6 }).map((_, i) => (
+                    <MobileEventSkeletonCard key={`event-skeleton-${i}`} />
+                  ))
+                ) : query.isError ? (
+                  <div className="rounded-xl border bg-background p-6 text-center text-sm text-red-500">
+                    Failed to load events.
+                  </div>
+                ) : paged.length ? (
+                  paged.map((e) => (
+                    <button
+                      key={e._id}
+                      type="button"
+                      onClick={() => openView(e)}
+                      className="text-left w-full"
+                    >
+                      <MobileEventCard event={e} />
+                    </button>
+                  ))
+                ) : (
+                  <div className="rounded-xl border bg-background p-6 text-center text-sm text-muted-foreground">
+                    No events found.
+                  </div>
+                )}
+              </div>
+
+              <div className="hidden md:block">
+                <TableFrame>
+                  <EventTable
+                    rows={paged}
+                    isLoading={query.isLoading}
+                    isError={query.isError}
+                    onRowClick={openView}
+                  />
+                </TableFrame>
+              </div>
             </div>
           </div>
-        </div>
 
-        <EventSheet
-          open={modalOpen}
-          onOpenChange={setModalOpen}
-          mode={modalMode}
-          eventId={selected?._id}
-        />
-      </div>
-    </TableShell>
+          <EventSheet
+            open={modalOpen}
+            onOpenChange={setModalOpen}
+            mode={modalMode}
+            eventId={selected?._id}
+          />
+        </div>
+      </TableShell>
+    </PermissionGate>
   );
 }

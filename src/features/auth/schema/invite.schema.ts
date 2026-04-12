@@ -1,3 +1,4 @@
+//src/features/auth/schema/invite.schema.ts
 import { z } from "zod";
 
 // ─── Individual password rules ────────────────────────────────────────────────
@@ -54,6 +55,8 @@ export const STRENGTH_CONFIG: Record<
 // Renamed to inviteAcceptSchema to fix your component error
 export const inviteAcceptSchema = z
   .object({
+    firstName: z.string().trim().min(1, "First name is required").max(50),
+    lastName: z.string().trim().min(1, "Last name is required").max(50),
     password: z
       .string()
       .min(8, "Password must be at least 8 characters")
@@ -61,9 +64,9 @@ export const inviteAcceptSchema = z
       .regex(/[a-z]/, "Must include at least one lowercase letter")
       .regex(/[0-9]/, "Must include at least one number")
       .regex(/[^A-Za-z0-9]/, "Must include at least one special character"),
-    confirmPassword: z.string().min(1, "Please confirm your password")
+    confirmPassword: z.string()
   })
-  .refine((d) => d.password === d.confirmPassword, {
+  .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
     path: ["confirmPassword"]
   });

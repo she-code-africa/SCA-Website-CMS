@@ -11,6 +11,8 @@ import {
 } from "@/features/courses/api";
 import { getSchools } from "@/features/schools/api";
 import type { Course, CourseUpsertInput } from "@/features/courses/types";
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
 
 import {
   Sheet,
@@ -101,7 +103,6 @@ export function CourseSheet({ open, onOpenChange, mode, courseId }: Props) {
       setEditing(false);
       setImageFile(null);
 
-      // Set existing image preview if available
       if (c.image) {
         setImagePreview(c.image);
       } else {
@@ -111,8 +112,7 @@ export function CourseSheet({ open, onOpenChange, mode, courseId }: Props) {
       setForm({
         name: c.name ?? "",
         shortDescription: c.shortDescription ?? "",
-        school:
-          typeof c.school === "string" ? c.school : (c.school?._id ?? ""),
+        school: typeof c.school === "string" ? c.school : (c.school?._id ?? ""),
         applicationLink: c.applicationLink ?? "",
         image: null
       });
@@ -221,49 +221,52 @@ export function CourseSheet({ open, onOpenChange, mode, courseId }: Props) {
             {/* Top actions row */}
             {mode === "view" && (
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <Button
-                  variant="outline"
-                  className="w-full sm:w-auto"
-                  onClick={() => setEditing((v) => !v)}
-                >
-                  {editing ? "View" : "Edit"}
-                </Button>
+                <PermissionGate permission={PERMISSIONS.UPDATE_COURSE}>
+                  <Button
+                    variant="outline"
+                    className="w-full sm:w-auto"
+                    onClick={() => setEditing((v) => !v)}
+                  >
+                    {editing ? "View" : "Edit"}
+                  </Button>
+                </PermissionGate>
 
                 <div className="flex gap-2 w-full sm:w-auto">
-                  {/* Delete with confirmation */}
                   {!editing && (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="destructive"
-                          className="flex-1 sm:flex-none"
-                        >
-                          Delete
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete course?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => {
-                              if (!courseId) return;
-                              deleteMut.mutate(courseId);
-                            }}
-                            className={cn(
-                              "bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            )}
+                    <PermissionGate permission={PERMISSIONS.DELETE_COURSE}>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="destructive"
+                            className="flex-1 sm:flex-none"
                           >
                             Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete course?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => {
+                                if (!courseId) return;
+                                deleteMut.mutate(courseId);
+                              }}
+                              className={cn(
+                                "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              )}
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </PermissionGate>
                   )}
                 </div>
               </div>
@@ -274,7 +277,6 @@ export function CourseSheet({ open, onOpenChange, mode, courseId }: Props) {
               <label className="text-sm font-medium">Course Image *</label>
 
               <div className="flex flex-col sm:flex-row gap-4 items-center">
-                {/* Image Preview */}
                 <div className="relative group">
                   <div
                     className={cn(
@@ -297,7 +299,6 @@ export function CourseSheet({ open, onOpenChange, mode, courseId }: Props) {
                     )}
                   </div>
 
-                  {/* Remove button */}
                   {editing && imagePreview && (
                     <button
                       type="button"
@@ -309,7 +310,6 @@ export function CourseSheet({ open, onOpenChange, mode, courseId }: Props) {
                   )}
                 </div>
 
-                {/* Upload Controls */}
                 <div className="flex-1 space-y-3">
                   <div className="space-y-2">
                     <p className="text-xs text-muted-foreground">
@@ -330,7 +330,6 @@ export function CourseSheet({ open, onOpenChange, mode, courseId }: Props) {
                     </Button>
                   )}
 
-                  {/* Hidden file input */}
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -376,7 +375,9 @@ export function CourseSheet({ open, onOpenChange, mode, courseId }: Props) {
               </div>
 
               <div className="grid gap-2">
-                <label className="text-sm font-medium">Application Link *</label>
+                <label className="text-sm font-medium">
+                  Application Link *
+                </label>
                 <Input
                   type="url"
                   value={form.applicationLink}

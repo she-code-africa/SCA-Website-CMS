@@ -1,19 +1,8 @@
-// src/features/jobs/components/job-filters.tsx
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
 import type { JobFilters, JobState } from "@/features/jobs/types";
 import { getJobCategories, getJobTypes } from "@/features/jobs/api";
-
-type JobType = {
-  _id: string;
-  name: string;
-};
-
-type JobCategory = {
-  _id: string;
-  name: string;
-};
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,6 +17,11 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
+
+type JobType = { _id: string; name: string };
+type JobCategory = { _id: string; name: string };
 
 type Props = {
   value: JobFilters;
@@ -40,18 +34,17 @@ export function JobFilters({ value, onChange, onReset }: Props) {
     queryKey: ["job-categories"],
     queryFn: getJobCategories
   });
-
   const { data: types = [] } = useQuery<JobType[]>({
     queryKey: ["job-types"],
     queryFn: getJobTypes
   });
 
-const activeCount =
-  Number(!!value.search?.trim()) +
-  Number(!!value.state) +
-  Number(!!value.jobType) +
-  Number(!!value.jobCategory) +
-  Number(!!value.sortBy);
+  const activeCount =
+    Number(!!value.search?.trim()) +
+    Number(!!value.state) +
+    Number(!!value.jobType) +
+    Number(!!value.jobCategory) +
+    Number(!!value.sortBy);
 
   return (
     <div className="flex w-full flex-col gap-2 lg:w-auto lg:flex-row lg:items-center">
@@ -76,6 +69,7 @@ const activeCount =
             className="z-50 w-85 max-w-[calc(100vw-2rem)] rounded-md border p-4 shadow-md"
           >
             <div className="grid gap-3">
+              {/* State filter */}
               <div className="grid gap-1">
                 <p className="text-sm font-medium">State</p>
                 <Select
@@ -99,15 +93,13 @@ const activeCount =
                 </Select>
               </div>
 
+              {/* Job Type filter */}
               <div className="grid gap-1">
                 <p className="text-sm font-medium">Job Type</p>
                 <Select
                   value={value.jobType ?? "all"}
                   onValueChange={(v) =>
-                    onChange({
-                      ...value,
-                      jobType: v === "all" ? "" : v
-                    })
+                    onChange({ ...value, jobType: v === "all" ? "" : v })
                   }
                 >
                   <SelectTrigger>
@@ -115,7 +107,7 @@ const activeCount =
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Any</SelectItem>
-                    {types.map((t: JobType) => (
+                    {types.map((t) => (
                       <SelectItem key={t._id} value={t._id}>
                         {t.name}
                       </SelectItem>
@@ -124,15 +116,13 @@ const activeCount =
                 </Select>
               </div>
 
+              {/* Job Category filter */}
               <div className="grid gap-1">
                 <p className="text-sm font-medium">Job Category</p>
                 <Select
                   value={value.jobCategory ?? "all"}
                   onValueChange={(v) =>
-                    onChange({
-                      ...value,
-                      jobCategory: v === "all" ? "" : v
-                    })
+                    onChange({ ...value, jobCategory: v === "all" ? "" : v })
                   }
                 >
                   <SelectTrigger>
@@ -140,7 +130,7 @@ const activeCount =
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Any</SelectItem>
-                    {categories.map((c: JobCategory) => (
+                    {categories.map((c) => (
                       <SelectItem key={c._id} value={c._id}>
                         {c.name}
                       </SelectItem>
@@ -149,6 +139,7 @@ const activeCount =
                 </Select>
               </div>
 
+              {/* Sort By filter */}
               <div className="grid gap-1">
                 <p className="text-sm font-medium">Sort By</p>
                 <Select
@@ -156,7 +147,12 @@ const activeCount =
                   onValueChange={(v: string) =>
                     onChange({
                       ...value,
-                      sortBy: (v === "all" ? "" : v) as "" | "createdAt" | "updatedAt" | "deadline" | "title"
+                      sortBy: (v === "all" ? "" : v) as
+                        | ""
+                        | "createdAt"
+                        | "updatedAt"
+                        | "deadline"
+                        | "title"
                     })
                   }
                 >
@@ -180,13 +176,15 @@ const activeCount =
           </PopoverContent>
         </Popover>
 
-        <Button
-          variant="default"
-          className="w-full sm:w-auto bg-pink-600 hover:bg-pink-700"
-          onClick={() => window.dispatchEvent(new CustomEvent("job:add"))}
-        >
-          Add Job
-        </Button>
+        <PermissionGate permission={PERMISSIONS.CREATE_JOB}>
+          <Button
+            variant="default"
+            className="w-full sm:w-auto"
+            onClick={() => window.dispatchEvent(new CustomEvent("job:add"))}
+          >
+            Add Job
+          </Button>
+        </PermissionGate>
       </div>
     </div>
   );

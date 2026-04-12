@@ -13,6 +13,8 @@ import {
   deleteEvent
 } from "@/features/events/api";
 import type { Event, EventUpsertInput } from "@/features/events/types";
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
 
 import {
   Sheet,
@@ -91,7 +93,6 @@ export function EventSheet({ open, onOpenChange, mode, eventId }: Props) {
       setEditing(false);
       setImageFile(null);
 
-      // Set existing image preview if available
       if (e.image) {
         setImagePreview(e.image);
       } else {
@@ -192,7 +193,6 @@ export function EventSheet({ open, onOpenChange, mode, eventId }: Props) {
       return;
     }
 
-    // Validate URL
     try {
       new URL(form.link);
     } catch {
@@ -237,63 +237,69 @@ export function EventSheet({ open, onOpenChange, mode, eventId }: Props) {
             {/* Top actions row */}
             {mode === "view" && (
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <Button
-                  variant="outline"
-                  className="w-full sm:w-auto"
-                  onClick={() => setEditing((v) => !v)}
-                >
-                  {editing ? "View" : "Edit"}
-                </Button>
-
-                <div className="flex gap-2 w-full sm:w-auto">
+                <PermissionGate permission={PERMISSIONS.UPDATE_EVENT}>
                   <Button
                     variant="outline"
-                    className="flex-1 sm:flex-none"
-                    onClick={() => {
-                      if (!eventId) return;
-                      if (currentState === "published")
-                        archiveMut.mutate(eventId);
-                      else publishMut.mutate(eventId);
-                    }}
-                    disabled={publishMut.isPending || archiveMut.isPending}
+                    className="w-full sm:w-auto"
+                    onClick={() => setEditing((v) => !v)}
                   >
-                    {currentState === "published" ? "Archive" : "Publish"}
+                    {editing ? "View" : "Edit"}
                   </Button>
+                </PermissionGate>
+
+                <div className="flex gap-2 w-full sm:w-auto">
+                  <PermissionGate permission={PERMISSIONS.UPDATE_EVENT}>
+                    <Button
+                      variant="outline"
+                      className="flex-1 sm:flex-none"
+                      onClick={() => {
+                        if (!eventId) return;
+                        if (currentState === "published")
+                          archiveMut.mutate(eventId);
+                        else publishMut.mutate(eventId);
+                      }}
+                      disabled={publishMut.isPending || archiveMut.isPending}
+                    >
+                      {currentState === "published" ? "Archive" : "Publish"}
+                    </Button>
+                  </PermissionGate>
 
                   {/* Delete with confirmation */}
                   {!editing && (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="destructive"
-                          className="flex-1 sm:flex-none"
-                        >
-                          Delete
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete event?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => {
-                              if (!eventId) return;
-                              deleteMut.mutate(eventId);
-                            }}
-                            className={cn(
-                              "bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            )}
+                    <PermissionGate permission={PERMISSIONS.DELETE_EVENT}>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="destructive"
+                            className="flex-1 sm:flex-none"
                           >
                             Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete event?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => {
+                                if (!eventId) return;
+                                deleteMut.mutate(eventId);
+                              }}
+                              className={cn(
+                                "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              )}
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </PermissionGate>
                   )}
                 </div>
               </div>
@@ -304,7 +310,6 @@ export function EventSheet({ open, onOpenChange, mode, eventId }: Props) {
               <label className="text-sm font-medium">Event Image</label>
 
               <div className="flex flex-col sm:flex-row gap-4 items-center">
-                {/* Image Preview */}
                 <div className="relative group">
                   <div
                     className={cn(
@@ -327,7 +332,6 @@ export function EventSheet({ open, onOpenChange, mode, eventId }: Props) {
                     )}
                   </div>
 
-                  {/* Remove button */}
                   {editing && imagePreview && (
                     <button
                       type="button"
@@ -339,7 +343,6 @@ export function EventSheet({ open, onOpenChange, mode, eventId }: Props) {
                   )}
                 </div>
 
-                {/* Upload Controls */}
                 <div className="flex-1 space-y-3">
                   <div className="space-y-2">
                     <p className="text-xs text-muted-foreground">
@@ -361,7 +364,6 @@ export function EventSheet({ open, onOpenChange, mode, eventId }: Props) {
                     </Button>
                   )}
 
-                  {/* Hidden file input */}
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -425,29 +427,47 @@ export function EventSheet({ open, onOpenChange, mode, eventId }: Props) {
           </div>
         </ScrollArea>
 
-        {/* Bottom action bar - Fixed */}
-        {(mode === "create" || editing) && (
-          <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={saving}
-            >
-              Cancel
-            </Button>
-            <Button
-              className="bg-pink-600 hover:bg-pink-700"
-              onClick={submit}
-              disabled={saving}
-            >
-              {saving
-                ? "Saving…"
-                : mode === "create"
-                  ? "Add Event"
-                  : "Save Changes"}
-            </Button>
-          </div>
-        )}
+        {/* Bottom action bar */}
+        {(mode === "create" && (
+          <PermissionGate permission={PERMISSIONS.CREATE_EVENT}>
+            <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
+              <Button
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={saving}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="bg-pink-600 hover:bg-pink-700"
+                onClick={submit}
+                disabled={saving}
+              >
+                {saving ? "Saving…" : "Add Event"}
+              </Button>
+            </div>
+          </PermissionGate>
+        )) ||
+          (mode === "view" && editing && (
+            <PermissionGate permission={PERMISSIONS.UPDATE_EVENT}>
+              <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
+                <Button
+                  variant="outline"
+                  onClick={() => onOpenChange(false)}
+                  disabled={saving}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="bg-pink-600 hover:bg-pink-700"
+                  onClick={submit}
+                  disabled={saving}
+                >
+                  {saving ? "Saving…" : "Save Changes"}
+                </Button>
+              </div>
+            </PermissionGate>
+          ))}
       </SheetContent>
     </Sheet>
   );

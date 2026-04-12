@@ -17,14 +17,25 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
+import { Download, Plus } from "lucide-react";
 
 type Props = {
   value: TalentRequestFilters;
   onChange: (next: TalentRequestFilters) => void;
   onReset: () => void;
+  onExport: () => void;
+  onCreate: () => void; // new
 };
 
-export function TalentRequestFilters({ value, onChange, onReset }: Props) {
+export function TalentRequestFilters({
+  value,
+  onChange,
+  onReset,
+  onExport,
+  onCreate
+}: Props) {
   const activeCount =
     Number(!!value.search?.trim()) +
     Number(!!value.status) +
@@ -54,6 +65,7 @@ export function TalentRequestFilters({ value, onChange, onReset }: Props) {
             className="z-50 w-85 max-w-[calc(100vw-2rem)] rounded-md border p-4 shadow-md"
           >
             <div className="grid gap-3">
+              {/* Status filter */}
               <div className="grid gap-1">
                 <p className="text-sm font-medium">Status</p>
                 <Select
@@ -77,6 +89,7 @@ export function TalentRequestFilters({ value, onChange, onReset }: Props) {
                 </Select>
               </div>
 
+              {/* Experience Level filter */}
               <div className="grid gap-1">
                 <p className="text-sm font-medium">Experience Level</p>
                 <Input
@@ -88,6 +101,7 @@ export function TalentRequestFilters({ value, onChange, onReset }: Props) {
                 />
               </div>
 
+              {/* Sort By filter */}
               <div className="grid gap-1">
                 <p className="text-sm font-medium">Sort By</p>
                 <Select
@@ -118,6 +132,28 @@ export function TalentRequestFilters({ value, onChange, onReset }: Props) {
             </div>
           </PopoverContent>
         </Popover>
+
+        <PermissionGate permission={PERMISSIONS.EXPORT_TALENT_REQUEST}>
+          <Button
+            variant="default"
+            className="w-full sm:w-auto"
+            onClick={onExport}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Export
+          </Button>
+        </PermissionGate>
+
+        <PermissionGate permission={PERMISSIONS.CREATE_TALENT_REQUEST}>
+          <Button
+            variant="default"
+            className="w-full sm:w-auto"
+            onClick={onCreate}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Add Request
+          </Button>
+        </PermissionGate>
       </div>
     </div>
   );

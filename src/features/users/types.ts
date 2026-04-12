@@ -3,25 +3,46 @@
 export type UserStatus = "active" | "deactivated" | "pending";
 
 export interface UserRole {
-  id: string;
+  _id: string; // backend uses _id
+  id?: string; // alias for convenience
   name: string;
   isDefault: boolean;
 }
 
 export interface AdminUser {
-  id: string;
+  _id: string; // primary identifier
+  id?: string; // alias
   firstName: string;
   lastName: string;
   email: string;
-  role: UserRole;
-  status: UserStatus;
-  lastLogin?: string;
+  role: string | UserRole; // can be ID string or full object
+  status: UserStatus; // "active" | "deactivated" | "pending"
+  isActive: boolean; // for existing users
+  lastLogin?: string | null;
   createdAt: string;
+}
+
+export interface Invitation {
+  _id: string;
+  email: string;
+  roleName: string;
+  roleId: string; // ID of the assigned role
+  invitedAt: string;
+  expiresAt?: string;
+  status: "pending" | "accepted" | "expired";
+}
+
+export interface PaginatedUsers {
+  users: AdminUser[];
+  totalPages: number;
+  totalCount: number;
+  currentPage: number;
 }
 
 export interface InviteUserInput {
   email: string;
-  roleId: string;
+  roleName: string;
+  roleId?: string;
 }
 
 export interface UpdateUserInput {
@@ -33,4 +54,6 @@ export interface UsersFilters {
   search?: string;
   roleId?: string;
   status?: string;
+  page?: number;
+  limit?: number;
 }

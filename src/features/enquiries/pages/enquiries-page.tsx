@@ -3,6 +3,11 @@
 
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Download } from "lucide-react";
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 import { TableShell } from "@/components/templates/table-shell";
 import { TableFrame } from "@/components/templates/table-frame";
@@ -16,6 +21,40 @@ import { EnquiryTable } from "@/features/enquiries/components/enquiry-table";
 import { MobileEnquiryCard } from "@/features/enquiries/components/mobile-enquiry-card";
 import { MobileEnquirySkeletonCard } from "@/features/enquiries/components/mobile-enquiry-skeleton-card";
 import { EnquiryDetailsSheet } from "@/features/enquiries/components/enquiry-details-sheet";
+
+// Helper: convert array of objects to CSV string
+function toCSV(data: Enquiry[]): string {
+  const headers = [
+    "Full Name",
+    "Email",
+    "Message",
+    "Status",
+    "Created At",
+    "Updated At"
+  ];
+  const rows = data.map((e) => [
+    e.fullName ?? "",
+    e.email ?? "",
+    (e.description ?? "").replace(/,/g, " ").replace(/\n/g, " "),
+    e.status ?? "open",
+    e.createdAt ? new Date(e.createdAt).toLocaleString() : "",
+    e.updatedAt ? new Date(e.updatedAt).toLocaleString() : ""
+  ]);
+  const csvContent = [headers, ...rows].map((row) => row.join(",")).join("\n");
+  return csvContent;
+}
+
+function downloadCSV(csv: string, filename: string) {
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  const url = URL.createObjectURL(blob);
+  link.href = url;
+  link.setAttribute("download", filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
 
 function applyClientFilters(rows: Enquiry[], f: EnquiryFilters) {
   let out = [...rows];
@@ -66,6 +105,7 @@ export default function EnquiriesPage() {
 
   const [detailsOpen, setDetailsOpen] = React.useState(false);
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
+  const [exporting, setExporting] = React.useState(false);
 
   React.useEffect(
     () => setPage(1),
@@ -91,79 +131,118 @@ export default function EnquiriesPage() {
     setDetailsOpen(true);
   }
 
+  async function exportEnquiries() {
+    if (!query.data || query.data.length === 0) {
+      toast.error("No enquiries to export.");
+      return;
+    }
+    setExporting(true);
+    try {
+      const allEnquiries = query.data as Enquiry[];
+      const csv = toCSV(allEnquiries);
+      const filename = `enquiries_${new Date().toISOString().slice(0, 19).replace(/:/g, "-")}.csv`;
+      downloadCSV(csv, filename);
+      toast.success("Exported successfully.");
+    } catch (error) {
+      toast.error("Failed to export enquiries.");
+    } finally {
+      setExporting(false);
+    }
+  }
+
   return (
-    <TableShell
-      title="Enquiries"
-      description="Messages submitted through the website contact form."
-      right={
-        <div className="text-sm text-muted-foreground">
-          {query.isLoading ? "Loading…" : `${rows.length} enquiry(s)`}
-        </div>
-      }
-    >
-      <div className="space-y-4 mt-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <Filters
-            value={filters}
-            onChange={setFilters}
-            onReset={() => setFilters({ search: "", status: "", sortBy: "" })}
-          />
-
-          <EnquiryPagination
-            currentPage={page}
-            totalPages={totalPages}
-            onPrevious={() => setPage((p) => Math.max(1, p - 1))}
-            onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
-            isLoading={query.isFetching}
-          />
-        </div>
-
-        <div className="space-y-3">
-          <div className="grid gap-3 md:hidden">
-            {query.isLoading ? (
-              Array.from({ length: 6 }).map((_, i) => (
-                <MobileEnquirySkeletonCard key={`enquiry-skeleton-${i}`} />
-              ))
-            ) : query.isError ? (
-              <div className="rounded-xl border bg-background p-6 text-center text-sm text-red-500">
-                Failed to load enquiries.
-              </div>
-            ) : paged.length ? (
-              paged.map((e) => (
-                <button
-                  key={e._id}
-                  type="button"
-                  onClick={() => openDetails(e)}
-                  className="text-left w-full"
-                >
-                  <MobileEnquiryCard row={e} />
-                </button>
-              ))
-            ) : (
-              <div className="rounded-xl border bg-background p-6 text-center text-sm text-muted-foreground">
-                No enquiries found.
-              </div>
-            )}
+    <PermissionGate permission={PERMISSIONS.VIEW_ENQUIRY}>
+      <TableShell
+        title="Enquiries"
+        description="Messages submitted through the website contact form."
+        right={
+          <div className="text-sm text-muted-foreground">
+            {query.isLoading ? "Loading…" : `${rows.length} enquiry(s)`}
           </div>
-
-          <div className="hidden md:block">
-            <TableFrame>
-              <EnquiryTable
-                rows={paged}
-                isLoading={query.isLoading}
-                isError={query.isError}
-                onRowClick={openDetails}
+        }
+      >
+        <div className="space-y-4 mt-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            {/* Left group: Filters + Export button */}
+            <div className="flex flex-wrap items-center gap-2">
+              <Filters
+                value={filters}
+                onChange={setFilters}
+                onReset={() =>
+                  setFilters({ search: "", status: "", sortBy: "" })
+                }
               />
-            </TableFrame>
-          </div>
-        </div>
+              <PermissionGate permission={PERMISSIONS.EXPORT_ENQUIRY}>
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={exportEnquiries}
+                  disabled={exporting || query.isLoading}
+                  className="shrink-0"
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  {exporting ? "Exporting…" : "Export"}
+                </Button>
+              </PermissionGate>
+            </div>
 
-        <EnquiryDetailsSheet
-          open={detailsOpen}
-          onOpenChange={setDetailsOpen}
-          id={selectedId}
-        />
-      </div>
-    </TableShell>
+            {/* Right group: Pagination */}
+            <EnquiryPagination
+              currentPage={page}
+              totalPages={totalPages}
+              onPrevious={() => setPage((p) => Math.max(1, p - 1))}
+              onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
+              isLoading={query.isFetching}
+            />
+          </div>
+
+          <div className="space-y-3">
+            <div className="grid gap-3 md:hidden">
+              {query.isLoading ? (
+                Array.from({ length: 6 }).map((_, i) => (
+                  <MobileEnquirySkeletonCard key={`enquiry-skeleton-${i}`} />
+                ))
+              ) : query.isError ? (
+                <div className="rounded-xl border bg-background p-6 text-center text-sm text-red-500">
+                  Failed to load enquiries.
+                </div>
+              ) : paged.length ? (
+                paged.map((e) => (
+                  <button
+                    key={e._id}
+                    type="button"
+                    onClick={() => openDetails(e)}
+                    className="text-left w-full"
+                  >
+                    <MobileEnquiryCard row={e} />
+                  </button>
+                ))
+              ) : (
+                <div className="rounded-xl border bg-background p-6 text-center text-sm text-muted-foreground">
+                  No enquiries found.
+                </div>
+              )}
+            </div>
+
+            <div className="hidden md:block">
+              <TableFrame>
+                <EnquiryTable
+                  rows={paged}
+                  isLoading={query.isLoading}
+                  isError={query.isError}
+                  onRowClick={openDetails}
+                />
+              </TableFrame>
+            </div>
+          </div>
+
+          <EnquiryDetailsSheet
+            open={detailsOpen}
+            onOpenChange={setDetailsOpen}
+            id={selectedId}
+          />
+        </div>
+      </TableShell>
+    </PermissionGate>
   );
 }

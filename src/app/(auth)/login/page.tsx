@@ -8,7 +8,7 @@ import { useMutation } from "@tanstack/react-query";
 import { Loader2, Eye, EyeOff, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
-import { z } from "zod"; 
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { AxiosError } from "axios";
 
@@ -25,7 +25,6 @@ import {
 } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
 
-// Validation Schema
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
@@ -48,7 +47,6 @@ export default function LoginPage() {
     }
   });
 
-  // Load remembered email
   React.useEffect(() => {
     const savedEmail = localStorage.getItem("rememberedEmail");
     if (savedEmail) {
@@ -63,13 +61,16 @@ export default function LoginPage() {
       const values = form.getValues();
       const expires = values.rememberMe ? 30 : 7;
 
-      // 1. Set Cookie for Middleware
-      Cookies.set("isLoggedIn", "true", { expires, sameSite: "lax" });
+      // 1. Set Secure Cookie for Middleware
+      Cookies.set("isLoggedIn", "true", {
+        expires,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production" // Only sends over HTTPS
+      });
 
-      // 2. Store Token for API Interceptor
+      // 2. Store Token
       localStorage.setItem("token", token);
 
-      // 3. Handle Email Persistence
       if (values.rememberMe) {
         localStorage.setItem("rememberedEmail", values.email);
       } else {
@@ -79,15 +80,19 @@ export default function LoginPage() {
       toast.success("Welcome back!");
       router.push("/admin/dashboard");
     },
-    onError: (err: AxiosError) => {
+    onError: (err: AxiosError<{ message?: string }>) => {
       const status = err?.response?.status;
+      const backendMessage = err?.response?.data?.message;
+
       if (status === 401) {
         toast.error("Invalid credentials", {
           description: "The email or password you entered is incorrect."
         });
+      } else if (status === 400 && backendMessage) {
+        toast.error("Login Failed", { description: backendMessage });
       } else {
         toast.error("Connection Error", {
-          description: "Could not reach the authentication server."
+          description: "Could not reach the server. Please try again later."
         });
       }
     }
@@ -153,7 +158,7 @@ export default function LoginPage() {
                         className="text-[11px] text-slate-500 hover:underline"
                         onClick={() =>
                           toast.info(
-                            "Contact your system administrator to reset password."
+                            "Contact your system administrator to reset."
                           )
                         }
                       >
@@ -205,7 +210,8 @@ export default function LoginPage() {
 
               <Button
                 type="submit"
-                disabled={mutation.isPending}
+                // UPDATE: Disabled during pending AND success to prevent double redirects
+                disabled={mutation.isPending || mutation.isSuccess}
                 className="w-full h-11 bg-slate-900 hover:bg-slate-800 text-white font-semibold transition-all active:scale-[0.98]"
               >
                 {mutation.isPending ? (

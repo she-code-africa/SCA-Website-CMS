@@ -1,4 +1,3 @@
-// src/features/chapters/components/chapter-sheet.tsx
 "use client";
 
 import * as React from "react";
@@ -12,6 +11,8 @@ import {
   getChapterCategories
 } from "@/features/chapters/api";
 import type { Chapter } from "@/features/chapters/types";
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
 
 import {
   Sheet,
@@ -53,7 +54,7 @@ type Props = {
   onOpenChange: (v: boolean) => void;
   mode: "create" | "view";
   chapterId?: string;
-  categoryId?: string; // category context (if your routes pass it)
+  categoryId?: string;
 };
 
 type ChapterFormState = {
@@ -74,8 +75,6 @@ export function ChapterSheet({
 }: Props) {
   const qc = useQueryClient();
   const [editing, setEditing] = React.useState(mode === "create");
-
-  // Image handling mirrors TeamMemberSheet
   const [imageFile, setImageFile] = React.useState<File | null>(null);
   const [imagePreview, setImagePreview] = React.useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -105,7 +104,6 @@ export function ChapterSheet({
   );
 
   const [form, setForm] = React.useState<ChapterFormState>(initialForm);
-
   const [socialLinks, setSocialLinks] = React.useState<Record<string, string>>(
     {}
   );
@@ -142,8 +140,6 @@ export function ChapterSheet({
 
       setSocialLinks(ch.socialMediaLinks || {});
       setImageFile(null);
-
-      // existing image preview
       setImagePreview(ch.image ? String(ch.image) : null);
     }
   }, [open, mode, chapterQuery.data, initialForm]);
@@ -151,7 +147,6 @@ export function ChapterSheet({
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     setImageFile(file);
     const reader = new FileReader();
     reader.onloadend = () => setImagePreview(reader.result as string);
@@ -202,7 +197,6 @@ export function ChapterSheet({
     const key = newLinkKey.trim();
     const url = newLinkUrl.trim();
     if (!key || !url) return;
-
     setSocialLinks((prev) => ({ ...prev, [key]: url }));
     setNewLinkKey("");
     setNewLinkUrl("");
@@ -233,7 +227,6 @@ export function ChapterSheet({
     formData.append("description", form.description);
     formData.append("socialMediaLinks", JSON.stringify(socialLinks));
 
-    // only attach file if user picked a new one
     if (imageFile) formData.append("image", imageFile);
 
     if (mode === "create") {
@@ -271,63 +264,62 @@ export function ChapterSheet({
 
         <ScrollArea className="flex-1 px-6">
           <div className="py-6 space-y-6">
-            {/* Top actions row (matches Team sheet) */}
+            {/* Top actions row */}
             {mode === "view" && (
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <Button
-                  variant="outline"
-                  className="w-full sm:w-auto"
-                  onClick={() => setEditing((v) => !v)}
-                >
-                  {editing ? "View" : "Edit"}
-                </Button>
+                <PermissionGate permission={PERMISSIONS.UPDATE_CHAPTER}>
+                  <Button
+                    variant="outline"
+                    className="w-full sm:w-auto"
+                    onClick={() => setEditing((v) => !v)}
+                  >
+                    {editing ? "View" : "Edit"}
+                  </Button>
+                </PermissionGate>
 
-                {/* Delete with confirmation (only when NOT editing) */}
                 {!editing && (
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="destructive"
-                        className="w-full sm:w-auto"
-                      >
-                        Delete
-                      </Button>
-                    </AlertDialogTrigger>
-
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete chapter?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => {
-                            if (!chapterId) return;
-                            deleteMut.mutate({ id: chapterId, categoryId });
-                          }}
-                          className={cn(
-                            "bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          )}
+                  <PermissionGate permission={PERMISSIONS.DELETE_CHAPTER}>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="destructive"
+                          className="w-full sm:w-auto"
                         >
-                          {deleteMut.isPending ? "Deleting…" : "Delete"}
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                          Delete
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete chapter?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => {
+                              if (!chapterId) return;
+                              deleteMut.mutate({ id: chapterId, categoryId });
+                            }}
+                            className={cn(
+                              "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            )}
+                          >
+                            {deleteMut.isPending ? "Deleting…" : "Delete"}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </PermissionGate>
                 )}
               </div>
             )}
 
-            {/* Professional Image Upload Section (matches Team sheet) */}
+            {/* Image Upload Section */}
             <div className="grid gap-3">
               <label className="text-sm font-medium">Chapter Image</label>
-
               <div className="flex flex-col sm:flex-row gap-4 items-center">
-                {/* Image Preview */}
                 <div className="relative group">
                   <div
                     className={cn(
@@ -349,8 +341,6 @@ export function ChapterSheet({
                       </div>
                     )}
                   </div>
-
-                  {/* Remove button (only when editing and image exists) */}
                   {canEdit && imagePreview && (
                     <button
                       type="button"
@@ -361,15 +351,12 @@ export function ChapterSheet({
                     </button>
                   )}
                 </div>
-
-                {/* Upload Controls */}
                 <div className="flex-1 space-y-3">
                   <div className="space-y-2">
                     <p className="text-xs text-muted-foreground">
                       Recommended: Square image, at least 400x400px. Max 5MB.
                     </p>
                   </div>
-
                   {canEdit && (
                     <Button
                       type="button"
@@ -382,7 +369,6 @@ export function ChapterSheet({
                       Choose Image
                     </Button>
                   )}
-
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -395,7 +381,7 @@ export function ChapterSheet({
               </div>
             </div>
 
-            {/* Form Fields (same grid + label style as Team sheet) */}
+            {/* Form Fields */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="grid gap-2 md:col-span-2">
                 <label className="text-sm font-medium">Name *</label>
@@ -406,7 +392,6 @@ export function ChapterSheet({
                   placeholder="Chapter Name"
                 />
               </div>
-
               <div className="grid gap-2">
                 <label className="text-sm font-medium">City *</label>
                 <Input
@@ -416,7 +401,6 @@ export function ChapterSheet({
                   placeholder="City"
                 />
               </div>
-
               <div className="grid gap-2">
                 <label className="text-sm font-medium">Country *</label>
                 <Input
@@ -428,7 +412,6 @@ export function ChapterSheet({
                   placeholder="Country"
                 />
               </div>
-
               <div className="grid gap-2 md:col-span-2">
                 <label className="text-sm font-medium">Category *</label>
                 <Select
@@ -448,7 +431,6 @@ export function ChapterSheet({
                   </SelectContent>
                 </Select>
               </div>
-
               <div className="grid gap-2 md:col-span-2">
                 <label className="text-sm font-medium">Link</label>
                 <Input
@@ -459,7 +441,6 @@ export function ChapterSheet({
                   placeholder="https://chapter-website.com"
                 />
               </div>
-
               <div className="grid gap-2 md:col-span-2">
                 <label className="text-sm font-medium">Description</label>
                 <Textarea
@@ -474,10 +455,9 @@ export function ChapterSheet({
               </div>
             </div>
 
-            {/* Social Links section - aligned styling with the rest */}
+            {/* Social Links */}
             <div className="grid gap-3 pt-2">
               <label className="text-sm font-medium">Social Media Links</label>
-
               {Object.entries(socialLinks).length > 0 && (
                 <div className="space-y-2">
                   {Object.entries(socialLinks).map(([key, url]) => (
@@ -491,7 +471,6 @@ export function ChapterSheet({
                           {url}
                         </span>
                       </div>
-
                       {canEdit && (
                         <Button
                           type="button"
@@ -506,7 +485,6 @@ export function ChapterSheet({
                   ))}
                 </div>
               )}
-
               {canEdit && (
                 <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-2">
                   <Input
@@ -523,7 +501,6 @@ export function ChapterSheet({
                     type="button"
                     variant="outline"
                     onClick={addSocialLink}
-                    className="w-full sm:w-auto"
                   >
                     Add
                   </Button>
@@ -533,25 +510,39 @@ export function ChapterSheet({
           </div>
         </ScrollArea>
 
-        {/* Bottom action bar - Fixed (matches Team sheet) */}
-        {(mode === "create" || editing) && (
-          <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={saving}
-            >
-              Cancel
-            </Button>
-            <Button variant="default" onClick={submit} disabled={saving}>
-              {saving
-                ? "Saving…"
-                : mode === "create"
-                  ? "Add Chapter"
-                  : "Save Changes"}
-            </Button>
-          </div>
-        )}
+        {/* Bottom action bar */}
+        {(mode === "create" && (
+          <PermissionGate permission={PERMISSIONS.CREATE_CHAPTER}>
+            <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
+              <Button
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={saving}
+              >
+                Cancel
+              </Button>
+              <Button variant="default" onClick={submit} disabled={saving}>
+                {saving ? "Saving…" : "Add Chapter"}
+              </Button>
+            </div>
+          </PermissionGate>
+        )) ||
+          (mode === "view" && editing && (
+            <PermissionGate permission={PERMISSIONS.UPDATE_CHAPTER}>
+              <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
+                <Button
+                  variant="outline"
+                  onClick={() => onOpenChange(false)}
+                  disabled={saving}
+                >
+                  Cancel
+                </Button>
+                <Button variant="default" onClick={submit} disabled={saving}>
+                  {saving ? "Saving…" : "Save Changes"}
+                </Button>
+              </div>
+            </PermissionGate>
+          ))}
       </SheetContent>
     </Sheet>
   );

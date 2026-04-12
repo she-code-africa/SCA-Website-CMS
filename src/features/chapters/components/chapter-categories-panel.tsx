@@ -9,6 +9,8 @@ import {
   editChapterCategory,
   getChapterCategories
 } from "@/features/chapters/api";
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -72,67 +74,71 @@ export function ChapterCategoriesPanel() {
   });
 
   return (
-    <Card className="rounded-xl">
-      <CardHeader className="space-y-1">
-        <div className="flex items-center justify-between gap-3">
-          <CardTitle className="text-base">Chapter Categories</CardTitle>
-          <Badge variant="secondary" className="shrink-0">
-            {isLoading ? "…" : data.length} total
-          </Badge>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Manage chapter categories.
-        </p>
-      </CardHeader>
+    <PermissionGate permission={PERMISSIONS.VIEW_CHAPTERCATEGORY}>
+      <Card className="rounded-xl">
+        <CardHeader className="space-y-1">
+          <div className="flex items-center justify-between gap-3">
+            <CardTitle className="text-base">Chapter Categories</CardTitle>
+            <Badge variant="secondary" className="shrink-0">
+              {isLoading ? "…" : data.length} total
+            </Badge>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Manage chapter categories.
+          </p>
+        </CardHeader>
 
-      <CardContent className="space-y-4">
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <Input
-            placeholder="New category"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full"
-          />
-          <Button
-            className="w-full sm:w-auto"
-            onClick={() => {
-              const v = name.trim();
-              if (!v) return;
-              addMut.mutate({ name: v });
-            }}
-            disabled={addMut.isPending}
-          >
-            {addMut.isPending ? "Adding…" : "Add"}
-          </Button>
-        </div>
-
-        <div className="rounded-md border">
-          {isLoading ? (
-            <div className="p-4 text-sm text-muted-foreground">Loading…</div>
-          ) : data.length === 0 ? (
-            <div className="p-4 text-sm text-muted-foreground">
-              No categories yet.
+        <CardContent className="space-y-4">
+          <PermissionGate permission={PERMISSIONS.CREATE_CHAPTERCATEGORY}>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Input
+                placeholder="New category"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full"
+              />
+              <Button
+                className="w-full sm:w-auto"
+                onClick={() => {
+                  const v = name.trim();
+                  if (!v) return;
+                  addMut.mutate({ name: v });
+                }}
+                disabled={addMut.isPending}
+              >
+                {addMut.isPending ? "Adding…" : "Add"}
+              </Button>
             </div>
-          ) : (
-            <ul className="divide-y">
-              {data.map((c: any) => (
-                <CategoryRow
-                  key={c._id}
-                  id={c._id}
-                  initialName={c.name}
-                  saving={editMut.isPending}
-                  deleting={delMut.isPending}
-                  onSave={(next) =>
-                    editMut.mutate({ id: c._id, data: { name: next } })
-                  }
-                  onDelete={() => delMut.mutate(c._id)}
-                />
-              ))}
-            </ul>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+          </PermissionGate>
+
+          <div className="rounded-md border">
+            {isLoading ? (
+              <div className="p-4 text-sm text-muted-foreground">Loading…</div>
+            ) : data.length === 0 ? (
+              <div className="p-4 text-sm text-muted-foreground">
+                No categories yet.
+              </div>
+            ) : (
+              <ul className="divide-y">
+                {data.map((c: any) => (
+                  <CategoryRow
+                    key={c._id}
+                    id={c._id}
+                    initialName={c.name}
+                    saving={editMut.isPending}
+                    deleting={delMut.isPending}
+                    onSave={(next) =>
+                      editMut.mutate({ id: c._id, data: { name: next } })
+                    }
+                    onDelete={() => delMut.mutate(c._id)}
+                  />
+                ))}
+              </ul>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </PermissionGate>
   );
 }
 
@@ -207,34 +213,38 @@ function CategoryRow({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => setEditing(true)}>
-              Rename
-            </DropdownMenuItem>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <DropdownMenuItem
-                  className="text-red-600"
-                  onSelect={(e) => e.preventDefault()}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete
-                </DropdownMenuItem>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete category?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This action cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={onDelete} disabled={deleting}>
-                    {deleting ? "Deleting…" : "Delete"}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            <PermissionGate permission={PERMISSIONS.UPDATE_CHAPTERCATEGORY}>
+              <DropdownMenuItem onClick={() => setEditing(true)}>
+                Rename
+              </DropdownMenuItem>
+            </PermissionGate>
+            <PermissionGate permission={PERMISSIONS.DELETE_CHAPTERCATEGORY}>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <DropdownMenuItem
+                    className="text-red-600"
+                    onSelect={(e) => e.preventDefault()}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete
+                  </DropdownMenuItem>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete category?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={onDelete} disabled={deleting}>
+                      {deleting ? "Deleting…" : "Delete"}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </PermissionGate>
           </DropdownMenuContent>
         </DropdownMenu>
       )}

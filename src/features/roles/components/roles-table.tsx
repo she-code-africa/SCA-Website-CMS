@@ -1,7 +1,6 @@
 "use client";
 
-import * as React from "react";
-import { MoreHorizontal, ShieldCheck, Lock } from "lucide-react";
+import { MoreHorizontal, Lock, UserCog } from "lucide-react";
 import type { RoleDetail } from "@/features/roles/types";
 import { cn } from "@/lib/utils/utils";
 import { Badge } from "@/components/ui/badge";
@@ -33,6 +32,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
 
 const headers = ["Role", "Type", "Permissions", "Users", ""];
 
@@ -101,16 +102,25 @@ export function RolesTable({
                   onClick={() => onRowClick(r)}
                   className={cn("cursor-pointer hover:bg-muted/50")}
                 >
-                  {/* Role name + description */}
                   <TableCell className="min-w-50">
                     <div className="flex items-center gap-2">
-                      {r.isDefault ? (
-                        <Lock className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                      {r.is_system_role ? (
+                        <Lock className="h-4 w-4 shrink-0 text-muted-foreground" />
                       ) : (
-                        <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-primary" />
+                        <UserCog className="h-4 w-4 shrink-0 text-primary" />
                       )}
                       <div>
-                        <p className="font-medium leading-none">{r.name}</p>
+                        <div className="font-medium leading-none flex items-center gap-2">
+                          {r.name}
+                          {r.is_system_role && (
+                            <Badge
+                              variant="secondary"
+                              className="text-[10px] px-1.5 py-0 h-4 bg-muted text-muted-foreground border-transparent"
+                            >
+                              System
+                            </Badge>
+                          )}
+                        </div>
                         {r.description && (
                           <p className="mt-0.5 text-xs text-muted-foreground max-w-65 truncate">
                             {r.description}
@@ -120,24 +130,20 @@ export function RolesTable({
                     </div>
                   </TableCell>
 
-                  {/* Type badge */}
                   <TableCell className="whitespace-nowrap">
-                    <Badge variant={r.isDefault ? "secondary" : "outline"}>
-                      {r.isDefault ? "System" : "Custom"}
+                    <Badge variant={r.is_system_role ? "secondary" : "outline"}>
+                      {r.is_system_role ? "System" : "Custom"}
                     </Badge>
                   </TableCell>
 
-                  {/* Permission count */}
                   <TableCell className="whitespace-nowrap text-muted-foreground">
                     {r.permissions.length} permissions
                   </TableCell>
 
-                  {/* User count */}
                   <TableCell className="whitespace-nowrap text-muted-foreground">
                     {r.usersCount} user{r.usersCount !== 1 ? "s" : ""}
                   </TableCell>
 
-                  {/* Actions */}
                   <TableCell
                     className="whitespace-nowrap text-right"
                     onClick={(e) => e.stopPropagation()}
@@ -156,27 +162,35 @@ export function RolesTable({
                         </DropdownMenuTrigger>
 
                         <DropdownMenuContent align="end" className="w-44">
-                          <DropdownMenuItem onClick={() => onRowClick(r)}>
-                            {r.isDefault ? "View permissions" : "Edit role"}
-                          </DropdownMenuItem>
+                          <PermissionGate permission={PERMISSIONS.UPDATE_ROLE}>
+                            <DropdownMenuItem onClick={() => onRowClick(r)}>
+                              {r.is_system_role
+                                ? "View permissions"
+                                : "Edit role"}
+                            </DropdownMenuItem>
+                          </PermissionGate>
 
-                          {!r.isDefault && (
+                          {!r.is_system_role && (
                             <>
                               <DropdownMenuSeparator />
-                              <AlertDialogTrigger asChild>
-                                <DropdownMenuItem
-                                  className="text-red-500 focus:text-red-500"
-                                  onSelect={(e) => e.preventDefault()}
-                                >
-                                  Delete role
-                                </DropdownMenuItem>
-                              </AlertDialogTrigger>
+                              <PermissionGate
+                                permission={PERMISSIONS.DELETE_ROLE}
+                              >
+                                <AlertDialogTrigger asChild>
+                                  <DropdownMenuItem
+                                    className="text-red-500 focus:text-red-500"
+                                    onSelect={(e) => e.preventDefault()}
+                                  >
+                                    Delete role
+                                  </DropdownMenuItem>
+                                </AlertDialogTrigger>
+                              </PermissionGate>
                             </>
                           )}
                         </DropdownMenuContent>
                       </DropdownMenu>
 
-                      {!r.isDefault && (
+                      {!r.is_system_role && (
                         <AlertDialogContent>
                           <AlertDialogHeader>
                             <AlertDialogTitle>Delete role?</AlertDialogTitle>

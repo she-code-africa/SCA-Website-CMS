@@ -14,6 +14,8 @@ import {
   getJobTypes
 } from "@/features/jobs/api";
 import type { Job, JobUpsertInput } from "@/features/jobs/types";
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
 
 import {
   Sheet,
@@ -116,7 +118,6 @@ export function JobSheet({ open, onOpenChange, mode, jobId }: Props) {
       const j = jobQuery.data as Job;
       setEditing(false);
 
-      // Extract IDs from populated objects
       const jobTypeId =
         typeof j.jobType === "string" ? j.jobType : j.jobType?._id || "";
       const jobCategoryId =
@@ -219,7 +220,6 @@ export function JobSheet({ open, onOpenChange, mode, jobId }: Props) {
       return;
     }
 
-    // Validate URLs
     try {
       new URL(form.applicationLink);
     } catch {
@@ -227,10 +227,8 @@ export function JobSheet({ open, onOpenChange, mode, jobId }: Props) {
       return;
     }
 
-    // Clean payload
     const payload: JobUpsertInput = { ...form };
 
-    // Clean empty company info
     if (form.guestPost && form.guestPostMetaData) {
       const isEmpty =
         !form.guestPostMetaData.companyName?.trim() &&
@@ -281,62 +279,68 @@ export function JobSheet({ open, onOpenChange, mode, jobId }: Props) {
             {/* Top actions row */}
             {mode === "view" && (
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <Button
-                  variant="outline"
-                  className="w-full sm:w-auto"
-                  onClick={() => setEditing((v) => !v)}
-                >
-                  {editing ? "View" : "Edit"}
-                </Button>
-
-                <div className="flex gap-2 w-full sm:w-auto">
+                <PermissionGate permission={PERMISSIONS.UPDATE_JOB}>
                   <Button
                     variant="outline"
-                    className="flex-1 sm:flex-none"
-                    onClick={() => {
-                      if (!jobId) return;
-                      if (currentState === "published")
-                        archiveMut.mutate(jobId);
-                      else publishMut.mutate(jobId);
-                    }}
-                    disabled={publishMut.isPending || archiveMut.isPending}
+                    className="w-full sm:w-auto"
+                    onClick={() => setEditing((v) => !v)}
                   >
-                    {currentState === "published" ? "Archive" : "Publish"}
+                    {editing ? "View" : "Edit"}
                   </Button>
+                </PermissionGate>
+
+                <div className="flex gap-2 w-full sm:w-auto">
+                  <PermissionGate permission={PERMISSIONS.UPDATE_JOB}>
+                    <Button
+                      variant="outline"
+                      className="flex-1 sm:flex-none"
+                      onClick={() => {
+                        if (!jobId) return;
+                        if (currentState === "published")
+                          archiveMut.mutate(jobId);
+                        else publishMut.mutate(jobId);
+                      }}
+                      disabled={publishMut.isPending || archiveMut.isPending}
+                    >
+                      {currentState === "published" ? "Archive" : "Publish"}
+                    </Button>
+                  </PermissionGate>
 
                   {!editing && (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="destructive"
-                          className="flex-1 sm:flex-none"
-                        >
-                          Delete
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete job?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => {
-                              if (!jobId) return;
-                              deleteMut.mutate(jobId);
-                            }}
-                            className={cn(
-                              "bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            )}
+                    <PermissionGate permission={PERMISSIONS.DELETE_JOB}>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="destructive"
+                            className="flex-1 sm:flex-none"
                           >
                             Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete job?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => {
+                                if (!jobId) return;
+                                deleteMut.mutate(jobId);
+                              }}
+                              className={cn(
+                                "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              )}
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </PermissionGate>
                   )}
                 </div>
               </div>
@@ -623,28 +627,46 @@ export function JobSheet({ open, onOpenChange, mode, jobId }: Props) {
         </ScrollArea>
 
         {/* Bottom action bar */}
-        {(mode === "create" || editing) && (
-          <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={saving}
-            >
-              Cancel
-            </Button>
-            <Button
-              className="bg-pink-600 hover:bg-pink-700"
-              onClick={submit}
-              disabled={saving}
-            >
-              {saving
-                ? "Saving…"
-                : mode === "create"
-                  ? "Add Job"
-                  : "Save Changes"}
-            </Button>
-          </div>
-        )}
+        {(mode === "create" && (
+          <PermissionGate permission={PERMISSIONS.CREATE_JOB}>
+            <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
+              <Button
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={saving}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="bg-pink-600 hover:bg-pink-700"
+                onClick={submit}
+                disabled={saving}
+              >
+                {saving ? "Saving…" : "Add Job"}
+              </Button>
+            </div>
+          </PermissionGate>
+        )) ||
+          (mode === "view" && editing && (
+            <PermissionGate permission={PERMISSIONS.UPDATE_JOB}>
+              <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
+                <Button
+                  variant="outline"
+                  onClick={() => onOpenChange(false)}
+                  disabled={saving}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="bg-pink-600 hover:bg-pink-700"
+                  onClick={submit}
+                  disabled={saving}
+                >
+                  {saving ? "Saving…" : "Save Changes"}
+                </Button>
+              </div>
+            </PermissionGate>
+          ))}
       </SheetContent>
     </Sheet>
   );

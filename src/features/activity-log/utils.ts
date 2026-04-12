@@ -1,71 +1,67 @@
-// src/features/activity-log/utils.ts
+ // src/features/activity-log/utils.ts
 import { FilterFn } from "@tanstack/react-table";
-import { format } from "date-fns";
-import type { ActivityLogRow } from "@/features/activity-log/types";
+// import { format } from "date-fns";
+import type { AuditLogEntry } from "@/features/activity-log/types";
 
-export const globalFilterFn: FilterFn<ActivityLogRow> = (
-  row,
-  _columnId,
-  filterValue
-) => {
-  const q = String(filterValue ?? "")
-    .toLowerCase()
-    .trim();
-  if (!q) return true;
 
-  const u = row.original.user;
+// ─── Human-readable labels ────────────────────────────────────────────────────
 
-  const haystack = [
-    u?.firstName,
-    u?.lastName,
-    u?.role,
-    row.original.action,
-    row.original.page
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
-
-  return haystack.includes(q);
+const ACTION_LABELS: Record<string, string> = {
+  CREATE: "Created",
+  UPDATE: "Updated",
+  DELETE: "Deleted",
+  LOGIN:  "Logged in",
+  LOGOUT: "Logged out",
 };
 
-export function toCSV(rows: ActivityLogRow[]) {
-  const headers = [
-    "User",
-    "Role",
-    "Action",
-    "Page",
-    "Old",
-    "New",
-    "Created",
-    "Updated"
-  ];
+const RESOURCE_LABELS: Record<string, string> = {
+  IDENTITY: "Identity",
+  USER:     "User",
+  ROLE:     "Role",
+  SESSION:  "Session",
+  // extend as your API introduces new resource types
+};
+// ─── TanStack global filter ───────────────────────────────────────────────────
 
-  const escape = (v: string) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+export const globalFilterFn: FilterFn<AuditLogEntry> = (row, _colId, value) => {
+  const search = String(value).toLowerCase();
+  const { user, action, resourceType } = row.original;
+  return (
+    (user?.email ?? "system").toLowerCase().includes(search) ||
+    action.toLowerCase().includes(search) ||
+    resourceType.toLowerCase().includes(search)
+  );
+};
 
-  const body = rows.map((r) => {
-    const user = `${r.user?.firstName ?? ""} ${r.user?.lastName ?? ""}`.trim();
-    const role = r.user?.role
-      ? r.user.role.charAt(0).toUpperCase() + r.user.role.slice(1)
-      : "";
-    const action = r.action
-      ? r.action.charAt(0).toUpperCase() + r.action.slice(1)
-      : "";
+// export function toCSV(rows: AuditLogEntry[]): string {
+//   const headers = [
+//     "User Email",
+//     "Module",
+//     "Action",
+//     "Affected Resource",
+//     "Method",
+//     "Path",
+//     "Timestamp",
+//   ];
 
-    return [
-      escape(user),
-      escape(role),
-      escape(action),
-      escape(r.page ?? ""),
-      escape(r.oldDoc?.name ?? "N/A"),
-      escape(r.newDoc?.name ?? ""),
-      escape(r.createdAt ? format(new Date(r.createdAt), "dd MMM, yyyy") : ""),
-      escape(r.updatedAt ? format(new Date(r.updatedAt), "dd MMM, yyyy") : "")
-    ].join(",");
-  });
+//   const escape = (v: string) => `"${String(v ?? "").replace(/"/g, '""')}"`;
 
-  return [headers.join(","), ...body].join("\n");
-}
+//   // const body = rows.map((r) => {
+//   //   return [
+//   //     escape(r.user?.email ?? ""),
+//   //     escape(r.module ?? ""),
+//   //     escape(r.action ?? ""),
+//   //     escape(r.affectedResource ?? ""),
+//   //     escape(r.method ?? ""),
+//   //     escape(r.path ?? ""),
+//   //     escape(
+//   //       r.timestamp ? format(new Date(r.timestamp), "dd MMM, yyyy HH:mm:ss") : ""
+//   //     ),
+//   //   ].join(",");
+//   // });
+
+//   // return [headers.join(","), ...body].join("\n");
+// }
 
 export function downloadCSV(csv: string, filename: string) {
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -79,14 +75,107 @@ export function downloadCSV(csv: string, filename: string) {
   window.URL.revokeObjectURL(url);
 }
 
-export function colClass(id: string) {
-  // Tablet (md) shows compact columns, desktop (lg+) shows all
-  switch (id) {
-    case "oldDoc":
-    case "newDoc":
-    case "updatedAt":
-      return "hidden lg:table-cell";
-    default:
-      return "";
-  }
+// export function colClass(id: string) {
+//   return "";
+// }
+
+// Helper to get user‑friendly action text
+export function getFriendlyAction(entry: AuditLogEntry): string {
+  return (
+    ACTION_LABELS[entry.action?.toUpperCase()] ?? entry.action ?? "Unknown"
+  );
 }
+
+// Convert raw module/affectedResource to a friendly name
+export function getFriendlyResource(entry: AuditLogEntry): string {
+  const label =
+    RESOURCE_LABELS[entry.resourceType] ?? entry.resourceType ?? "Resource";
+  const actionVerb = getFriendlyAction(entry);
+
+  // e.g. "Identity Created", "Identity Deleted"
+  return `${label} ${actionVerb}`;
+}
+
+/** Returns a short description shown in the table "Description" column */
+export function getActivityDescription(entry: AuditLogEntry): string {
+  const actor = entry.user?.email ?? "System";
+  const resource = RESOURCE_LABELS[entry.resourceType] ?? entry.resourceType ?? "record";
+  const verb = getFriendlyAction(entry).toLowerCase();
+
+  if (entry.resourceId) {
+    return `${actor} ${verb} a ${resource.toLowerCase()}`;
+  }
+  return `${actor} ${verb} ${resource.toLowerCase()}`;
+}
+
+
+// // Helper to capitalise a string
+// function capitalise(str: string): string {
+//   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+// }
+
+// // Extract a readable resource name from an API path
+// function extractResourceFromPath(path: string): string {
+//   if (!path) return "Unknown";
+//   const cleanPath = path.split("?")[0].replace(/\/$/, "");
+//   const parts = cleanPath.split("/").filter(Boolean);
+//   const resourcePart = parts[1] || parts[0] || "";
+//   let resource = resourcePart.replace(/[-_]/g, " ");
+//   if (resource.endsWith("ies")) resource = resource.slice(0, -3) + "y";
+//   else if (resource.endsWith("s") && !resource.endsWith("ss"))
+//     resource = resource.slice(0, -1);
+//   return capitalise(resource);
+// }
+
+// Special‑case overrides for when path‑based extraction needs a custom description
+// const specialResourceMappings: {
+//   pattern: RegExp;
+//   getDescription: (log: AuditLogEntry) => string;
+// }[] = [
+//   {
+//     pattern: /\/users\/[^/]+\/activate/,
+//     getDescription: () => "User account activation",
+//   },
+//   {
+//     pattern: /\/users\/[^/]+\/deactivate/,
+//     getDescription: () => "User account deactivation",
+//   },
+//   {
+//     pattern: /\/users\/[^/]+\/role/,
+//     getDescription: () => "User role change",
+//   },
+//   {
+//     pattern: /\/users\/invite/,
+//     getDescription: () => "User invitation sent",
+//   },
+//   {
+//     pattern: /\/auth\/login/,
+//     getDescription: () => "User login",
+//   },
+// ];
+
+
+// export function getResourceDescription(log: AuditLogEntry): string {
+//   // Prefer path if it exists (most accurate)
+//   if (log.path) {
+//     for (const mapping of specialResourceMappings) {
+//       if (mapping.pattern.test(log.path)) {
+//         return mapping.getDescription(log);
+//       }
+//     }
+//     const resource = extractResourceFromPath(log.path);
+//     const action = getFriendlyAction(log).toLowerCase();
+//     return `${resource} ${action}`;
+//   }
+
+//   // No path – use affectedResource or module
+//   const identifier = log.affectedResource || log.module;
+//   if (identifier) {
+//     const friendlyName = getFriendlyResourceName(identifier);
+//     const action = getFriendlyAction(log).toLowerCase();
+//     return `${friendlyName} ${action}`;
+//   }
+
+//   // Ultimate fallback
+//   return "System event";
+// }

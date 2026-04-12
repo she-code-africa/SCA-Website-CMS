@@ -17,12 +17,14 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
 
 type Props = {
   value: TeamMembersFilters;
   onChange: (next: TeamMembersFilters) => void;
   onReset: () => void;
 };
+
 
 export function TeamFilters({ value, onChange, onReset }: Props) {
   const activeCount =
@@ -31,6 +33,8 @@ export function TeamFilters({ value, onChange, onReset }: Props) {
     Number(!!value.state) +
     Number(!!value.team);
 
+
+    
   return (
     <div className="flex w-full flex-col gap-2 lg:w-auto lg:flex-row lg:items-center">
       <Input
@@ -115,8 +119,6 @@ export function TeamFilters({ value, onChange, onReset }: Props) {
                     <SelectItem value="Full Time">Full Time</SelectItem>
                   </SelectContent>
                 </Select>
-
-                {/* Clear team only */}
                 <Button
                   type="button"
                   variant="ghost"
@@ -134,18 +136,17 @@ export function TeamFilters({ value, onChange, onReset }: Props) {
           </PopoverContent>
         </Popover>
 
-<PermissionGate permission="CREATE_TEAM">
-
-        <Button
-          variant="default"
-          className="w-full sm:w-auto"
-          onClick={() =>
-            window.dispatchEvent(new CustomEvent("team:add-member"))
-          }
-        >
-          Add Member
-        </Button>
-</PermissionGate>
+        <PermissionGate permission={PERMISSIONS.CREATE_TEAM}>
+          <Button
+            variant="default"
+            className="w-full sm:w-auto"
+            onClick={() =>
+              window.dispatchEvent(new CustomEvent("team:add-member"))
+            }
+          >
+            Add Member
+          </Button>
+        </PermissionGate>
       </div>
     </div>
   );

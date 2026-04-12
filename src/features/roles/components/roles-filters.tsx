@@ -1,6 +1,5 @@
 "use client";
 
-// ─── RolesFilters ────────────────────────────────────────────────────────────
 import * as React from "react";
 import type { RolesFilters } from "@/features/roles/types";
 import { Input } from "@/components/ui/input";
@@ -17,14 +16,22 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
 
 type FiltersProps = {
   value: RolesFilters;
   onChange: (next: RolesFilters) => void;
   onReset: () => void;
+  onCreate: () => void;
 };
 
-export function RolesFiltersBar({ value, onChange, onReset }: FiltersProps) {
+export function RolesFiltersBar({
+  value,
+  onChange,
+  onReset,
+  onCreate
+}: FiltersProps) {
   const activeCount = Number(!!value.type);
 
   return (
@@ -77,15 +84,16 @@ export function RolesFiltersBar({ value, onChange, onReset }: FiltersProps) {
           </PopoverContent>
         </Popover>
 
-        <Button
-          variant="default"
-          className="w-full sm:w-auto"
-          onClick={() => window.dispatchEvent(new CustomEvent("roles:create"))}
-        >
-          Create Role
-        </Button>
+        <PermissionGate permission={PERMISSIONS.CREATE_ROLE}>
+          <Button
+            variant="default"
+            className="w-full sm:w-auto"
+            onClick={onCreate}
+          >
+            Create Role
+          </Button>
+        </PermissionGate>
       </div>
     </div>
   );
 }
-

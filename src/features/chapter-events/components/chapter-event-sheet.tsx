@@ -1,9 +1,8 @@
-// src/features/chapters/components/chapter-event-sheet.tsx
 "use client";
 
 import * as React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Upload, Archive, FileCheck, X, ImageIcon, Calendar } from "lucide-react";
+import { Upload, Archive, FileCheck, X, Calendar } from "lucide-react";
 import {
   addChapterEvent,
   editChapterEvent,
@@ -13,6 +12,8 @@ import {
   deleteChapterEvent
 } from "@/features/chapters/api";
 import type { ChapterEvent } from "@/features/chapters/types";
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
 
 import {
   Sheet,
@@ -65,8 +66,6 @@ export function ChapterEventSheet({
 }: Props) {
   const qc = useQueryClient();
   const [editing, setEditing] = React.useState(mode === "create");
-
-  // Match TeamMemberSheet image handling
   const [imageFile, setImageFile] = React.useState<File | null>(null);
   const [imagePreview, setImagePreview] = React.useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -113,7 +112,6 @@ export function ChapterEventSheet({
           : ""
       });
 
-      // existing image preview from backend (first image)
       setImageFile(null);
       setImagePreview(ev.images?.[0] ? String(ev.images[0]) : null);
     }
@@ -173,7 +171,6 @@ export function ChapterEventSheet({
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     setImageFile(file);
     const reader = new FileReader();
     reader.onloadend = () => setImagePreview(reader.result as string);
@@ -204,7 +201,6 @@ export function ChapterEventSheet({
     formData.append("eventDate", form.eventDate);
     formData.append("chapterId", chapterId);
 
-    // Only append if user picked a new file
     if (imageFile) {
       formData.append("images", imageFile);
     }
@@ -242,89 +238,93 @@ export function ChapterEventSheet({
 
         <ScrollArea className="flex-1 px-6">
           <div className="py-6 space-y-6">
-            {/* Top actions row (matches TeamMemberSheet layout) */}
+            {/* Top actions row */}
             {mode === "view" && (
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <Button
-                  variant="outline"
-                  className="w-full sm:w-auto"
-                  onClick={() => setEditing((v) => !v)}
-                >
-                  {editing ? "View" : "Edit"}
-                </Button>
-
-                <div className="flex gap-2 w-full sm:w-auto">
+                <PermissionGate permission={PERMISSIONS.UPDATE_EVENT}>
                   <Button
                     variant="outline"
-                    className="flex-1 sm:flex-none"
-                    onClick={() => {
-                      if (!eventId) return;
-                      if (currentState === "published") {
-                        archiveMut.mutate(eventId);
-                      } else {
-                        publishMut.mutate(eventId);
-                      }
-                    }}
-                    disabled={publishMut.isPending || archiveMut.isPending}
+                    className="w-full sm:w-auto"
+                    onClick={() => setEditing((v) => !v)}
                   >
-                    {currentState === "published" ? (
-                      <>
-                        <Archive className="h-4 w-4 mr-2" />
-                        Archive
-                      </>
-                    ) : (
-                      <>
-                        <FileCheck className="h-4 w-4 mr-2" />
-                        Publish
-                      </>
-                    )}
+                    {editing ? "View" : "Edit"}
                   </Button>
+                </PermissionGate>
 
-                  {/* Delete (only when NOT editing) */}
+                <div className="flex gap-2 w-full sm:w-auto">
+                  <PermissionGate permission={PERMISSIONS.UPDATE_EVENT}>
+                    <Button
+                      variant="outline"
+                      className="flex-1 sm:flex-none"
+                      onClick={() => {
+                        if (!eventId) return;
+                        if (currentState === "published") {
+                          archiveMut.mutate(eventId);
+                        } else {
+                          publishMut.mutate(eventId);
+                        }
+                      }}
+                      disabled={publishMut.isPending || archiveMut.isPending}
+                    >
+                      {currentState === "published" ? (
+                        <>
+                          <Archive className="h-4 w-4 mr-2" />
+                          Archive
+                        </>
+                      ) : (
+                        <>
+                          <FileCheck className="h-4 w-4 mr-2" />
+                          Publish
+                        </>
+                      )}
+                    </Button>
+                  </PermissionGate>
+
                   {!editing && (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="destructive"
-                          className="flex-1 sm:flex-none"
-                        >
-                          Delete
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete event?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => {
-                              if (!eventId) return;
-                              deleteMut.mutate(eventId);
-                            }}
-                            className={cn(
-                              "bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            )}
+                    <PermissionGate permission={PERMISSIONS.DELETE_EVENT}>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="destructive"
+                            className="flex-1 sm:flex-none"
                           >
-                            {deleteMut.isPending ? "Deleting…" : "Delete"}
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                            Delete
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete event?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => {
+                                if (!eventId) return;
+                                deleteMut.mutate(eventId);
+                              }}
+                              className={cn(
+                                "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              )}
+                            >
+                              {deleteMut.isPending ? "Deleting…" : "Delete"}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </PermissionGate>
                   )}
                 </div>
               </div>
             )}
 
-            {/* Professional Image Upload Section (matches TeamMemberSheet) */}
+            {/* Image Upload Section */}
             <div className="grid gap-3">
               <label className="text-sm font-medium">Event Image</label>
 
               <div className="flex flex-col sm:flex-row gap-4 items-center">
-                {/* Image preview */}
                 <div className="relative group">
                   <div
                     className={cn(
@@ -347,7 +347,6 @@ export function ChapterEventSheet({
                     )}
                   </div>
 
-                  {/* Remove button */}
                   {canEdit && imagePreview && (
                     <button
                       type="button"
@@ -359,7 +358,6 @@ export function ChapterEventSheet({
                   )}
                 </div>
 
-                {/* Upload controls */}
                 <div className="flex-1 space-y-3">
                   <div className="space-y-2">
                     <p className="text-xs text-muted-foreground">
@@ -392,7 +390,7 @@ export function ChapterEventSheet({
               </div>
             </div>
 
-            {/* Form fields (match TeamMemberSheet spacing/labels) */}
+            {/* Form fields */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="grid gap-2 md:col-span-2">
                 <label className="text-sm font-medium">Title *</label>
@@ -443,25 +441,39 @@ export function ChapterEventSheet({
           </div>
         </ScrollArea>
 
-        {/* Bottom action bar (matches TeamMemberSheet) */}
-        {(mode === "create" || editing) && (
-          <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={saving}
-            >
-              Cancel
-            </Button>
-            <Button variant="default" onClick={submit} disabled={saving}>
-              {saving
-                ? "Saving…"
-                : mode === "create"
-                  ? "Add Event"
-                  : "Save Changes"}
-            </Button>
-          </div>
-        )}
+        {/* Bottom action bar */}
+        {(mode === "create" && (
+          <PermissionGate permission={PERMISSIONS.CREATE_EVENT}>
+            <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
+              <Button
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={saving}
+              >
+                Cancel
+              </Button>
+              <Button variant="default" onClick={submit} disabled={saving}>
+                {saving ? "Saving…" : "Add Event"}
+              </Button>
+            </div>
+          </PermissionGate>
+        )) ||
+          (mode === "view" && editing && (
+            <PermissionGate permission={PERMISSIONS.UPDATE_EVENT}>
+              <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
+                <Button
+                  variant="outline"
+                  onClick={() => onOpenChange(false)}
+                  disabled={saving}
+                >
+                  Cancel
+                </Button>
+                <Button variant="default" onClick={submit} disabled={saving}>
+                  {saving ? "Saving…" : "Save Changes"}
+                </Button>
+              </div>
+            </PermissionGate>
+          ))}
       </SheetContent>
     </Sheet>
   );

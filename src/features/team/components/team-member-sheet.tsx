@@ -1,3 +1,4 @@
+// src/features/team/components/team-member-sheet.tsx
 "use client";
 
 import * as React from "react";
@@ -13,6 +14,8 @@ import {
   deleteTeamMember
 } from "@/features/team/api";
 import type { TeamMember, TeamMemberUpsertInput } from "@/features/team/types";
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
 
 import {
   Sheet,
@@ -45,9 +48,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils/utils";
 
-// ─── RBAC ────────────────────────────────────────────────────────────────────
-import { usePermissions } from "@/hooks/usePermissions";
-
 type Props = {
   open: boolean;
   onOpenChange: (v: boolean) => void;
@@ -67,16 +67,8 @@ export function TeamMemberSheet({
 }: Props) {
   const qc = useQueryClient();
 
-  // ── Permission checks ────────────────────────────────────────────────────
-  const { can } = usePermissions();
-  const canEdit = can("UPDATE_TEAM");
-  const canDelete = can("DELETE_TEAM");
-
-  // ── Local state ──────────────────────────────────────────────────────────
-  // If the user can't edit, always start in view mode regardless of `mode`
-  const [editing, setEditing] = React.useState(
-    mode === "create" ? can("CREATE_TEAM") : false
-  );
+  // Local UI state
+  const [editing, setEditing] = React.useState(mode === "create");
   const [imageFile, setImageFile] = React.useState<File | null>(null);
   const [imagePreview, setImagePreview] = React.useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -150,7 +142,6 @@ export function TeamMemberSheet({
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  // ── Mutations ─────────────────────────────────────────────────────────────
   const createMut = useMutation({
     mutationFn: addTeamMember,
     onSuccess: () => {
@@ -241,11 +232,10 @@ export function TeamMemberSheet({
 
         <ScrollArea className="flex-1 px-6">
           <div className="py-6 space-y-6">
-            {/* ── Top actions row (view mode only) ─────────────────────── */}
+            {/* Top actions row (view mode only) */}
             {mode === "view" && (
               <div className="flex flex-wrap items-center justify-between gap-2">
-                {/* Edit toggle — only shown if user can update */}
-                {canEdit && (
+                <PermissionGate permission={PERMISSIONS.UPDATE_TEAM}>
                   <Button
                     variant="outline"
                     className="w-full sm:w-auto"
@@ -253,11 +243,10 @@ export function TeamMemberSheet({
                   >
                     {editing ? "View" : "Edit"}
                   </Button>
-                )}
+                </PermissionGate>
 
                 <div className="flex gap-2 w-full sm:w-auto">
-                  {/* Publish / Archive — only if user can update */}
-                  {canEdit && (
+                  <PermissionGate permission={PERMISSIONS.UPDATE_TEAM}>
                     <Button
                       variant="outline"
                       className="flex-1 sm:flex-none"
@@ -271,50 +260,52 @@ export function TeamMemberSheet({
                     >
                       {currentState === "published" ? "Archive" : "Publish"}
                     </Button>
-                  )}
+                  </PermissionGate>
 
-                  {/* Delete — only if user can delete and is NOT currently editing */}
-                  {canDelete && !editing && (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="destructive"
-                          className="flex-1 sm:flex-none"
-                        >
-                          Delete
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>
-                            Delete team member?
-                          </AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => {
-                              if (!memberId || !catId) return;
-                              deleteMut.mutate({ catId, id: memberId });
-                            }}
-                            className={cn(
-                              "bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            )}
+                  {/* Delete – only when NOT editing */}
+                  {!editing && (
+                    <PermissionGate permission={PERMISSIONS.DELETE_TEAM}>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="destructive"
+                            className="flex-1 sm:flex-none"
                           >
                             Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>
+                              Delete team member?
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => {
+                                if (!memberId || !catId) return;
+                                deleteMut.mutate({ catId, id: memberId });
+                              }}
+                              className={cn(
+                                "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              )}
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </PermissionGate>
                   )}
                 </div>
               </div>
             )}
 
-            {/* ── Profile photo ─────────────────────────────────────────── */}
+            {/* Profile photo */}
             <div className="grid gap-3">
               <label className="text-sm font-medium">Profile Photo</label>
               <div className="flex flex-col sm:flex-row gap-4 items-center">
@@ -377,7 +368,7 @@ export function TeamMemberSheet({
               </div>
             </div>
 
-            {/* ── Form fields ───────────────────────────────────────────── */}
+            {/* Form fields */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <label className="text-sm font-medium">Name *</label>
@@ -432,39 +423,39 @@ export function TeamMemberSheet({
           </div>
         </ScrollArea>
 
-        {/* ── Bottom save bar ─────────────────────────────────────────────
-            Shown for:
-              create mode  → only if user has CREATE_TEAM
-              view + edit  → only if user has UPDATE_TEAM
-        ──────────────────────────────────────────────────────────────── */}
-        {mode === "create" && can("CREATE_TEAM") && (
-          <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={saving}
-            >
-              Cancel
-            </Button>
-            <Button onClick={submit} disabled={saving}>
-              {saving ? "Saving…" : "Add Member"}
-            </Button>
-          </div>
+        {/* Bottom action bars */}
+        {mode === "create" && (
+          <PermissionGate permission={PERMISSIONS.CREATE_TEAM}>
+            <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
+              <Button
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={saving}
+              >
+                Cancel
+              </Button>
+              <Button onClick={submit} disabled={saving}>
+                {saving ? "Saving…" : "Add Member"}
+              </Button>
+            </div>
+          </PermissionGate>
         )}
 
-        {mode === "view" && editing && canEdit && (
-          <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
-            <Button
-              variant="outline"
-              onClick={() => setEditing(false)}
-              disabled={saving}
-            >
-              Cancel
-            </Button>
-            <Button onClick={submit} disabled={saving}>
-              {saving ? "Saving…" : "Save Changes"}
-            </Button>
-          </div>
+        {mode === "view" && editing && (
+          <PermissionGate permission={PERMISSIONS.UPDATE_TEAM}>
+            <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
+              <Button
+                variant="outline"
+                onClick={() => setEditing(false)}
+                disabled={saving}
+              >
+                Cancel
+              </Button>
+              <Button onClick={submit} disabled={saving}>
+                {saving ? "Saving…" : "Save Changes"}
+              </Button>
+            </div>
+          </PermissionGate>
         )}
       </SheetContent>
     </Sheet>

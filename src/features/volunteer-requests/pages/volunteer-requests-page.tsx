@@ -1,8 +1,10 @@
-// src/app/admin/volunteers/page.tsx
 "use client";
 
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
 
 import { getVolunteerRequests } from "@/features/volunteer-requests/api";
 import type {
@@ -19,10 +21,47 @@ import { VolunteerPagination } from "@/features/volunteer-requests/components/vo
 import { TableShell } from "@/components/templates/table-shell";
 import { TableFrame } from "@/components/templates/table-frame";
 
-// local filter/sort util
+// Helper: convert array to CSV
+function toCSV(data: VolunteerRequest[]): string {
+  const headers = [
+    "Full Name",
+    "Email",
+    "Phone",
+    "Current Role",
+    "Volunteer Role",
+    "Purpose",
+    "Status",
+    "Created At",
+    "Updated At"
+  ];
+  const rows = data.map((v) => [
+    v.fullname ?? "",
+    v.email ?? "",
+    v.phone ?? "",
+    v.currentRole ?? "",
+    v.volunteerRole ?? "",
+    (v.purpose ?? "").replace(/,/g, " ").replace(/\n/g, " "),
+    v.status ?? "",
+    v.createdAt ? new Date(v.createdAt).toLocaleString() : "",
+    v.updatedAt ? new Date(v.updatedAt).toLocaleString() : ""
+  ]);
+  return [headers, ...rows].map((row) => row.join(",")).join("\n");
+}
+
+function downloadCSV(csv: string, filename: string) {
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  const url = URL.createObjectURL(blob);
+  link.href = url;
+  link.setAttribute("download", filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
 function applyClientFilters(rows: VolunteerRequest[], f: VolunteerFilters) {
   let out = [...rows];
-
   const q = f.search?.trim().toLowerCase();
   if (q) {
     out = out.filter((v) => {
@@ -35,24 +74,20 @@ function applyClientFilters(rows: VolunteerRequest[], f: VolunteerFilters) {
       );
     });
   }
-
   if (f.status) out = out.filter((v) => v.status === f.status);
   if (f.volunteerRole)
     out = out.filter((v) => v.volunteerRole === f.volunteerRole);
-
   if (f.sortBy) {
     const key = f.sortBy;
-    out.sort((a: VolunteerRequest, b: VolunteerRequest) => {
+    out.sort((a, b) => {
       const av = a?.[key];
       const bv = b?.[key];
-
       if (key === "createdAt" || key === "updatedAt") {
         return new Date(bv ?? 0).getTime() - new Date(av ?? 0).getTime();
       }
       return String(av ?? "").localeCompare(String(bv ?? ""));
     });
   }
-
   return out;
 }
 
@@ -63,15 +98,12 @@ export default function VolunteersPage() {
     volunteerRole: "",
     sortBy: ""
   });
-
-  // client-side pagination (mirrors team layout)
   const [page, setPage] = React.useState(1);
   const limit = 10;
-
   const [modalOpen, setModalOpen] = React.useState(false);
   const [selected, setSelected] = React.useState<VolunteerRequest | null>(null);
+  const [exporting, setExporting] = React.useState(false);
 
-  // reset to page 1 when filters change
   React.useEffect(() => {
     setPage(1);
   }, [filters.search, filters.status, filters.volunteerRole, filters.sortBy]);
@@ -95,90 +127,107 @@ export default function VolunteersPage() {
     setModalOpen(true);
   };
 
+  const handleExport = async () => {
+    if (!query.data || query.data.length === 0) {
+      toast.error("No data to export.");
+      return;
+    }
+    setExporting(true);
+    try {
+      const allData = query.data as VolunteerRequest[];
+      const csv = toCSV(allData);
+      const filename = `volunteer_requests_${new Date().toISOString().slice(0, 19).replace(/:/g, "-")}.csv`;
+      downloadCSV(csv, filename);
+      toast.success("Exported successfully.");
+    } catch (error) {
+      toast.error("Failed to export.");
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
-    <TableShell
-      title="Volunteer Requests"
-      description="Review volunteer requests and update approval status."
-      right={
-        <div className="text-sm text-muted-foreground">
-          {query.isLoading ? "Loading…" : `${rows.length} result(s)`}
-        </div>
-      }
-    >
-      <div className="space-y-4 mt-4">
-        {/* Controls (exact pattern as Team) */}
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <Filters
-            value={filters}
-            onChange={setFilters}
-            onReset={() =>
-              setFilters({
-                search: "",
-                status: "",
-                volunteerRole: "",
-                sortBy: ""
-              })
-            }
-          />
-
-          <VolunteerPagination
-            currentPage={page}
-            totalPages={totalPages}
-            onPrevious={() => setPage((p) => Math.max(1, p - 1))}
-            onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
-            isLoading={query.isFetching}
-          />
-        </div>
-
-        {/* Responsive list/table wrapper (exact pattern as Team) */}
-        <div className="space-y-3">
-          {/* Mobile list */}
-          <div className="grid gap-3 md:hidden">
-            {query.isLoading ? (
-              Array.from({ length: 6 }).map((_, i) => (
-                <MobileVolunteerSkeletonCard key={i} />
-              ))
-            ) : query.isError ? (
-              <div className="rounded-xl border bg-background p-6 text-center text-sm text-red-500">
-                Failed to load volunteer requests.
-              </div>
-            ) : paged.length ? (
-              paged.map((v) => (
-                <button
-                  key={v._id}
-                  type="button"
-                  onClick={() => openView(v)}
-                  className="text-left w-full"
-                >
-                  <MobileVolunteerCard row={v} />
-                </button>
-              ))
-            ) : (
-              <div className="rounded-xl border bg-background p-6 text-center text-sm text-muted-foreground">
-                No volunteer requests found.
-              </div>
-            )}
+    <PermissionGate permission={PERMISSIONS.VIEW_VOLUNTEER_REQUEST}>
+      <TableShell
+        title="Volunteer Requests"
+        description="Review volunteer requests and update approval status."
+        right={
+          <div className="text-sm text-muted-foreground">
+            {query.isLoading ? "Loading…" : `${rows.length} result(s)`}
+          </div>
+        }
+      >
+        <div className="space-y-4 mt-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <Filters
+              value={filters}
+              onChange={setFilters}
+              onReset={() =>
+                setFilters({
+                  search: "",
+                  status: "",
+                  volunteerRole: "",
+                  sortBy: ""
+                })
+              }
+              onExport={handleExport}
+            />
+            <VolunteerPagination
+              currentPage={page}
+              totalPages={totalPages}
+              onPrevious={() => setPage((p) => Math.max(1, p - 1))}
+              onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
+              isLoading={query.isFetching}
+            />
           </div>
 
-          {/* Tablet + Desktop table */}
-          <div className="hidden md:block">
-            <TableFrame>
-              <VolunteerTable
-                rows={paged}
-                isLoading={query.isLoading}
-                isError={query.isError}
-                onRowClick={openView}
-              />
-            </TableFrame>
-          </div>
-        </div>
+          <div className="space-y-3">
+            <div className="grid gap-3 md:hidden">
+              {query.isLoading ? (
+                Array.from({ length: 6 }).map((_, i) => (
+                  <MobileVolunteerSkeletonCard key={i} />
+                ))
+              ) : query.isError ? (
+                <div className="rounded-xl border bg-background p-6 text-center text-sm text-red-500">
+                  Failed to load volunteer requests.
+                </div>
+              ) : paged.length ? (
+                paged.map((v) => (
+                  <button
+                    key={v._id}
+                    type="button"
+                    onClick={() => openView(v)}
+                    className="text-left w-full"
+                  >
+                    <MobileVolunteerCard row={v} />
+                  </button>
+                ))
+              ) : (
+                <div className="rounded-xl border bg-background p-6 text-center text-sm text-muted-foreground">
+                  No volunteer requests found.
+                </div>
+              )}
+            </div>
 
-        <VolunteerDetailsSheet
-          open={modalOpen}
-          onOpenChange={setModalOpen}
-          id={selected?._id ?? null}
-        />
-      </div>
-    </TableShell>
+            <div className="hidden md:block">
+              <TableFrame>
+                <VolunteerTable
+                  rows={paged}
+                  isLoading={query.isLoading}
+                  isError={query.isError}
+                  onRowClick={openView}
+                />
+              </TableFrame>
+            </div>
+          </div>
+
+          <VolunteerDetailsSheet
+            open={modalOpen}
+            onOpenChange={setModalOpen}
+            id={selected?._id ?? null}
+          />
+        </div>
+      </TableShell>
+    </PermissionGate>
   );
 }

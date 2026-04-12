@@ -16,6 +16,8 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
 
 type Props = {
   value: PartnerFilters;
@@ -24,7 +26,6 @@ type Props = {
 };
 
 export function PartnerFilters({ value, onChange, onReset }: Props) {
-  // Fixed: Use double negation (!!) to check for existence without comparing to ""
   const activeCount =
     Number(!!value.search?.trim()) +
     Number(!!value.featured) +
@@ -60,7 +61,6 @@ export function PartnerFilters({ value, onChange, onReset }: Props) {
                   onValueChange={(v) =>
                     onChange({
                       ...value,
-                      // Fixed: Cast to specific type instead of 'any'
                       featured:
                         v === "all"
                           ? undefined
@@ -86,7 +86,6 @@ export function PartnerFilters({ value, onChange, onReset }: Props) {
                   onValueChange={(v) =>
                     onChange({
                       ...value,
-                      // Fixed: Cast to specific type instead of 'any'
                       sortBy:
                         v === "all"
                           ? undefined
@@ -113,13 +112,15 @@ export function PartnerFilters({ value, onChange, onReset }: Props) {
           </PopoverContent>
         </Popover>
 
-        <Button
-          variant="default"
-          className="w-full sm:w-auto bg-primary hover:bg-pink-700"
-          onClick={() => window.dispatchEvent(new CustomEvent("partner:add"))}
-        >
-          Add Partner
-        </Button>
+        <PermissionGate permission={PERMISSIONS.CREATE_PARTNER}>
+          <Button
+            variant="default"
+            className="w-full sm:w-auto bg-primary"
+            onClick={() => window.dispatchEvent(new CustomEvent("partner:add"))}
+          >
+            Add Partner
+          </Button>
+        </PermissionGate>
       </div>
     </div>
   );

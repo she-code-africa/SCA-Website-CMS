@@ -11,6 +11,8 @@ import {
   deleteReach
 } from "@/features/our-reach/api";
 import type { Reach, ReachUpsertInput } from "@/features/our-reach/types";
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
 
 import {
   Sheet,
@@ -163,45 +165,54 @@ export function ReachSheet({ open, onOpenChange, mode, reachId }: Props) {
             {/* Top actions row */}
             {mode === "view" && (
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <Button
-                  variant="outline"
-                  className="w-full sm:w-auto"
-                  onClick={() => setEditing((v) => !v)}
-                >
-                  {editing ? "View" : "Edit"}
-                </Button>
+                <PermissionGate permission={PERMISSIONS.UPDATE_OUR_REACH}>
+                  <Button
+                    variant="outline"
+                    className="w-full sm:w-auto"
+                    onClick={() => setEditing((v) => !v)}
+                  >
+                    {editing ? "View" : "Edit"}
+                  </Button>
+                </PermissionGate>
 
                 {/* Delete with confirmation */}
                 {!editing && (
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="destructive" className="w-full sm:w-auto">
-                        Delete
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete reach stat?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => {
-                            if (!reachId) return;
-                            deleteMut.mutate(reachId);
-                          }}
-                          className={cn(
-                            "bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          )}
+                  <PermissionGate permission={PERMISSIONS.DELETE_OUR_REACH}>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="destructive"
+                          className="w-full sm:w-auto"
                         >
                           Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            Delete reach stat?
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => {
+                              if (!reachId) return;
+                              deleteMut.mutate(reachId);
+                            }}
+                            className={cn(
+                              "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            )}
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </PermissionGate>
                 )}
               </div>
             )}
@@ -211,13 +222,11 @@ export function ReachSheet({ open, onOpenChange, mode, reachId }: Props) {
               <div className="rounded-lg border bg-muted/50 p-6 space-y-4">
                 <div className="flex items-center gap-4">
                   <div className="h-16 w-16 rounded-lg border bg-background flex items-center justify-center">
-                    <TrendingUp className="h-8 w-8 text-pink-600" />
+                    <TrendingUp className="h-8 w-8 text-primary" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">
-                      {form.name}
-                    </p>
-                    <p className="text-4xl font-bold text-pink-600">
+                    <p className="text-sm text-muted-foreground">{form.name}</p>
+                    <p className="text-4xl font-bold text-primary">
                       {new Intl.NumberFormat("en-US").format(form.value)}
                     </p>
                   </div>
@@ -260,29 +269,47 @@ export function ReachSheet({ open, onOpenChange, mode, reachId }: Props) {
           </div>
         </ScrollArea>
 
-        {/* Bottom action bar - Fixed */}
-        {(mode === "create" || editing) && (
-          <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={saving}
-            >
-              Cancel
-            </Button>
-            <Button
-              className="bg-pink-600 hover:bg-pink-700"
-              onClick={submit}
-              disabled={saving}
-            >
-              {saving
-                ? "Saving…"
-                : mode === "create"
-                  ? "Add Stat"
-                  : "Save Changes"}
-            </Button>
-          </div>
-        )}
+        {/* Bottom action bar */}
+        {(mode === "create" && (
+          <PermissionGate permission={PERMISSIONS.CREATE_OUR_REACH}>
+            <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
+              <Button
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={saving}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="default"
+                onClick={submit}
+                disabled={saving}
+              >
+                {saving ? "Saving…" : "Add Stat"}
+              </Button>
+            </div>
+          </PermissionGate>
+        )) ||
+          (mode === "view" && editing && (
+            <PermissionGate permission={PERMISSIONS.UPDATE_OUR_REACH}>
+              <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
+                <Button
+                  variant="outline"
+                  onClick={() => onOpenChange(false)}
+                  disabled={saving}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="default"
+                  onClick={submit}
+                  disabled={saving}
+                >
+                  {saving ? "Saving…" : "Save Changes"}
+                </Button>
+              </div>
+            </PermissionGate>
+          ))}
       </SheetContent>
     </Sheet>
   );

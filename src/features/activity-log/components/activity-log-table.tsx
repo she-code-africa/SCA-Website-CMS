@@ -13,12 +13,9 @@ import {
 import { format } from "date-fns";
 import { toast } from "sonner";
 
-import { getActivityLog } from "@/features/activity-log/api";
+import { getActivityLog, exportActivityLogs } from "@/features/activity-log/api";
 import { normalizeActivityLogPayload } from "@/features/activity-log/normalize";
-import type {
-  ActivityLogPayload,
-  ActivityLogRow
-} from "@/features/activity-log/types";
+import type { AuditLogEntry } from "@/features/activity-log/types";
 
 import { ActivityLogDetailsDrawer } from "@/features/activity-log/components/activity-log-details-drawer";
 import { ActivityLogFilters } from "@/features/activity-log/components/activity-log-filters";
@@ -27,136 +24,134 @@ import { ActivityLogPagination } from "@/features/activity-log/components/activi
 import { MobileLogCard } from "@/features/activity-log/components/mobile-log-card";
 import { MobileSkeletonCard } from "@/features/activity-log/components/mobile-skeleton-card";
 import { columns } from "@/features/activity-log/components/columns";
+import { globalFilterFn } from "@/features/activity-log/utils";
 import {
-  globalFilterFn,
-  toCSV,
-  downloadCSV
-} from "@/features/activity-log/utils";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePermissions } from "@/hooks/usePermissions";
 
+const PAGE_SIZE = 10;
+
 export function ActivityLogTable() {
   const { can } = usePermissions();
-  const [page, setPage] = React.useState(1);
-  const [limit] = React.useState(10);
 
+  // ── Pagination (owned entirely by the client) ──────────────────────────────
+  const [page, setPage] = React.useState(1);
+
+  // ── Filters ────────────────────────────────────────────────────────────────
   const [startDate, setStartDate] = React.useState<Date | null>(null);
   const [endDate, setEndDate] = React.useState<Date | null>(null);
-
   const [globalFilter, setGlobalFilter] = React.useState("");
+
+  // ── Export dialog ──────────────────────────────────────────────────────────
   const [exportOpen, setExportOpen] = React.useState(false);
   const [exportStart, setExportStart] = React.useState<Date | null>(null);
   const [exportEnd, setExportEnd] = React.useState<Date | null>(null);
   const [isExporting, setIsExporting] = React.useState(false);
 
-  const [hasToken, setHasToken] = React.useState(false);
+  // ── Row detail drawer ──────────────────────────────────────────────────────
   const [detailsOpen, setDetailsOpen] = React.useState(false);
-  const [selectedRow, setSelectedRow] = React.useState<ActivityLogRow | null>(
-    null
+  const [selectedRow, setSelectedRow] = React.useState<AuditLogEntry | null>(null);
+
+  // ── Auth guard (runs once on mount) ───────────────────────────────────────
+  const hasToken = React.useMemo(
+    () => Boolean(localStorage.getItem("token")),
+    []
   );
 
-  React.useEffect(() => {
-    setHasToken(Boolean(localStorage.getItem("token")));
-  }, []);
-
+  // ── Data fetching ──────────────────────────────────────────────────────────
   const query = useQuery({
     queryKey: [
       "activity-log",
       page,
-      limit,
-      startDate?.toISOString(),
-      endDate?.toISOString()
+      PAGE_SIZE,
+      startDate?.toISOString() ?? null,
+      endDate?.toISOString() ?? null
     ],
-    queryFn: () => getActivityLog({ page, limit, startDate, endDate }),
+    queryFn: () =>
+      getActivityLog({ page, limit: PAGE_SIZE, startDate, endDate }),
+    enabled: hasToken && can("VIEW_DASHBOARD"),
     retry: false,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     staleTime: 30_000,
-    enabled: hasToken && can("VIEW_DASHBOARD")
+    placeholderData: (prev) => prev  // keeps previous page visible while loading
   });
 
-  const isUnauthorized = (() => {
-    const err = query.error as unknown;
-    if (!err || typeof err !== "object") return false;
-    const maybe = err as { response?: { status?: number } };
-    return maybe.response?.status === 401;
-  })();
+  // ── Normalise payload ──────────────────────────────────────────────────────
+  // totalPages comes directly from the server — never from local state.
+  const { rows, totalPages } = React.useMemo(
+    () => normalizeActivityLogPayload(query.data ?? {}),
+    [query.data]
+  );
 
-  function openDetails(row: ActivityLogRow) {
+  // ── Error helpers ──────────────────────────────────────────────────────────
+  const isUnauthorized = React.useMemo(() => {
+    const err = query.error as { response?: { status?: number } } | null;
+    return err?.response?.status === 401;
+  }, [query.error]);
+
+  // ── Handlers ───────────────────────────────────────────────────────────────
+  function handlePrevious() {
+    setPage((p) => Math.max(1, p - 1));
+  }
+
+  function handleNext() {
+    // Guard against going past what the server says exists
+    setPage((p) => Math.min(totalPages, p + 1));
+  }
+
+  function handleReset() {
+    setStartDate(null);
+    setEndDate(null);
+    setGlobalFilter("");
+    setPage(1); // always reset to page 1 when filters clear
+  }
+
+  function handleStartDateChange(date: Date | null) {
+    setStartDate(date);
+    setPage(1); // new filter → start from page 1
+  }
+
+  function handleEndDateChange(date: Date | null) {
+    setEndDate(date);
+    setPage(1);
+  }
+
+  function openDetails(row: AuditLogEntry) {
     setSelectedRow(row);
     setDetailsOpen(true);
   }
 
   async function exportLogs() {
-    if (!exportStart || !exportEnd) return;
-    if (exportStart > exportEnd) return;
-
+    if (!exportStart || !exportEnd || exportStart > exportEnd) return;
     if (!hasToken) {
-      toast.error("Please login first to export logs.");
+      toast.error("Please log in first to export logs.");
       return;
     }
 
     setIsExporting(true);
-
     try {
-      let all: ActivityLogRow[] = [];
-      let current = 1;
-      const exportLimit = 500;
-
-      while (true) {
-        const payload = (await getActivityLog({
-          page: current,
-          limit: exportLimit,
-          startDate: exportStart,
-          endDate: exportEnd
-        })) as ActivityLogPayload;
-
-        const pageRows = payload?.data ?? [];
-        const total = payload?.totalPages ?? 1;
-
-        all = all.concat(pageRows);
-
-        current += 1;
-        if (current > total || pageRows.length === 0) break;
-      }
-
+      const blob = await exportActivityLogs({ startDate: exportStart, endDate: exportEnd });
+      const url = URL.createObjectURL(blob);
       const filename = `activity_log_${format(exportStart, "dd-MM-yyyy")}_to_${format(exportEnd, "dd-MM-yyyy")}.csv`;
-
-      downloadCSV(toCSV(all), filename);
-
+      const a = Object.assign(document.createElement("a"), { href: url, download: filename });
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
       toast.success("CSV exported successfully");
       setExportOpen(false);
     } catch (err: unknown) {
-      const errorObj = err as { response?: { data?: { message?: string } }; message?: string };
-      const message =
-        errorObj?.response?.data?.message ||
-        errorObj?.message ||
-        "Failed to export logs.";
-      toast.error(message);
+      const e = err as { response?: { data?: { message?: string } }; message?: string };
+      toast.error(e?.response?.data?.message ?? e?.message ?? "Failed to export logs.");
     } finally {
       setIsExporting(false);
     }
   }
 
-  const { rows, totalPages, currentPage } = React.useMemo(() => {
-    const raw = (query.data ?? {}) as ActivityLogPayload;
-    return normalizeActivityLogPayload(raw);
-  }, [query.data]);
-
-  React.useEffect(() => {
-    if (!query.isLoading && currentPage && currentPage !== page) {
-      setPage(currentPage);
-    }
-  }, [currentPage, query.isLoading, page]);
-
+  // ── Table instance ─────────────────────────────────────────────────────────
   const table = useReactTable({
     data: rows,
     columns,
@@ -168,56 +163,42 @@ export function ActivityLogTable() {
     getPaginationRowModel: getPaginationRowModel()
   });
 
+  // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div className="space-y-4">
-      {/* Controls */}
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <ActivityLogFilters
           globalFilter={globalFilter}
           onGlobalFilterChange={setGlobalFilter}
           startDate={startDate}
-          onStartDateChange={(date) => {
-            setStartDate(date);
-            setPage(1);
-          }}
+          onStartDateChange={handleStartDateChange}
           endDate={endDate}
-          onEndDateChange={(date) => {
-            setEndDate(date);
-            setPage(1);
-          }}
-          onReset={() => {
-            setStartDate(null);
-            setEndDate(null);
-            setGlobalFilter("");
-            setPage(1);
-          }}
+          onEndDateChange={handleEndDateChange}
+          onReset={handleReset}
           onExportClick={() => setExportOpen(true)}
         />
 
         <ActivityLogPagination
           currentPage={page}
           totalPages={totalPages}
-          onPrevious={() => setPage((p) => Math.max(1, p - 1))}
-          onNext={() => setPage((p) => p + 1)}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
           isLoading={query.isFetching}
         />
       </div>
 
-      {/* Responsive table: mobile cards + desktop table */}
       <div className="space-y-3">
-        {/* Mobile list */}
+        {/* ── Mobile cards ── */}
         <div className="grid gap-3 md:hidden">
           {query.isLoading ? (
-            Array.from({ length: 6 }).map((_, i) => (
-              <MobileSkeletonCard key={i} />
-            ))
-          ) : table.getRowModel().rows?.length ? (
+            Array.from({ length: 6 }).map((_, i) => <MobileSkeletonCard key={i} />)
+          ) : table.getRowModel().rows.length ? (
             table.getRowModel().rows.map((r) => (
               <button
                 key={r.id}
                 type="button"
                 onClick={() => openDetails(r.original)}
-                className="text-left w-full"
+                className="w-full text-left"
               >
                 <MobileLogCard row={r.original} />
               </button>
@@ -229,89 +210,83 @@ export function ActivityLogTable() {
           )}
         </div>
 
-        {/* Tablet + Desktop table */}
-        {/* Table */}
-        <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
-          <div className="w-full overflow-x-auto">
-            <Table className="min-w-275">
-              <TableHeader className="sticky top-0 z-10 bg-card">
-                {table.getHeaderGroups().map((hg) => (
-                  <TableRow key={hg.id} className="border-b">
-                    {hg.headers.map((header) => (
-                      <TableHead
-                        key={header.id}
-                        className="whitespace-nowrap bg-muted/40 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-                      >
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                      </TableHead>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableHeader>
-
-              <TableBody>
-                {query.isLoading ? (
-                  Array.from({ length: 6 }).map((_, idx) => (
-                    <TableRow key={idx} className="hover:bg-transparent">
-                      {columns.map((_, cIdx) => (
-                        <TableCell key={cIdx}>
-                          <Skeleton className="h-4 w-full" />
-                        </TableCell>
+        {/* ── Desktop table ── */}
+        <div className="hidden md:block">
+          <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
+            <div className="w-full overflow-x-auto">
+              <Table className="min-w-275">
+                <TableHeader className="sticky top-0 z-10 bg-card">
+                  {table.getHeaderGroups().map((hg) => (
+                    <TableRow key={hg.id} className="border-b">
+                      {hg.headers.map((header) => (
+                        <TableHead
+                          key={header.id}
+                          className="whitespace-nowrap bg-muted/40 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+                        >
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(header.column.columnDef.header, header.getContext())}
+                        </TableHead>
                       ))}
                     </TableRow>
-                  ))
-                ) : table.getRowModel().rows?.length ? (
-                  table.getRowModel().rows.map((row) => (
+                  ))}
+                </TableHeader>
+
+                <TableBody>
+                  {query.isLoading ? (
+                    Array.from({ length: PAGE_SIZE }).map((_, idx) => (
+                      <TableRow key={idx} className="hover:bg-transparent">
+                        {columns.map((_, cIdx) => (
+                          <TableCell key={cIdx}>
+                            <Skeleton className="h-4 w-full" />
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))
+                  ) : table.getRowModel().rows.length ? (
+                    table.getRowModel().rows.map((row) => (
                       <TableRow
                         key={row.id}
                         onClick={() => openDetails(row.original)}
                         className="cursor-pointer hover:bg-primary/5"
                       >
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id} className="whitespace-nowrap">
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </TableCell>
-                      ))}
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell key={cell.id} className="whitespace-nowrap">
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={columns.length}
+                        className="h-24 text-center text-muted-foreground"
+                      >
+                        No activity found.
+                      </TableCell>
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell
-                      colSpan={columns.length}
-                      className="h-24 text-center text-muted-foreground"
-                    >
-                      No activity found.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Error messages */}
+      {/* ── Error states ── */}
       {!hasToken ? (
         <p className="text-sm text-red-500">
-          You are not logged in. Please login to view activity logs.
+          You are not logged in. Please log in to view activity logs.
         </p>
       ) : isUnauthorized ? (
         <p className="text-sm text-red-500">
-          Session expired or invalid token. Please login again.
+          Session expired or invalid token. Please log in again.
         </p>
       ) : query.isError ? (
         <p className="text-sm text-red-500">Failed to load activity logs.</p>
       ) : null}
 
-      {/* Export Dialog */}
       <ActivityLogExportDialog
         open={exportOpen}
         onOpenChange={setExportOpen}
@@ -328,7 +303,6 @@ export function ActivityLogTable() {
         }}
       />
 
-      {/* Details Drawer */}
       <ActivityLogDetailsDrawer
         open={detailsOpen}
         onOpenChange={setDetailsOpen}

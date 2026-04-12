@@ -3,7 +3,6 @@
 
 import * as React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { User } from "lucide-react";
 import {
   addTestimonial,
   archiveTestimonial,
@@ -16,6 +15,8 @@ import type {
   Testimonial,
   TestimonialUpsertInput
 } from "@/features/testimonials/types";
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
 
 import {
   Sheet,
@@ -44,24 +45,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils/utils";
 
-
 type Props = {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   mode: "create" | "view";
   testimonialId?: string;
 };
-
-function HtmlPreview({ html }: { html: string }) {
-  return (
-    <div
-      className="rounded-lg border bg-muted/30 p-4 text-sm leading-relaxed prose prose-sm max-w-none"
-      // NOTE: If testimonials can be added by untrusted users, sanitize HTML first.
-      dangerouslySetInnerHTML={{ __html: html || "<p></p>" }}
-    />
-  );
-}
-
 
 export function TestimonialSheet({
   open,
@@ -89,7 +78,6 @@ export function TestimonialSheet({
   );
 
   const [form, setForm] = React.useState<TestimonialUpsertInput>(initialForm);
-  const [showPreview, setShowPreview] = React.useState(false);
 
   React.useEffect(() => {
     if (!open) return;
@@ -208,83 +196,77 @@ export function TestimonialSheet({
             {/* Top actions row */}
             {mode === "view" && (
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <Button
-                  variant="outline"
-                  className="w-full sm:w-auto"
-                  onClick={() => setEditing((v) => !v)}
-                >
-                  {editing ? "View" : "Edit"}
-                </Button>
-
-                <div className="flex gap-2 w-full sm:w-auto">
+                <PermissionGate permission={PERMISSIONS.UPDATE_TESTIMONIALS}>
                   <Button
                     variant="outline"
-                    className="flex-1 sm:flex-none"
-                    onClick={() => {
-                      if (!testimonialId) return;
-                      if (currentState === "published")
-                        archiveMut.mutate(testimonialId);
-                      else publishMut.mutate(testimonialId);
-                    }}
-                    disabled={publishMut.isPending || archiveMut.isPending}
+                    className="w-full sm:w-auto"
+                    onClick={() => setEditing((v) => !v)}
                   >
-                    {currentState === "published" ? "Archive" : "Publish"}
+                    {editing ? "View" : "Edit"}
                   </Button>
+                </PermissionGate>
+
+                <div className="flex gap-2 w-full sm:w-auto">
+                  <PermissionGate permission={PERMISSIONS.UPDATE_TESTIMONIALS}>
+                    <Button
+                      variant="outline"
+                      className="flex-1 sm:flex-none"
+                      onClick={() => {
+                        if (!testimonialId) return;
+                        if (currentState === "published")
+                          archiveMut.mutate(testimonialId);
+                        else publishMut.mutate(testimonialId);
+                      }}
+                      disabled={publishMut.isPending || archiveMut.isPending}
+                    >
+                      {currentState === "published" ? "Archive" : "Publish"}
+                    </Button>
+                  </PermissionGate>
 
                   {/* Delete with confirmation */}
                   {!editing && (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="destructive"
-                          className="flex-1 sm:flex-none"
-                        >
-                          Delete
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>
-                            Delete testimonial?
-                          </AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => {
-                              if (!testimonialId) return;
-                              deleteMut.mutate(testimonialId);
-                            }}
-                            className={cn(
-                              "bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            )}
+                    <PermissionGate
+                      permission={PERMISSIONS.DELETE_TESTIMONIALS}
+                    >
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="destructive"
+                            className="flex-1 sm:flex-none"
                           >
                             Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>
+                              Delete testimonial?
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => {
+                                if (!testimonialId) return;
+                                deleteMut.mutate(testimonialId);
+                              }}
+                              className={cn(
+                                "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              )}
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </PermissionGate>
                   )}
                 </div>
               </div>
             )}
-
-            {/* Image Preview (Optional - can be added later) */}
-            {/* <div className="grid gap-3">
-              <label className="text-sm font-medium">Profile Photo</label>
-              <div className="flex flex-col sm:flex-row gap-4 items-center">
-                <div className="relative group">
-                  <div className="w-32 h-32 rounded-lg border-2 border-dashed overflow-hidden">
-                    <div className="w-full h-full flex items-center justify-center bg-muted">
-                      <User className="w-12 h-12 text-muted-foreground" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div> */}
 
             {/* Form Fields */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -324,29 +306,39 @@ export function TestimonialSheet({
           </div>
         </ScrollArea>
 
-        {/* Bottom action bar - Fixed */}
-        {(mode === "create" || editing) && (
-          <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={saving}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="default"
-              onClick={submit}
-              disabled={saving}
-            >
-              {saving
-                ? "Saving…"
-                : mode === "create"
-                  ? "Add Testimonial"
-                  : "Save Changes"}
-            </Button>
-          </div>
-        )}
+        {/* Bottom action bar */}
+        {(mode === "create" && (
+          <PermissionGate permission={PERMISSIONS.CREATE_TESTIMONIALS}>
+            <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
+              <Button
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={saving}
+              >
+                Cancel
+              </Button>
+              <Button variant="default" onClick={submit} disabled={saving}>
+                {saving ? "Saving…" : "Add Testimonial"}
+              </Button>
+            </div>
+          </PermissionGate>
+        )) ||
+          (mode === "view" && editing && (
+            <PermissionGate permission={PERMISSIONS.UPDATE_TESTIMONIALS}>
+              <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
+                <Button
+                  variant="outline"
+                  onClick={() => setEditing(false)}
+                  disabled={saving}
+                >
+                  Cancel
+                </Button>
+                <Button variant="default" onClick={submit} disabled={saving}>
+                  {saving ? "Saving…" : "Save Changes"}
+                </Button>
+              </div>
+            </PermissionGate>
+          ))}
       </SheetContent>
     </Sheet>
   );

@@ -1,76 +1,113 @@
-// src/features/roles/api.ts
+import { api } from "@/lib/api/client";
 import type {
   RoleDetail,
   CreateRoleInput,
   UpdateRoleInput,
-  RolesFilters
+  PermissionKey
 } from "./types";
-import { getMockRoles, setMockRoles } from "./mock";
-// import { api } from "@/lib/api/client";  ← uncomment when backend is ready
 
-function delay(ms = 400) {
-  return new Promise((r) => setTimeout(r, ms));
+function normalizeRole(role: Record<string, unknown>): RoleDetail {
+  // Extract permissions: they could be an array of objects with 'name' or plain strings
+  let permissions: string[] = [];
+  const perms = role.permissions;
+  if (Array.isArray(perms)) {
+    permissions = perms
+      .map((p) => {
+        if (typeof p === "string") return p;
+        if (p && typeof p === "object" && "name" in p)
+          return (p as { name: string }).name;
+        return "";
+      })
+      .filter(Boolean);
+  }
+  return {
+    ...role,
+    id: (role._id as string) || (role.id as string),
+    permissions
+  } as unknown as RoleDetail;
 }
 
-export async function getRoles(filters?: RolesFilters): Promise<RoleDetail[]> {
-  await delay();
-  // REAL: return api.get("/admin/roles", { params: filters });
-  let list = getMockRoles();
-  if (filters?.search?.trim()) {
-    const q = filters.search.toLowerCase();
-    list = list.filter(
-      (r) =>
-        r.name.toLowerCase().includes(q) ||
-        r.description.toLowerCase().includes(q)
+export async function getRoles(params?: {
+  search?: string;
+  type?: string;
+}): Promise<RoleDetail[]> {
+  const cleanParams = Object.fromEntries(
+    Object.entries(params || {}).filter(([_, v]) => v !== "" && v != null)
+  );
+  try {
+    const response = await api.get<{ data: Record<string, unknown>[] }>(
+      "/roles",
+      { params: cleanParams }
     );
+    const rolesArray = Array.isArray(response)
+      ? response
+      : response?.data || [];
+    return rolesArray.map(normalizeRole);
+  } catch (error) {
+    console.error("Roles API Error:", error);
+    return [];
   }
-  if (filters?.type === "default") list = list.filter((r) => r.isDefault);
-  if (filters?.type === "custom") list = list.filter((r) => !r.isDefault);
-  return list;
+}
+
+export async function getRoleById(roleId: string): Promise<RoleDetail> {
+  const response = await api.get<Record<string, unknown>>(`/roles/${roleId}`);
+  return normalizeRole(response);
+}
+
+export async function getRoleByName(roleName: string): Promise<RoleDetail> {
+  const response = await api.get<Record<string, unknown>>(
+    `/roles/name/${roleName}`
+  );
+  return normalizeRole(response);
+}
+
+export async function getPermissions(): Promise<PermissionKey[]> {
+  const response = await api.get<PermissionKey[]>("/permissions");
+  return response || [];
 }
 
 export async function createRole(input: CreateRoleInput): Promise<RoleDetail> {
-  await delay(600);
-  // REAL: return api.post("/admin/roles", input);
-  const newRole: RoleDetail = {
-    id: `role_custom_${Date.now()}`,
+  const response = await api.post<Record<string, unknown>>("/roles", {
     name: input.name.trim(),
-    description: input.description.trim(),
-    isDefault: false,
-    permissions: input.permissions,
-    usersCount: 0,
-    createdAt: new Date().toISOString()
-  };
-  setMockRoles([...getMockRoles(), newRole]);
-  return newRole;
+    description: input.description?.trim(),
+    permissions: input.permissions
+  });
+  return normalizeRole(response);
 }
 
 export async function updateRole(
   id: string,
   input: UpdateRoleInput
 ): Promise<RoleDetail> {
-  await delay(500);
-  // REAL: return api.patch(`/admin/roles/${id}`, input);
-  const updated = getMockRoles().map((r) =>
-    r.id !== id
-      ? r
-      : {
-          ...r,
-          name: input.name.trim(),
-          description: input.description.trim(),
-          permissions: input.permissions
-        }
+  const response = await api.put<Record<string, unknown>>(
+    `/roles/${id}`,
+    input
   );
-  setMockRoles(updated);
-  return updated.find((r) => r.id === id)!;
+  return normalizeRole(response);
 }
 
 export async function deleteRole(id: string): Promise<void> {
-  await delay(400);
-  // REAL: return api.delete(`/admin/roles/${id}`);
-  const role = getMockRoles().find((r) => r.id === id);
-  if (role?.isDefault) throw new Error("Cannot delete a default system role.");
-  if ((role?.usersCount ?? 0) > 0)
-    throw new Error("Cannot delete a role that has users assigned to it.");
-  setMockRoles(getMockRoles().filter((r) => r.id !== id));
+  await api.delete(`/roles/${id}`);
+}
+
+export async function attachPermissions(
+  id: string,
+  permissions: string[]
+): Promise<RoleDetail> {
+  const response = await api.patch<Record<string, unknown>>(
+    `/roles/${id}/permissions/attach`,
+    { permissions }
+  );
+  return normalizeRole(response);
+}
+
+export async function detachPermissions(
+  id: string,
+  permissions: string[]
+): Promise<RoleDetail> {
+  const response = await api.patch<Record<string, unknown>>(
+    `/roles/${id}/permissions/de-attach`,
+    { permissions }
+  );
+  return normalizeRole(response);
 }
