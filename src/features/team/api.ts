@@ -66,63 +66,91 @@ export async function getTeamMember(
 }
 
 
-export async function addTeamMember(input: TeamMemberUpsertInput) {
-  const fd = new FormData();
-  fd.append("name", input.name);
-  fd.append("teamCategory", input.teamCategory);
-  fd.append("role", input.role);
-  // fd.append("bio", input.bio); // REMOVED - Backend doesn't accept bio anymore
-  fd.append("position", String(Number(input.position ?? 0)));
-  // fd.append("isLeader", String(!!input.isLeader));
-  if (input.image) fd.append("image", input.image);
+// export async function addTeamMember(input: TeamMemberUpsertInput) {
+//   const fd = new FormData();
+//   fd.append("name", input.name);
+//   fd.append("teamCategory", input.teamCategory);
+//   fd.append("role", input.role);
+//   // fd.append("bio", input.bio); // REMOVED - Backend doesn't accept bio anymore
+//   fd.append("position", String(Number(input.position ?? 0)));
+//   // fd.append("isLeader", String(!!input.isLeader));
+//   if (input.image) fd.append("image", input.image);
 
-  return api.post(`/teams/members`, fd);
+//   return api.post(`/teams/members`, fd);
+// }
+
+export async function addTeamMember(input: TeamMemberUpsertInput) {
+  // Send JSON payload, not FormData
+  return api.post(`/teams/members`, {
+    name: input.name,
+    teamCategory: input.teamCategory,
+    role: input.role,
+    position: Number(input.position ?? 0),
+    image: input.image ?? null // base64 string or null
+  });
 }
+
+// export async function editTeamMember(payload: {
+//   id: string;
+//   catId: string;
+//   data: Partial<TeamMemberUpsertInput>;
+// }) {
+//   const fd = new FormData();
+//   const d = payload.data;
+
+//   if (d.name !== undefined) fd.append("name", d.name);
+//   if (d.teamCategory !== undefined) fd.append("teamCategory", d.teamCategory);
+//   if (d.role !== undefined) fd.append("role", d.role);
+
+//   // FIXED: Commented out or remove the bio line to match your type definition
+//   // if (d.bio !== undefined) fd.append("bio", d.bio);
+
+//   if (d.position !== undefined)
+//     fd.append("position", String(Number(d.position)));
+
+//   if (d.isLeader !== undefined) fd.append("isLeader", String(!!d.isLeader));
+//   if (d.image !== undefined && d.image !== null) fd.append("image", d.image);
+
+//   return api.put(
+//     `/teams/categories/${payload.catId}/members/${payload.id}`,
+//     fd
+//   );
+// }
+
 
 export async function editTeamMember(payload: {
   id: string;
   catId: string;
   data: Partial<TeamMemberUpsertInput>;
 }) {
-  const fd = new FormData();
-  const d = payload.data;
-
-  if (d.name !== undefined) fd.append("name", d.name);
-  if (d.teamCategory !== undefined) fd.append("teamCategory", d.teamCategory);
-  if (d.role !== undefined) fd.append("role", d.role);
-
-  // FIXED: Commented out or remove the bio line to match your type definition
-  // if (d.bio !== undefined) fd.append("bio", d.bio);
-
-  if (d.position !== undefined)
-    fd.append("position", String(Number(d.position)));
-
-  if (d.isLeader !== undefined) fd.append("isLeader", String(!!d.isLeader));
-  if (d.image !== undefined && d.image !== null) fd.append("image", d.image);
-
-  return api.put(
-    `/teams/categories/${payload.catId}/members/${payload.id}`,
-    fd
-  );
+  const { data } = payload;
+  return api.put(`/teams/categories/${payload.catId}/members/${payload.id}`, {
+    name: data.name,
+    teamCategory: data.teamCategory,
+    role: data.role,
+    position: data.position !== undefined ? Number(data.position) : undefined,
+    isLeader: data.isLeader,
+    image: data.image !== undefined ? data.image : undefined // base64 or undefined
+  });
 }
 
-export async function publishTeamMember(payload: {
-  catId: string;
-  id: string;
-}) {
-  return api.patch(
-    `/teams/categories/${payload.catId}/members/${payload.id}/publish`
-  );
-}
+// export async function publishTeamMember(payload: {
+//   catId: string;
+//   id: string;
+// }) {
+//   return api.patch(
+//     `/teams/categories/${payload.catId}/members/${payload.id}/publish`
+//   );
+// }
 
-export async function archiveTeamMember(payload: {
-  catId: string;
-  id: string;
-}) {
-  return api.patch(
-    `/teams/categories/${payload.catId}/members/${payload.id}/archive`
-  );
-}
+// export async function archiveTeamMember(payload: {
+//   catId: string;
+//   id: string;
+// }) {
+//   return api.patch(
+//     `/teams/categories/${payload.catId}/members/${payload.id}/archive`
+//   );
+// }
 
 export async function deleteTeamMember(payload: { catId: string; id: string }) {
   return api.delete(`/teams/categories/${payload.catId}/members/${payload.id}`);
@@ -148,9 +176,9 @@ export async function addTeamCategory(payload: { name: string }) {
 // matches your legacy service exactly
 export async function editTeamCategories(payload: {
   catId: string;
-  name: string | { name: string };
+  name: string;
 }) {
-  return api.put(`/teams/categories/${payload.catId}`, payload.name);
+  return api.put(`/teams/categories/${payload.catId}`, { name: payload.name });
 }
 
 export async function deleteTeamCategory(id: string) {

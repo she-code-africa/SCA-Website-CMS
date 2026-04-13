@@ -48,7 +48,8 @@ export type TeamMemberUpsertInput = {
   teamCategory: string; // category id
   isLeader?: boolean;
   position: number;
-  image?: File | null;
+  // image?: File | null;
+  image?: string | null;   // base64 string, not File
 };
 
 export type User = {

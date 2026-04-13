@@ -1,22 +1,13 @@
-// src/features/team/components/team-member-sheet.tsx
 "use client";
 
 import * as React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { User, Upload, X } from "lucide-react";
-import {
-  addTeamMember,
-  archiveTeamMember,
-  editTeamMember,
-  getTeamCategories,
-  getTeamMember,
-  publishTeamMember,
-  deleteTeamMember
-} from "@/features/team/api";
-import type { TeamMember, TeamMemberUpsertInput } from "@/features/team/types";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils/utils";
 import { PermissionGate } from "@/components/PermissionGate";
 import { PERMISSIONS } from "@/lib/rbac/permissions";
-
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Sheet,
   SheetContent,
@@ -45,8 +36,14 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { toast } from "sonner";
-import { cn } from "@/lib/utils/utils";
+import {
+  addTeamMember,
+  editTeamMember,
+  getTeamCategories,
+  getTeamMember,
+  deleteTeamMember
+} from "@/features/team/api";
+import type { TeamMember, TeamMemberUpsertInput } from "@/features/team/types";
 
 type Props = {
   open: boolean;
@@ -65,14 +62,15 @@ export function TeamMemberSheet({
   catId,
   defaultCategoryId
 }: Props) {
-  const qc = useQueryClient();
+  const queryClient = useQueryClient();
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  // Local UI state
+  // UI state
   const [editing, setEditing] = React.useState(mode === "create");
   const [imageFile, setImageFile] = React.useState<File | null>(null);
   const [imagePreview, setImagePreview] = React.useState<string | null>(null);
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
+  // Queries
   const { data: categories = [] } = useQuery({
     queryKey: ["team-categories"],
     queryFn: getTeamCategories,
@@ -98,6 +96,15 @@ export function TeamMemberSheet({
 
   const [form, setForm] = React.useState<TeamMemberUpsertInput>(initialForm);
 
+  // Reset form when switching between members (prevents flash of stale data)
+  React.useEffect(() => {
+    if (!open || mode === "create") return;
+    setForm(initialForm);
+    setImagePreview(null);
+    setImageFile(null);
+  }, [memberId, catId, open, mode, initialForm]);
+
+  // Populate form when member data arrives
   React.useEffect(() => {
     if (!open) return;
     if (mode === "create") {
@@ -107,7 +114,7 @@ export function TeamMemberSheet({
       setImagePreview(null);
       return;
     }
-    if (memberQuery.data) {
+    if (memberQuery.data && !memberQuery.isLoading) {
       const m = memberQuery.data as TeamMember;
       setEditing(false);
       setImageFile(null);
@@ -124,8 +131,20 @@ export function TeamMemberSheet({
         image: null
       });
     }
-  }, [open, mode, memberQuery.data, initialForm]);
+  }, [open, mode, memberQuery.data, memberQuery.isLoading, initialForm]);
 
+  // Helper: extract server error message
+  const getErrorMessage = (err: unknown): string => {
+    if (err && typeof err === "object" && "response" in err) {
+      const axiosErr = err as any;
+      const data = axiosErr.response?.data;
+      if (data?.message) return data.message;
+      if (data?.error) return data.error;
+    }
+    return "An unexpected error occurred";
+  };
+
+  // Image handling
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -142,55 +161,79 @@ export function TeamMemberSheet({
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  // Image compression
+  const compressImage = (
+    file: File,
+    maxWidth = 800,
+    maxHeight = 800,
+    quality = 0.7
+  ): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (e) => {
+        const img = new Image();
+        img.src = e.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > maxWidth) {
+              height *= maxWidth / width;
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width *= maxHeight / height;
+              height = maxHeight;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx?.drawImage(img, 0, 0, width, height);
+          const base64 = canvas.toDataURL("image/jpeg", quality);
+          resolve(base64);
+        };
+        img.onerror = reject;
+      };
+      reader.onerror = reject;
+    });
+  };
+
+  // Mutations
   const createMut = useMutation({
     mutationFn: addTeamMember,
     onSuccess: () => {
       toast.success("Member added");
-      qc.invalidateQueries({ queryKey: ["team"] });
+      queryClient.invalidateQueries({ queryKey: ["team"] });
       onOpenChange(false);
     },
-    onError: () => toast.error("Could not add member")
+    onError: (err) => toast.error(getErrorMessage(err))
   });
 
   const updateMut = useMutation({
     mutationFn: editTeamMember,
     onSuccess: () => {
       toast.success("Member updated");
-      qc.invalidateQueries({ queryKey: ["team"] });
-      qc.invalidateQueries({ queryKey: ["team-member"] });
+      queryClient.invalidateQueries({ queryKey: ["team"] });
+      queryClient.invalidateQueries({ queryKey: ["team-member"] });
       onOpenChange(false);
     },
-    onError: () => toast.error("Could not update member")
-  });
-
-  const publishMut = useMutation({
-    mutationFn: publishTeamMember,
-    onSuccess: () => {
-      toast.success("Published");
-      qc.invalidateQueries({ queryKey: ["team"] });
-      qc.invalidateQueries({ queryKey: ["team-member"] });
-    },
-    onError: () => toast.error("Could not publish")
-  });
-
-  const archiveMut = useMutation({
-    mutationFn: archiveTeamMember,
-    onSuccess: () => {
-      toast.success("Archived");
-      qc.invalidateQueries({ queryKey: ["team"] });
-      qc.invalidateQueries({ queryKey: ["team-member"] });
-    },
-    onError: () => toast.error("Could not archive")
+    onError: (err) => toast.error(getErrorMessage(err))
   });
 
   const deleteMut = useMutation({
     mutationFn: deleteTeamMember,
     onSuccess: () => {
       toast.success("Deleted");
-      qc.invalidateQueries({ queryKey: ["team"] });
+      queryClient.invalidateQueries({ queryKey: ["team"] });
       onOpenChange(false);
     },
-    onError: () => toast.error("Could not delete")
+    onError: (err) => toast.error(getErrorMessage(err))
   });
 
   const submit = async () => {
@@ -198,20 +241,71 @@ export function TeamMemberSheet({
       toast.error("Please fill required fields");
       return;
     }
+
+    let imageValue: string | null | undefined;
+
+    if (imageFile) {
+      try {
+        imageValue = await compressImage(imageFile, 800, 800, 0.7);
+      } catch {
+        toast.error("Failed to process image");
+        return;
+      }
+    }
+
     if (mode === "create") {
-      createMut.mutate({ ...form, image: imageFile });
+      createMut.mutate({ ...form, image: imageValue ?? null });
       return;
     }
+
     if (!memberId || !catId) return;
     updateMut.mutate({
       id: memberId,
       catId,
-      data: { ...form, image: imageFile ?? undefined }
+      data: { ...form, image: imageValue }
     });
   };
 
-  const currentState = (memberQuery.data as TeamMember | undefined)?.state;
   const saving = createMut.isPending || updateMut.isPending;
+
+  // Skeleton loader for view mode
+  if (mode === "view" && memberQuery.isLoading && !memberQuery.data) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent
+          side="right"
+          className="w-full sm:max-w-xl p-0 flex flex-col"
+        >
+          <SheetHeader className="px-6 py-4 border-b">
+            <Skeleton className="h-6 w-40" />
+            <Skeleton className="h-4 w-64 mt-1" />
+          </SheetHeader>
+          <div className="flex-1 px-6 py-6 space-y-6">
+            {/* Profile photo skeleton */}
+            <div className="grid gap-3">
+              <Skeleton className="h-5 w-24" />
+              <div className="flex flex-col sm:flex-row gap-4 items-center">
+                <Skeleton className="w-32 h-32 rounded-lg" />
+                <div className="flex-1 space-y-3">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-9 w-32" />
+                </div>
+              </div>
+            </div>
+            {/* Form fields skeleton */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="grid gap-2">
+                  <Skeleton className="h-5 w-20" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
+    );
+  }
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -226,7 +320,7 @@ export function TeamMemberSheet({
           <SheetDescription>
             {mode === "create"
               ? "Add a new member to the team."
-              : "View, edit, publish/archive, or delete this member."}
+              : "View, edit, or delete this member."}
           </SheetDescription>
         </SheetHeader>
 
@@ -245,63 +339,39 @@ export function TeamMemberSheet({
                   </Button>
                 </PermissionGate>
 
-                <div className="flex gap-2 w-full sm:w-auto">
-                  <PermissionGate permission={PERMISSIONS.UPDATE_TEAM}>
-                    <Button
-                      variant="outline"
-                      className="flex-1 sm:flex-none"
-                      onClick={() => {
-                        if (!memberId || !catId) return;
-                        if (currentState === "published")
-                          archiveMut.mutate({ catId, id: memberId });
-                        else publishMut.mutate({ catId, id: memberId });
-                      }}
-                      disabled={publishMut.isPending || archiveMut.isPending}
-                    >
-                      {currentState === "published" ? "Archive" : "Publish"}
-                    </Button>
-                  </PermissionGate>
-
-                  {/* Delete – only when NOT editing */}
-                  {!editing && (
-                    <PermissionGate permission={PERMISSIONS.DELETE_TEAM}>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="destructive"
-                            className="flex-1 sm:flex-none"
+                {!editing && (
+                  <PermissionGate permission={PERMISSIONS.DELETE_TEAM}>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive">Delete</Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            Delete team member?
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => {
+                              if (!memberId || !catId) return;
+                              deleteMut.mutate({ catId, id: memberId });
+                            }}
+                            className={cn(
+                              "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            )}
                           >
                             Delete
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>
-                              Delete team member?
-                            </AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => {
-                                if (!memberId || !catId) return;
-                                deleteMut.mutate({ catId, id: memberId });
-                              }}
-                              className={cn(
-                                "bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              )}
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </PermissionGate>
-                  )}
-                </div>
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </PermissionGate>
+                )}
               </div>
             )}
 
@@ -319,6 +389,7 @@ export function TeamMemberSheet({
                     )}
                   >
                     {imagePreview ? (
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={imagePreview}
                         alt="Preview"
@@ -408,7 +479,7 @@ export function TeamMemberSheet({
                 </Select>
               </div>
               <div className="grid gap-2">
-                <label className="text-sm font-medium">Position</label>
+                <label className="text-sm font-medium">Display Order</label>
                 <Input
                   type="number"
                   value={form.position}
@@ -418,6 +489,10 @@ export function TeamMemberSheet({
                   }
                   placeholder="0"
                 />
+                <p className="text-xs text-muted-foreground">
+                  Controls the order on the team grid. Lower numbers appear
+                  first.
+                </p>
               </div>
             </div>
           </div>

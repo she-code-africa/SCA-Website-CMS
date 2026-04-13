@@ -240,6 +240,7 @@ export function ActivityLogTable() {
                           <TableCell key={cIdx}>
                             <Skeleton className="h-4 w-full" />
                           </TableCell>
+                          
                         ))}
                       </TableRow>
                     ))
