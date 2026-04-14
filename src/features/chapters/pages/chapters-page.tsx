@@ -111,6 +111,13 @@ export default function ChaptersPage() {
     setModalOpen(true);
   };
 
+  const openEdit = (ch: Chapter) => {
+    // Same as openView – the sheet has an Edit button internally
+    setSelected(ch);
+    setModalMode("view");
+    setModalOpen(true);
+  };
+
   return (
     <PermissionGate permission={PERMISSIONS.VIEW_CHAPTER}>
       <TableShell
@@ -182,7 +189,8 @@ export default function ChaptersPage() {
                     rows={paged}
                     isLoading={query.isLoading}
                     isError={query.isError}
-                    onRowClick={openView}
+                    onView={openView}
+                    onEdit={openEdit}
                   />
                 </TableFrame>
               </div>

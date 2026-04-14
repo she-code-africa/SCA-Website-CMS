@@ -143,7 +143,10 @@ export function EventTable({
               </TableCell>
 
               {/* Action column */}
-              <TableCell className="whitespace-nowrap" onClick={(ev) => ev.stopPropagation()}>
+              <TableCell
+                className="whitespace-nowrap"
+                onClick={(ev) => ev.stopPropagation()}
+              >
                 <div className="flex items-center gap-1">
                   <Button
                     variant="ghost"

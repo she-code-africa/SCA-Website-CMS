@@ -1,13 +1,13 @@
-// src/features/chapters/components/chapter-table.tsx
 "use client";
 
 import * as React from "react";
 import { format } from "date-fns";
-import { Users } from "lucide-react";
+import { Users, Eye, Pencil } from "lucide-react";
 import type { Chapter } from "@/features/chapters/types";
 import { cn } from "@/lib/utils/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Table,
@@ -50,22 +50,20 @@ export function ChapterTable({
   rows,
   isLoading,
   isError,
-  onRowClick
+  onView,
+  onEdit
 }: {
   rows: Chapter[];
   isLoading: boolean;
   isError: boolean;
-  onRowClick: (c: Chapter) => void;
+  onView: (c: Chapter) => void;
+  onEdit: (c: Chapter) => void;
 }) {
-  const headers = [
-    "Name",
-    "Location",
-    "Category",
-    "Leader",
-    "State",
-    "Updated",
-    "Created"
-  ];
+  const headers = ["Name", "Location", "Category", "State", "Updated", "Action"];
+
+  const handleRowClick = (chapter: Chapter) => {
+    onView(chapter);
+  };
 
   return (
     <Table>
@@ -103,9 +101,10 @@ export function ChapterTable({
           rows.map((c) => (
             <TableRow
               key={c._id}
-              onClick={() => onRowClick(c)}
+              onClick={() => handleRowClick(c)}
               className={cn("cursor-pointer hover:bg-muted/50")}
             >
+              {/* Name column */}
               <TableCell className="whitespace-nowrap">
                 <div className="flex items-center gap-2">
                   <Avatar className="h-8 w-8">
@@ -118,30 +117,48 @@ export function ChapterTable({
                 </div>
               </TableCell>
 
+              {/* Location column */}
               <TableCell className="whitespace-nowrap">
                 {c.city}, {c.country}
               </TableCell>
 
+              {/* Category column */}
               <TableCell className="whitespace-nowrap">
                 {getCategoryName(c.category)}
               </TableCell>
 
-              <TableCell className="max-w-xs truncate">
-                {c.leader ?? "—"}
-              </TableCell>
-
+              {/* State column */}
               <TableCell className="whitespace-nowrap">
                 <Badge variant={stateBadgeVariant(c.state)}>
                   {c.state ?? "draft"}
                 </Badge>
               </TableCell>
 
+              {/* Updated column */}
               <TableCell className="whitespace-nowrap text-muted-foreground">
                 {fmtDate(c.updatedAt)}
               </TableCell>
 
-              <TableCell className="whitespace-nowrap text-muted-foreground">
-                {fmtDate(c.createdAt)}
+              {/* Action column */}
+              <TableCell className="whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => onView(c)}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => onEdit(c)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                </div>
               </TableCell>
             </TableRow>
           ))
