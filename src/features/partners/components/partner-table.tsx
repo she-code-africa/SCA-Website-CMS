@@ -1,13 +1,13 @@
-// src/features/partners/components/partner-table.tsx
 "use client";
 
 import * as React from "react";
 import { format } from "date-fns";
-import { Building2 } from "lucide-react";
+import { Building2, Eye, Pencil } from "lucide-react";
 import type { Partner } from "@/features/partners/types";
 import { cn } from "@/lib/utils/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -35,14 +35,20 @@ export function PartnerTable({
   rows,
   isLoading,
   isError,
-  onRowClick
+  onView,
+  onEdit
 }: {
   rows: Partner[];
   isLoading: boolean;
   isError: boolean;
-  onRowClick: (p: Partner) => void;
+  onView: (p: Partner) => void;
+  onEdit: (p: Partner) => void;
 }) {
-  const headers = ["Name", "Featured", "Updated", "Created"];
+  const headers = ["Name", "Featured", "Updated", "Created", "Action"];
+
+  const handleRowClick = (partner: Partner) => {
+    onView(partner);
+  };
 
   return (
     <Table>
@@ -80,9 +86,10 @@ export function PartnerTable({
           rows.map((p) => (
             <TableRow
               key={p._id}
-              onClick={() => onRowClick(p)}
+              onClick={() => handleRowClick(p)}
               className={cn("cursor-pointer hover:bg-muted/50")}
             >
+              {/* Name column */}
               <TableCell className="whitespace-nowrap">
                 <div className="flex items-center gap-2">
                   {p.image ? (
@@ -101,18 +108,43 @@ export function PartnerTable({
                 </div>
               </TableCell>
 
+              {/* Featured column */}
               <TableCell className="whitespace-nowrap">
                 <Badge variant={p.featured ? "default" : "secondary"}>
                   {p.featured ? "Featured" : "Standard"}
                 </Badge>
               </TableCell>
 
+              {/* Updated column */}
               <TableCell className="whitespace-nowrap text-muted-foreground">
                 {fmtDate(p.updatedAt)}
               </TableCell>
 
+              {/* Created column */}
               <TableCell className="whitespace-nowrap text-muted-foreground">
                 {fmtDate(p.createdAt)}
+              </TableCell>
+
+              {/* Action column */}
+              <TableCell className="whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => onView(p)}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => onEdit(p)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                </div>
               </TableCell>
             </TableRow>
           ))

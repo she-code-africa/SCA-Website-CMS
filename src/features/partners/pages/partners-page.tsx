@@ -92,6 +92,12 @@ export default function PartnersPage() {
     setModalOpen(true);
   };
 
+  const openEdit = (p: Partner) => {
+    setSelected(p);
+    setModalMode("view"); // The sheet has an Edit button inside
+    setModalOpen(true);
+  };
+
   return (
     <PermissionGate permission={PERMISSIONS.VIEW_PARTNER}>
       <TableShell
@@ -156,7 +162,8 @@ export default function PartnersPage() {
                     rows={paged}
                     isLoading={query.isLoading}
                     isError={query.isError}
-                    onRowClick={openView}
+                    onView={openView}
+                    onEdit={openEdit}
                   />
                 </TableFrame>
               </div>
