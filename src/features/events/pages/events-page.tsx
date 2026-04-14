@@ -1,4 +1,3 @@
-// src/app/admin/events/page.tsx
 "use client";
 
 import * as React from "react";
@@ -105,6 +104,11 @@ export default function EventsPage() {
     setModalOpen(true);
   };
 
+  const openEdit = (e: Event) => {
+    setSelected(e);
+    setModalMode("view"); // The sheet handles edit internally via Edit button
+    setModalOpen(true);
+  };
 
   return (
     <PermissionGate permission={PERMISSIONS.VIEW_EVENT}>
@@ -173,7 +177,8 @@ export default function EventsPage() {
                     rows={paged}
                     isLoading={query.isLoading}
                     isError={query.isError}
-                    onRowClick={openView}
+                    onView={openView}
+                    onEdit={openEdit}
                   />
                 </TableFrame>
               </div>

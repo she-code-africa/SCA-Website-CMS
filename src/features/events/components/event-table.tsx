@@ -45,6 +45,10 @@ export function EventTable({
 }) {
   const headers = ["Title", "Link", "State", "Event Date", "Created", "Action"];
 
+  const handleRowClick = (e: Event) => {
+    onView(e);
+  };
+
   return (
     <Table>
       <TableHeader>
@@ -79,7 +83,11 @@ export function EventTable({
           </TableRow>
         ) : rows.length ? (
           rows.map((e) => (
-            <TableRow key={e._id} className={cn("hover:bg-muted/50")}>
+            <TableRow
+              key={e._id}
+              onClick={() => handleRowClick(e)}
+              className={cn("cursor-pointer hover:bg-muted/50")}
+            >
               {/* Title column */}
               <TableCell className="whitespace-nowrap">
                 <div className="flex items-center gap-2">
@@ -107,7 +115,7 @@ export function EventTable({
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline"
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={(ev) => ev.stopPropagation()}
                   >
                     <span className="truncate">Link</span>
                     <ExternalLink className="h-3 w-3 shrink-0" />
@@ -135,7 +143,7 @@ export function EventTable({
               </TableCell>
 
               {/* Action column */}
-              <TableCell className="whitespace-nowrap">
+              <TableCell className="whitespace-nowrap" onClick={(ev) => ev.stopPropagation()}>
                 <div className="flex items-center gap-1">
                   <Button
                     variant="ghost"
