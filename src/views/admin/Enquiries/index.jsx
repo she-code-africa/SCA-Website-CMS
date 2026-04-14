@@ -38,6 +38,8 @@ const Enquiries = () => {
 		},
 	});
 
+	console.log(data);
+
 	useEffect(() => {
 		setEnquiries(data);
 	}, [data]);

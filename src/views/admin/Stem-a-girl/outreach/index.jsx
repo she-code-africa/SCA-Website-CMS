@@ -35,6 +35,7 @@ const OutreachPage = () => {
 	const { isLoading } = useQuery("outreaches", getOutreaches, {
 		onSuccess: ({ data }) => {
 			setOutreaches(data.data);
+			console.log(data)
 		},
 		onError: () => {
 			toast.error("Could not fetch Outreaches");

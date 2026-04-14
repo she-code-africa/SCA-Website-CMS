@@ -746,6 +746,11 @@ export async function createOutreach(data) {
 	return await axios.post(`${sagBaseUrl}/outreach`, data);
 }
 
+export async function getSagEnquiries() {
+	const enquiresResponse = await api.get(`${sagBaseUrl}/enquiry`);
+	return enquiresResponse;
+}
+
 export async function updateOutreach({ outreachId, data }) {
 	return await axios.put(`${sagBaseUrl}/outreach/${outreachId}`, data);
 }
