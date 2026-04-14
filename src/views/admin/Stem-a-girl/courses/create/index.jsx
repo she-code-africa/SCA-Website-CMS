@@ -18,7 +18,7 @@ const defaultLesson = () => ({
 	thumbnail: "",
 	durationMinutes: "",
 	order: "",
-	isPreview: false,
+	// isPreview: false,
 	practiceTask: "",
 	resources: [{ title: "", url: "" }],
 });
@@ -196,7 +196,7 @@ const CreateCoursesPage = () => {
 	};
 
 	//Submit
-const history = useHistory()
+	const history = useHistory();
 	const { mutate: addCourse, isLoading: creating } = useMutation(
 		createSAGCourse,
 		{
@@ -235,6 +235,7 @@ const history = useHistory()
 		formData.append("slug", slug);
 		formData.append("state", state);
 		formData.append("modules", JSON.stringify(modules));
+		// formData.append("modules", JSON.stringify(sanitizeModules(modules)));
 		addCourse(formData);
 	};
 
