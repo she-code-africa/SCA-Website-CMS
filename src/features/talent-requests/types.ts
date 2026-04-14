@@ -1,5 +1,5 @@
 // src/features/talent-requests/types.ts
-export type TalentRequestStatus = "Pending" | "Approved" | "Rejected";
+export type TalentRequestStatus = "Pending" | "Open" | "Closed" | "Archived";
 
 export type TalentRequest = {
   _id: string;

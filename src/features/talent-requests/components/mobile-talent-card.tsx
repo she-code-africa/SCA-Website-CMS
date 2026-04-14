@@ -10,10 +10,11 @@ function fmtDate(v?: string) {
   return format(d, "dd MMM, yyyy");
 }
 
-function statusVariant(status?: TalentRequestStatus) {
-  if (status === "Approved") return "default";
-  if (status === "Rejected") return "destructive";
-  return "secondary";
+function statusBadgeVariant(status?: TalentRequestStatus) {
+  if (status === "Open") return "default";
+  if (status === "Closed") return "destructive";
+  if (status === "Archived") return "secondary";
+  return "secondary"; // Pending
 }
 
 export function MobileTalentCard({ row }: { row: TalentRequest }) {
@@ -29,7 +30,7 @@ export function MobileTalentCard({ row }: { row: TalentRequest }) {
           </p>
 
           <div className="mt-2 flex flex-wrap gap-2">
-            <Badge variant={statusVariant(row.status)}>
+            <Badge variant={statusBadgeVariant(row.status)}>
               {row.status ?? "Pending"}
             </Badge>
             {row.jobRole ? (

@@ -7,6 +7,7 @@ import type { TalentRequest, TalentRequestStatus } from "../types";
 import {
   createTalentRequest,
   updateTalentRequest,
+  updateTalentRequestStatus,
   deleteTalentRequest
 } from "../api";
 import { PermissionGate } from "@/components/PermissionGate";
@@ -52,10 +53,11 @@ type Props = {
   onDelete?: () => void;
 };
 
-function badgeVariant(status?: string) {
-  if (status === "Approved") return "default";
-  if (status === "Rejected") return "destructive";
-  return "secondary";
+function badgeVariant(status?: TalentRequestStatus) {
+  if (status === "Open") return "default";
+  if (status === "Closed") return "destructive";
+  if (status === "Archived") return "secondary";
+  return "secondary"; // Pending
 }
 
 type FormData = {
@@ -92,7 +94,6 @@ export function TalentRequestDetailsSheet({
 
   const isCreate = !row;
 
-  // Reset and hydrate form when sheet opens or row changes
   React.useEffect(() => {
     if (!open) {
       setEditing(false);
@@ -134,19 +135,38 @@ export function TalentRequestDetailsSheet({
       onOpenChange(false);
       onUpdate?.();
     },
-    onError: () => toast.error("Failed to create request")
+    onError: (err: any) =>
+      toast.error(err?.response?.data?.message || "Failed to create request")
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<FormData> }) =>
-      updateTalentRequest(id, data),
+    mutationFn: async ({
+      id,
+      data,
+      previousStatus
+    }: {
+      id: string;
+      data: Partial<FormData>;
+      previousStatus?: TalentRequestStatus;
+    }) => {
+      const { status, ...otherFields } = data;
+      // Update non-status fields via PUT
+      if (Object.keys(otherFields).length > 0) {
+        await updateTalentRequest(id, otherFields);
+      }
+      // Update status via PATCH if changed
+      if (status && previousStatus && status !== previousStatus) {
+        await updateTalentRequestStatus({ id, status });
+      }
+    },
     onSuccess: () => {
       toast.success("Request updated");
       qc.invalidateQueries({ queryKey: ["talent-requests"] });
       setEditing(false);
       onUpdate?.();
     },
-    onError: () => toast.error("Failed to update request")
+    onError: (err: any) =>
+      toast.error(err?.response?.data?.message || "Failed to update request")
   });
 
   const deleteMutation = useMutation({
@@ -157,7 +177,8 @@ export function TalentRequestDetailsSheet({
       onOpenChange(false);
       onDelete?.();
     },
-    onError: () => toast.error("Failed to delete request")
+    onError: (err: any) =>
+      toast.error(err?.response?.data?.message || "Failed to delete request")
   });
 
   const handleSubmit = () => {
@@ -165,8 +186,12 @@ export function TalentRequestDetailsSheet({
       const { status, ...createData } = form;
       createMutation.mutate(createData);
     } else if (row) {
-      const { ...updateData } = form;
-      updateMutation.mutate({ id: row._id, data: updateData });
+      const { status, ...otherFields } = form;
+      updateMutation.mutate({
+        id: row._id,
+        data: { ...otherFields, status },
+        previousStatus: row.status
+      });
     }
   };
 
@@ -175,7 +200,6 @@ export function TalentRequestDetailsSheet({
     updateMutation.isPending ||
     deleteMutation.isPending;
 
-  // Skeleton while row is not yet available (should not happen, but safe)
   if (!isCreate && !row && open) {
     return (
       <Sheet open={open} onOpenChange={onOpenChange}>
@@ -316,8 +340,9 @@ export function TalentRequestDetailsSheet({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Pending">Pending</SelectItem>
-                      <SelectItem value="Approved">Approved</SelectItem>
-                      <SelectItem value="Rejected">Rejected</SelectItem>
+                      <SelectItem value="Open">Open</SelectItem>
+                      <SelectItem value="Closed">Closed</SelectItem>
+                      <SelectItem value="Archived">Archived</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

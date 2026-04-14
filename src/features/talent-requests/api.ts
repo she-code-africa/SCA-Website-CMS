@@ -40,13 +40,13 @@ export async function updateTalentRequest(
   return (await api.put(`/talent-request/${id}`, data)) as TalentRequest;
 }
 
-// Update only status (convenience)
 export async function updateTalentRequestStatus(args: {
   id: string;
   status: TalentRequestStatus;
 }): Promise<TalentRequest> {
-  const { id, status } = args;
-  return updateTalentRequest(id, { status });
+  return await api.patch(`/talent-request/${args.id}/status`, {
+    status: args.status
+  });
 }
 
 // Delete

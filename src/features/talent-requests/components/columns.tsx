@@ -8,9 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 function statusBadgeVariant(status?: TalentRequestStatus) {
-  if (status === "Approved") return "default";
-  if (status === "Rejected") return "destructive";
-  return "secondary";
+  if (status === "Open") return "default";
+  if (status === "Closed") return "destructive";
+  if (status === "Archived") return "secondary";
+  return "secondary"; // Pending
 }
 
 function fmtDate(v?: string) {
