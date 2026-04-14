@@ -1,13 +1,13 @@
-// src/features/events/components/event-table.tsx
 "use client";
 
 import * as React from "react";
 import { format } from "date-fns";
-import { Calendar, ExternalLink } from "lucide-react";
+import { Calendar, ExternalLink, Eye, Pencil } from "lucide-react";
 import type { Event, EventState } from "@/features/events/types";
 import { cn } from "@/lib/utils/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -34,21 +34,16 @@ export function EventTable({
   rows,
   isLoading,
   isError,
-  onRowClick
+  onView,
+  onEdit
 }: {
   rows: Event[];
   isLoading: boolean;
   isError: boolean;
-  onRowClick: (e: Event) => void;
+  onView: (e: Event) => void;
+  onEdit: (e: Event) => void;
 }) {
-  const headers = [
-    "Title",
-    "Description",
-    "Link",
-    "State",
-    "Event Date",
-    "Created"
-  ];
+  const headers = ["Title", "Link", "State", "Event Date", "Created", "Action"];
 
   return (
     <Table>
@@ -84,11 +79,8 @@ export function EventTable({
           </TableRow>
         ) : rows.length ? (
           rows.map((e) => (
-            <TableRow
-              key={e._id}
-              onClick={() => onRowClick(e)}
-              className={cn("cursor-pointer hover:bg-muted/50")}
-            >
+            <TableRow key={e._id} className={cn("hover:bg-muted/50")}>
+              {/* Title column */}
               <TableCell className="whitespace-nowrap">
                 <div className="flex items-center gap-2">
                   {e.image ? (
@@ -107,10 +99,7 @@ export function EventTable({
                 </div>
               </TableCell>
 
-              <TableCell className="max-w-xs truncate">
-                {e.description ?? "—"}
-              </TableCell>
-
+              {/* Link column */}
               <TableCell className="max-w-md">
                 {e.link ? (
                   <a
@@ -128,18 +117,43 @@ export function EventTable({
                 )}
               </TableCell>
 
+              {/* State column */}
               <TableCell className="whitespace-nowrap">
                 <Badge variant={stateBadgeVariant(e.state)}>
                   {e.state ?? "draft"}
                 </Badge>
               </TableCell>
 
+              {/* Event Date column */}
               <TableCell className="whitespace-nowrap text-muted-foreground">
                 {fmtDate(e.eventDate)}
               </TableCell>
 
+              {/* Created column */}
               <TableCell className="whitespace-nowrap text-muted-foreground">
                 {fmtDate(e.createdAt)}
+              </TableCell>
+
+              {/* Action column */}
+              <TableCell className="whitespace-nowrap">
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => onView(e)}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => onEdit(e)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                </div>
               </TableCell>
             </TableRow>
           ))

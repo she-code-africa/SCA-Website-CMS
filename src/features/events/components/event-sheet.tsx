@@ -1,17 +1,9 @@
-// src/features/events/components/event-sheet.tsx
 "use client";
 
 import * as React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Calendar, Upload, X } from "lucide-react";
-import {
-  addEvent,
-  archiveEvent,
-  editEvent,
-  getEvent,
-  publishEvent,
-  deleteEvent
-} from "@/features/events/api";
+import { Calendar, Upload, X, Loader2 } from "lucide-react";
+import { addEvent, editEvent, deleteEvent } from "@/features/events/api";
 import type { Event, EventUpsertInput } from "@/features/events/types";
 import { PermissionGate } from "@/components/PermissionGate";
 import { PERMISSIONS } from "@/lib/rbac/permissions";
@@ -43,12 +35,56 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils/utils";
 import { format } from "date-fns";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Props = {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   mode: "create" | "view";
   eventId?: string;
+};
+
+// Image compression helper
+const compressImage = (
+  file: File,
+  maxWidth = 800,
+  maxHeight = 800,
+  quality = 0.7
+): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (e) => {
+      const img = new Image();
+      img.src = e.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxWidth) {
+            height *= maxWidth / width;
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width *= maxHeight / height;
+            height = maxHeight;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx?.drawImage(img, 0, 0, width, height);
+        const base64 = canvas.toDataURL("image/jpeg", quality);
+        resolve(base64);
+      };
+      img.onerror = reject;
+    };
+    reader.onerror = reject;
+  });
 };
 
 export function EventSheet({ open, onOpenChange, mode, eventId }: Props) {
@@ -63,6 +99,8 @@ export function EventSheet({ open, onOpenChange, mode, eventId }: Props) {
     queryFn: () => getEvent(String(eventId)),
     enabled: open && mode === "view" && !!eventId
   });
+
+  const event = eventQuery.data as Event | undefined;
 
   const initialForm: EventUpsertInput = React.useMemo(
     () => ({
@@ -88,37 +126,28 @@ export function EventSheet({ open, onOpenChange, mode, eventId }: Props) {
       return;
     }
 
-    if (eventQuery.data) {
-      const e = eventQuery.data as Event;
+    if (event) {
       setEditing(false);
       setImageFile(null);
-
-      if (e.image) {
-        setImagePreview(e.image);
-      } else {
-        setImagePreview(null);
-      }
-
+      setImagePreview(event.image ?? null);
       setForm({
-        title: e.title ?? "",
-        description: e.description ?? "",
-        link: e.link ?? "",
-        eventDate: e.eventDate
-          ? format(new Date(e.eventDate), "yyyy-MM-dd")
+        title: event.title ?? "",
+        description: event.description ?? "",
+        link: event.link ?? "",
+        eventDate: event.eventDate
+          ? format(new Date(event.eventDate), "yyyy-MM-dd")
           : format(new Date(), "yyyy-MM-dd"),
         image: null
       });
     }
-  }, [open, mode, eventQuery.data, initialForm]);
+  }, [open, mode, event, initialForm]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setImageFile(file);
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
+      reader.onloadend = () => setImagePreview(reader.result as string);
       reader.readAsDataURL(file);
     }
   };
@@ -126,50 +155,47 @@ export function EventSheet({ open, onOpenChange, mode, eventId }: Props) {
   const handleRemoveImage = () => {
     setImageFile(null);
     setImagePreview(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const createMut = useMutation({
-    mutationFn: addEvent,
+    mutationFn: async (data: {
+      title: string;
+      description: string;
+      link: string;
+      eventDate: string;
+      image?: string | null;
+    }) => addEvent(data),
     onSuccess: () => {
       toast.success("Event added");
       qc.invalidateQueries({ queryKey: ["events"] });
       onOpenChange(false);
     },
-    onError: () => toast.error("Could not add event")
+    onError: (err: any) => {
+      toast.error(err?.response?.data?.message || "Could not add event");
+    }
   });
 
   const updateMut = useMutation({
-    mutationFn: editEvent,
+    mutationFn: async (payload: {
+      id: string;
+      data: {
+        title?: string;
+        description?: string;
+        link?: string;
+        eventDate?: string;
+        image?: string | null;
+      };
+    }) => editEvent(payload),
     onSuccess: () => {
       toast.success("Event updated");
       qc.invalidateQueries({ queryKey: ["events"] });
       qc.invalidateQueries({ queryKey: ["event"] });
       onOpenChange(false);
     },
-    onError: () => toast.error("Could not update event")
-  });
-
-  const publishMut = useMutation({
-    mutationFn: publishEvent,
-    onSuccess: () => {
-      toast.success("Published");
-      qc.invalidateQueries({ queryKey: ["events"] });
-      qc.invalidateQueries({ queryKey: ["event"] });
-    },
-    onError: () => toast.error("Could not publish")
-  });
-
-  const archiveMut = useMutation({
-    mutationFn: archiveEvent,
-    onSuccess: () => {
-      toast.success("Archived");
-      qc.invalidateQueries({ queryKey: ["events"] });
-      qc.invalidateQueries({ queryKey: ["event"] });
-    },
-    onError: () => toast.error("Could not archive")
+    onError: (err: any) => {
+      toast.error(err?.response?.data?.message || "Could not update event");
+    }
   });
 
   const deleteMut = useMutation({
@@ -200,20 +226,66 @@ export function EventSheet({ open, onOpenChange, mode, eventId }: Props) {
       return;
     }
 
+    let imageValue: string | null | undefined = undefined;
+
+    if (imageFile) {
+      try {
+        imageValue = await compressImage(imageFile, 800, 800, 0.7);
+      } catch {
+        toast.error("Failed to process image");
+        return;
+      }
+    }
+
     if (mode === "create") {
-      createMut.mutate({ ...form, image: imageFile });
+      createMut.mutate({
+        title: form.title.trim(),
+        description: form.description.trim(),
+        link: form.link.trim(),
+        eventDate: form.eventDate,
+        image: imageValue ?? null
+      });
       return;
     }
 
     if (!eventId) return;
     updateMut.mutate({
       id: eventId,
-      data: { ...form, image: imageFile ?? undefined }
+      data: {
+        title: form.title.trim(),
+        description: form.description.trim(),
+        link: form.link.trim(),
+        eventDate: form.eventDate,
+        image: imageValue
+      }
     });
   };
 
-  const currentState = (eventQuery.data as Event | undefined)?.state;
   const saving = createMut.isPending || updateMut.isPending;
+
+  // Skeleton loader while fetching
+  if (mode === "view" && eventQuery.isLoading && !event) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent
+          side="right"
+          className="w-full sm:max-w-xl p-0 flex flex-col"
+        >
+          <SheetHeader className="px-6 py-4 border-b">
+            <Skeleton className="h-6 w-40" />
+            <Skeleton className="h-4 w-64 mt-1" />
+          </SheetHeader>
+          <div className="flex-1 px-6 py-6 space-y-6">
+            <Skeleton className="h-32 w-full rounded-lg" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-32 w-full" />
+          </div>
+        </SheetContent>
+      </Sheet>
+    );
+  }
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -228,13 +300,13 @@ export function EventSheet({ open, onOpenChange, mode, eventId }: Props) {
           <SheetDescription>
             {mode === "create"
               ? "Add a new event."
-              : "View, edit, publish/archive, or delete this event."}
+              : "View, edit, or delete this event."}
           </SheetDescription>
         </SheetHeader>
 
         <ScrollArea className="flex-1 px-6">
           <div className="py-6 space-y-6">
-            {/* Top actions row */}
+            {/* Top actions row (view mode only) */}
             {mode === "view" && (
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <PermissionGate permission={PERMISSIONS.UPDATE_EVENT}>
@@ -247,61 +319,43 @@ export function EventSheet({ open, onOpenChange, mode, eventId }: Props) {
                   </Button>
                 </PermissionGate>
 
-                <div className="flex gap-2 w-full sm:w-auto">
-                  <PermissionGate permission={PERMISSIONS.UPDATE_EVENT}>
-                    <Button
-                      variant="outline"
-                      className="flex-1 sm:flex-none"
-                      onClick={() => {
-                        if (!eventId) return;
-                        if (currentState === "published")
-                          archiveMut.mutate(eventId);
-                        else publishMut.mutate(eventId);
-                      }}
-                      disabled={publishMut.isPending || archiveMut.isPending}
-                    >
-                      {currentState === "published" ? "Archive" : "Publish"}
-                    </Button>
-                  </PermissionGate>
-
-                  {/* Delete with confirmation */}
-                  {!editing && (
-                    <PermissionGate permission={PERMISSIONS.DELETE_EVENT}>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="destructive"
-                            className="flex-1 sm:flex-none"
+                {/* Delete – only when NOT editing */}
+                {!editing && (
+                  <PermissionGate permission={PERMISSIONS.DELETE_EVENT}>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="destructive"
+                          className="flex-1 sm:flex-none"
+                        >
+                          Delete
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete event?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => {
+                              if (!eventId) return;
+                              deleteMut.mutate(eventId);
+                            }}
+                            className={cn(
+                              "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            )}
                           >
                             Delete
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete event?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => {
-                                if (!eventId) return;
-                                deleteMut.mutate(eventId);
-                              }}
-                              className={cn(
-                                "bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              )}
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </PermissionGate>
-                  )}
-                </div>
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </PermissionGate>
+                )}
               </div>
             )}
 
@@ -344,12 +398,9 @@ export function EventSheet({ open, onOpenChange, mode, eventId }: Props) {
                 </div>
 
                 <div className="flex-1 space-y-3">
-                  <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground">
-                      Recommended: 16:9 aspect ratio, at least 800x450px. Max
-                      5MB.
-                    </p>
-                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Recommended: 16:9 aspect ratio, at least 800x450px. Max 5MB.
+                  </p>
 
                   {editing && (
                     <Button
@@ -372,6 +423,16 @@ export function EventSheet({ open, onOpenChange, mode, eventId }: Props) {
                     onChange={handleImageChange}
                     className="hidden"
                   />
+
+                  {editing && (
+                    <p className="text-xs text-muted-foreground">
+                      {imageFile
+                        ? `Selected: ${imageFile.name}`
+                        : mode === "create"
+                          ? "No image selected (optional)"
+                          : "No new file selected (keeps existing image)."}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -428,7 +489,7 @@ export function EventSheet({ open, onOpenChange, mode, eventId }: Props) {
         </ScrollArea>
 
         {/* Bottom action bar */}
-        {(mode === "create" && (
+        {mode === "create" && (
           <PermissionGate permission={PERMISSIONS.CREATE_EVENT}>
             <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
               <Button
@@ -443,31 +504,46 @@ export function EventSheet({ open, onOpenChange, mode, eventId }: Props) {
                 onClick={submit}
                 disabled={saving}
               >
-                {saving ? "Saving…" : "Add Event"}
+                {saving ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving…
+                  </>
+                ) : (
+                  "Add Event"
+                )}
               </Button>
             </div>
           </PermissionGate>
-        )) ||
-          (mode === "view" && editing && (
-            <PermissionGate permission={PERMISSIONS.UPDATE_EVENT}>
-              <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
-                <Button
-                  variant="outline"
-                  onClick={() => onOpenChange(false)}
-                  disabled={saving}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  className="bg-pink-600 hover:bg-pink-700"
-                  onClick={submit}
-                  disabled={saving}
-                >
-                  {saving ? "Saving…" : "Save Changes"}
-                </Button>
-              </div>
-            </PermissionGate>
-          ))}
+        )}
+
+        {mode === "view" && editing && (
+          <PermissionGate permission={PERMISSIONS.UPDATE_EVENT}>
+            <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
+              <Button
+                variant="outline"
+                onClick={() => setEditing(false)}
+                disabled={saving}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="bg-pink-600 hover:bg-pink-700"
+                onClick={submit}
+                disabled={saving}
+              >
+                {saving ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving…
+                  </>
+                ) : (
+                  "Save Changes"
+                )}
+              </Button>
+            </div>
+          </PermissionGate>
+        )}
       </SheetContent>
     </Sheet>
   );
