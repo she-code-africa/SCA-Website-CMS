@@ -1,9 +1,10 @@
-// src/features/volunteer-roles/components/volunteer-role-table.tsx
 "use client";
 
 import * as React from "react";
+import { Eye } from "lucide-react";
 import type { VolunteerRole } from "../types";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils/utils";
 import {
   Table,
@@ -74,7 +75,7 @@ export function VolunteerRoleTable({
   isError: boolean;
   onRowClick: (r: VolunteerRole) => void;
 }) {
-  const headers = ["Role", "Skills", "Updated"];
+  const headers = ["Role", "Skills", "Updated", "View"];
 
   return (
     <TooltipProvider delayDuration={120}>
@@ -117,6 +118,11 @@ export function VolunteerRoleTable({
                 <TableCell>
                   <Skeleton className="h-4 w-24" />
                 </TableCell>
+
+                {/* View skeleton */}
+                <TableCell>
+                  <Skeleton className="h-8 w-8 rounded-full" />
+                </TableCell>
               </TableRow>
             ))
           ) : isError ? (
@@ -147,7 +153,6 @@ export function VolunteerRoleTable({
                             alt={r.name}
                             className="h-8 w-8 rounded-full object-cover"
                             onClick={(e) => {
-                              // prevent row click if user only wants to hover/click image
                               e.stopPropagation();
                             }}
                           />
@@ -179,7 +184,6 @@ export function VolunteerRoleTable({
                         {r.name ?? "—"}
                       </div>
 
-                      {/* 🔥 Hard truncate (no plugin required) */}
                       <div
                         className="text-xs text-muted-foreground truncate max-w-130"
                         title={(r.description ?? "").trim() || undefined}
@@ -203,6 +207,21 @@ export function VolunteerRoleTable({
                 {/* UPDATED */}
                 <TableCell className="whitespace-nowrap text-muted-foreground">
                   {fmtDate(r.updatedAt ?? r.createdAt)}
+                </TableCell>
+
+                {/* VIEW ACTION */}
+                <TableCell className="whitespace-nowrap">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRowClick(r);
+                    }}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
                 </TableCell>
               </TableRow>
             ))

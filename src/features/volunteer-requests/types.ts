@@ -9,7 +9,7 @@ export type VolunteerRequest = {
   purpose?: string;
   volunteerRole?: string;
   status?: VolunteerStatus;
-
+  rejectionReason?: string; 
   createdAt?: string; // ISO string
   updatedAt?: string; // ISO string
 

@@ -1,12 +1,12 @@
-// src/features/volunteer-roles/components/volunteer-role-sheet.tsx
 "use client";
 
 import * as React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Upload, X, Briefcase } from "lucide-react";
+import { Upload, X, Briefcase, Loader2 } from "lucide-react";
 
 import {
+  createVolunteerRole,
   deleteVolunteerRole,
   getVolunteerRole,
   updateVolunteerRole
@@ -38,7 +38,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils/utils";
 
-type Mode = "view" | "edit";
+type Mode = "create" | "view" | "edit";
 
 type Props = {
   open: boolean;
@@ -50,6 +50,49 @@ type Props = {
 function normalizeSkill(s: string) {
   return s.trim().replace(/\s+/g, " ");
 }
+
+// Image compression helper (same as team)
+const compressImage = (
+  file: File,
+  maxWidth = 800,
+  maxHeight = 800,
+  quality = 0.7
+): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (e) => {
+      const img = new Image();
+      img.src = e.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxWidth) {
+            height *= maxWidth / width;
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width *= maxHeight / height;
+            height = maxHeight;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx?.drawImage(img, 0, 0, width, height);
+        const base64 = canvas.toDataURL("image/jpeg", quality);
+        resolve(base64);
+      };
+      img.onerror = reject;
+    };
+    reader.onerror = reject;
+  });
+};
 
 export function VolunteerRoleSheet({
   open,
@@ -68,37 +111,61 @@ export function VolunteerRoleSheet({
   const [skills, setSkills] = React.useState<string[]>([]);
   const [skillInput, setSkillInput] = React.useState("");
 
-  // ✅ team-like image handling
+  // image handling
   const [imageFile, setImageFile] = React.useState<File | null>(null);
   const [imagePreview, setImagePreview] = React.useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
+  // Fetch existing role (only in view/edit mode)
   const q = useQuery({
     queryKey: ["volunteer-role", roleId],
     queryFn: () => getVolunteerRole(String(roleId)),
-    enabled: open && !!roleId,
+    enabled: open && !!roleId && mode !== "create",
     staleTime: 30_000
   });
 
   const role = q.data as VolunteerRole | undefined;
 
+  // Reset everything when opening in create mode
   React.useEffect(() => {
-    if (open) setMode(initialMode);
-  }, [open, initialMode]);
+    if (!open) return;
+    if (mode === "create") {
+      setName("");
+      setDescription("");
+      setSkills([]);
+      setSkillInput("");
+      setImageFile(null);
+      setImagePreview(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }, [open, mode]);
 
-  // hydrate form + preview from fetched role
+  // Hydrate form from fetched role (view/edit)
   React.useEffect(() => {
-    if (!role) return;
-
+    if (!role || mode === "create") return;
     setName(role.name ?? "");
     setDescription(role.description ?? "");
     setSkills(role.skills ?? []);
     setSkillInput("");
-
     setImageFile(null);
-    setImagePreview(role.image ?? null); //show existing url
-  }, [role]);
+    setImagePreview(role.image ?? null);
+  }, [role, mode]);
 
+  // Create mutation
+  const createMut = useMutation({
+    mutationFn: createVolunteerRole,
+    onSuccess: () => {
+      toast.success("Volunteer role created");
+      qc.invalidateQueries({ queryKey: ["volunteer-roles"] });
+      onOpenChange(false);
+    },
+    onError: (err: any) => {
+      const message = err?.response?.data?.message ?? "Failed to create role";
+      toast.error(message);
+    }
+  });
+
+  // Update mutation
   const updateMut = useMutation({
     mutationFn: updateVolunteerRole,
     onSuccess: () => {
@@ -107,13 +174,14 @@ export function VolunteerRoleSheet({
       qc.invalidateQueries({ queryKey: ["volunteer-role", roleId] });
       setMode("view");
       setImageFile(null);
-      // keep imagePreview as whatever is in fetched role after refetch
     },
     onError: (err: any) => {
-      toast.error(err?.response?.data?.message ?? "Failed to update role");
+      const message = err?.response?.data?.message ?? "Failed to update role";
+      toast.error(message);
     }
   });
 
+  // Delete mutation
   const deleteMut = useMutation({
     mutationFn: deleteVolunteerRole,
     onSuccess: () => {
@@ -148,39 +216,57 @@ export function VolunteerRoleSheet({
   }
 
   function cancelEdit() {
+    if (mode === "create") {
+      onOpenChange(false);
+      return;
+    }
     if (!role) return;
     setName(role.name ?? "");
     setDescription(role.description ?? "");
     setSkills(role.skills ?? []);
     setSkillInput("");
-
     setImageFile(null);
     setImagePreview(role.image ?? null);
-
     setMode("view");
   }
 
-  function onSave() {
-    if (!roleId) return;
+  async function onSave() {
     if (!canSave) {
       toast.error("Please fill name, description, and at least 1 skill.");
       return;
     }
 
-    // ✅ image optional:
-    // if imageFile is null => toFormData won't append it => backend keeps existing image
-    updateMut.mutate({
-      id: roleId,
-      data: {
+    let imageValue: string | undefined = undefined;
+
+    if (imageFile) {
+      try {
+        imageValue = await compressImage(imageFile, 800, 800, 0.7);
+      } catch {
+        toast.error("Failed to process image");
+        return;
+      }
+    }
+
+    if (mode === "create") {
+      createMut.mutate({
         name: name.trim(),
         description: description.trim(),
         skills,
-        image: imageFile ?? undefined
-      }
-    });
+        image: imageValue // undefined = no image field sent
+      });
+    } else if (roleId) {
+      updateMut.mutate({
+        id: roleId,
+        data: {
+          name: name.trim(),
+          description: description.trim(),
+          skills,
+          image: imageValue // undefined = keep existing
+        }
+      });
+    }
   }
 
-  // ✅ image UX same as team
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -193,13 +279,14 @@ export function VolunteerRoleSheet({
 
   const handleRemoveImage = () => {
     setImageFile(null);
-    setImagePreview(null); // sets to none (won’t delete on backend, just preview)
+    setImagePreview(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const isLoading = q.isLoading;
-  const isError = q.isError;
-  const saving = updateMut.isPending;
+  const isLoading = mode !== "create" && q.isLoading;
+  const isError = mode !== "create" && q.isError;
+  const saving = createMut.isPending || updateMut.isPending;
+  const isEditMode = mode === "edit" || mode === "create";
 
   return (
     <Sheet
@@ -220,24 +307,40 @@ export function VolunteerRoleSheet({
         <SheetHeader className="px-6 py-4 border-b space-y-1">
           <div className="flex items-start justify-between gap-3">
             <div className="space-y-1">
-              <SheetTitle>Volunteer Role</SheetTitle>
+              <SheetTitle>
+                {mode === "create" ? "Create Volunteer Role" : "Volunteer Role"}
+              </SheetTitle>
               <SheetDescription>
-                {mode === "edit"
-                  ? "Edit role details. Image upload is optional."
-                  : "View role details and manage updates."}
+                {mode === "create"
+                  ? "Add a new volunteer role. Image upload is optional."
+                  : mode === "edit"
+                    ? "Edit role details. Image upload is optional."
+                    : "View role details and manage updates."}
               </SheetDescription>
             </div>
 
             <div className="flex gap-2">
-              {mode === "view" ? (
-                <Button
-                  variant="secondary"
-                  onClick={() => setMode("edit")}
-                  disabled={isLoading || isError || !roleId}
-                >
-                  Edit
-                </Button>
-              ) : (
+              {mode === "view" && (
+                <>
+                  <Button
+                    variant="secondary"
+                    onClick={() => setMode("edit")}
+                    disabled={isLoading || isError || !roleId}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="text-red-600 hover:text-red-700"
+                    onClick={() => setConfirmDelete(true)}
+                    disabled={!roleId || deleteMut.isPending || saving}
+                  >
+                    Delete
+                  </Button>
+                </>
+              )}
+
+              {(mode === "edit" || mode === "create") && (
                 <Button
                   variant="secondary"
                   onClick={cancelEdit}
@@ -246,15 +349,6 @@ export function VolunteerRoleSheet({
                   Cancel
                 </Button>
               )}
-
-              <Button
-                variant="outline"
-                className="text-red-600 hover:text-red-700"
-                onClick={() => setConfirmDelete(true)}
-                disabled={!roleId || deleteMut.isPending || saving}
-              >
-                Delete
-              </Button>
             </div>
           </div>
         </SheetHeader>
@@ -262,29 +356,29 @@ export function VolunteerRoleSheet({
         <ScrollArea className="flex-1 px-6">
           <div className="py-6 space-y-6">
             {isLoading ? (
-              <p className="text-sm text-muted-foreground">Loading…</p>
-            ) : isError || !role ? (
+              <div className="flex items-center justify-center py-10">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : isError ? (
               <p className="text-sm text-red-500">
                 Failed to load volunteer role.
               </p>
             ) : (
               <>
-                {/* Meta */}
                 <div className="flex items-center justify-between gap-2">
                   <Badge variant="secondary">{skills.length} skill(s)</Badge>
                 </div>
 
-                {/* ✅ Image upload (Team-like) */}
+                {/* Image upload */}
                 <div className="grid gap-3">
                   <label className="text-sm font-medium">Role Image</label>
 
                   <div className="flex flex-col sm:flex-row gap-4 items-center">
-                    {/* Preview */}
                     <div className="relative group">
                       <div
                         className={cn(
                           "w-32 h-32 rounded-lg border-2 border-dashed overflow-hidden transition-colors",
-                          mode === "edit"
+                          isEditMode
                             ? "border-muted-foreground/25 hover:border-muted-foreground/50"
                             : "border-muted-foreground/25"
                         )}
@@ -303,8 +397,7 @@ export function VolunteerRoleSheet({
                         )}
                       </div>
 
-                      {/* Remove */}
-                      {mode === "edit" && imagePreview && (
+                      {isEditMode && imagePreview && (
                         <button
                           type="button"
                           onClick={handleRemoveImage}
@@ -315,13 +408,12 @@ export function VolunteerRoleSheet({
                       )}
                     </div>
 
-                    {/* Controls */}
                     <div className="flex-1 space-y-3">
                       <p className="text-xs text-muted-foreground">
                         Recommended: Square image, at least 400×400px. Max 5MB.
                       </p>
 
-                      {mode === "edit" && (
+                      {isEditMode && (
                         <Button
                           type="button"
                           variant="outline"
@@ -338,16 +430,18 @@ export function VolunteerRoleSheet({
                         ref={fileInputRef}
                         type="file"
                         accept="image/*"
-                        disabled={mode !== "edit"}
+                        disabled={!isEditMode}
                         onChange={handleImageChange}
                         className="hidden"
                       />
 
-                      {mode === "edit" && (
+                      {isEditMode && (
                         <p className="text-xs text-muted-foreground">
                           {imageFile
                             ? `Selected: ${imageFile.name} (will replace current)`
-                            : "No new file selected (keeps existing image)."}
+                            : mode === "create"
+                              ? "No image selected (optional)"
+                              : "No new file selected (keeps existing image)."}
                         </p>
                       )}
                     </div>
@@ -356,39 +450,38 @@ export function VolunteerRoleSheet({
 
                 <Separator />
 
-                {/* Name */}
                 <div className="grid gap-2">
-                  <label className="text-sm font-medium">Role Name</label>
+                  <label className="text-sm font-medium">Role Name *</label>
                   <Input
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    disabled={mode !== "edit"}
+                    disabled={!isEditMode}
+                    placeholder="e.g., Mentor, Event Organizer"
                   />
                 </div>
 
-                {/* Description */}
                 <div className="grid gap-2">
-                  <label className="text-sm font-medium">Description</label>
+                  <label className="text-sm font-medium">Description *</label>
                   <Textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    disabled={mode !== "edit"}
+                    disabled={!isEditMode}
                     className="min-h-35"
+                    placeholder="Describe the role responsibilities..."
                   />
                 </div>
 
-                {/* Skills */}
                 <div className="grid gap-3">
                   <div className="flex items-center justify-between gap-2">
-                    <label className="text-sm font-medium">Skills</label>
-                    {mode === "edit" ? (
+                    <label className="text-sm font-medium">Skills *</label>
+                    {isEditMode && (
                       <span className="text-xs text-muted-foreground">
                         Press Enter to add
                       </span>
-                    ) : null}
+                    )}
                   </div>
 
-                  {mode === "edit" ? (
+                  {isEditMode && (
                     <div className="flex flex-col gap-2 sm:flex-row">
                       <Input
                         value={skillInput}
@@ -410,7 +503,7 @@ export function VolunteerRoleSheet({
                         Add
                       </Button>
                     </div>
-                  ) : null}
+                  )}
 
                   <div className="flex flex-wrap gap-2">
                     {skills.length ? (
@@ -419,20 +512,20 @@ export function VolunteerRoleSheet({
                           key={s}
                           type="button"
                           onClick={() =>
-                            mode === "edit" ? removeSkill(s) : undefined
+                            isEditMode ? removeSkill(s) : undefined
                           }
                           className={[
                             "rounded-full border bg-background px-3 py-1 text-xs",
-                            mode === "edit"
+                            isEditMode
                               ? "hover:bg-muted cursor-pointer"
                               : "cursor-default"
                           ].join(" ")}
-                          title={mode === "edit" ? "Remove" : undefined}
+                          title={isEditMode ? "Remove" : undefined}
                         >
                           {s}
-                          {mode === "edit" ? (
+                          {isEditMode && (
                             <span className="text-muted-foreground"> ×</span>
-                          ) : null}
+                          )}
                         </button>
                       ))
                     ) : (
@@ -447,8 +540,7 @@ export function VolunteerRoleSheet({
           </div>
         </ScrollArea>
 
-        {/* Bottom action bar (like Team) */}
-        {mode === "edit" && (
+        {isEditMode && (
           <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
             <Button variant="outline" onClick={cancelEdit} disabled={saving}>
               Cancel
@@ -458,12 +550,20 @@ export function VolunteerRoleSheet({
               onClick={onSave}
               disabled={saving || !canSave}
             >
-              {saving ? "Saving…" : "Save Changes"}
+              {saving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {mode === "create" ? "Creating…" : "Saving…"}
+                </>
+              ) : mode === "create" ? (
+                "Create Role"
+              ) : (
+                "Save Changes"
+              )}
             </Button>
           </div>
         )}
 
-        {/* Delete confirm */}
         <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
           <AlertDialogContent>
             <AlertDialogHeader>
@@ -473,7 +573,6 @@ export function VolunteerRoleSheet({
                 admin dashboard.
               </AlertDialogDescription>
             </AlertDialogHeader>
-
             <AlertDialogFooter>
               <AlertDialogCancel disabled={deleteMut.isPending}>
                 Cancel
