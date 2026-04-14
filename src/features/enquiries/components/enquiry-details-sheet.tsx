@@ -16,6 +16,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectTrigger,
@@ -37,6 +38,7 @@ export function EnquiryDetailsSheet({
   const qc = useQueryClient();
   const [editing, setEditing] = React.useState(false);
   const [status, setStatus] = React.useState<EnquiryStatus>("open");
+  const [comment, setComment] = React.useState("");
 
   const q = useQuery({
     queryKey: ["enquiry", id],
@@ -47,32 +49,33 @@ export function EnquiryDetailsSheet({
   const enquiry = q.data as Enquiry | undefined;
 
   React.useEffect(() => {
-    if (enquiry?.status) setStatus(enquiry.status);
+    if (enquiry) {
+      setStatus(enquiry.status ?? "open");
+      setComment(enquiry.comment ?? "");
+    }
     setEditing(false);
   }, [enquiry, open]);
 
   const mut = useMutation({
-    mutationFn: async ({
+    mutationFn: ({
       id,
-      status
+      status,
+      comment
     }: {
       id: string;
       status: EnquiryStatus;
-    }) => {
-      console.log("🔍 Updating enquiry status:", { id, status });
-      return updateEnquiryStatus({ id, status });
+      comment?: string;
+    }) => updateEnquiryStatus({ id, status, comment }),
+    onSuccess: () => {
+      toast.success("Enquiry updated");
+      qc.invalidateQueries({ queryKey: ["enquiries"] });
+      qc.invalidateQueries({ queryKey: ["enquiry", id] });
+      onOpenChange(false);
     },
-// In EnquiryDetailsSheet, onSuccess:
-onSuccess: () => {
-  toast.success("Enquiry updated");
-  qc.invalidateQueries({ queryKey: ["enquiries"] });
-  qc.invalidateQueries({ queryKey: ["enquiry", id] });
-  qc.refetchQueries({ queryKey: ["enquiries"] });
-  onOpenChange(false);
-},
     onError: (err: any) => {
-      console.error("Update failed:", err);
-      toast.error(err?.response?.data?.message || "Failed to update enquiry");
+      const message =
+        err?.response?.data?.message || "Failed to update enquiry";
+      toast.error(message);
     }
   });
 
@@ -113,7 +116,9 @@ onSuccess: () => {
           ) : (
             <div className="space-y-6">
               <div className="flex justify-between">
-                <Badge>{enquiry.status ?? "open"}</Badge>
+                <Badge variant={status === "closed" ? "secondary" : "default"}>
+                  {status}
+                </Badge>
                 <Button variant="outline" onClick={() => setEditing((v) => !v)}>
                   {editing ? "View" : "Edit"}
                 </Button>
@@ -121,30 +126,45 @@ onSuccess: () => {
 
               <Field label="Full Name" value={enquiry.fullName} />
               <Field label="Email" value={enquiry.email} />
+              <Field label="Message" value={enquiry.description} multiline />
 
-              <div>
-                <label className="text-sm font-medium">Status</label>
-                <Select
-                  value={status}
-                  disabled={!editing}
-                  onValueChange={(v) => setStatus(v as EnquiryStatus)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="open">Open</SelectItem>
-                    <SelectItem value="closed">Closed</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium">Message</label>
-                <div className="rounded-md border p-3 text-sm bg-muted/50 whitespace-pre-wrap">
-                  {enquiry.description ?? "—"}
-                </div>
-              </div>
+              {editing ? (
+                <>
+                  <div className="grid gap-2">
+                    <label className="text-sm font-medium">Status</label>
+                    <Select
+                      value={status}
+                      onValueChange={(v) => setStatus(v as EnquiryStatus)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="open">Open</SelectItem>
+                        <SelectItem value="closed">Closed</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <label className="text-sm font-medium">
+                      Comment (optional)
+                    </label>
+                    <Textarea
+                      value={comment}
+                      onChange={(e) => setComment(e.target.value)}
+                      placeholder="Add a note about this enquiry..."
+                      rows={3}
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Field label="Status" value={status} />
+                  {comment && (
+                    <Field label="Comment" value={comment} multiline />
+                  )}
+                </>
+              )}
             </div>
           )}
         </ScrollArea>
@@ -155,9 +175,10 @@ onSuccess: () => {
               Cancel
             </Button>
             <Button
-              onClick={() => id && mut.mutate({ id, status })}
+              onClick={() =>
+                id && mut.mutate({ id, status, comment: comment || undefined })
+              }
               disabled={mut.isPending}
-              className="bg-pink-600 hover:bg-pink-700"
             >
               {mut.isPending ? "Saving…" : "Save"}
             </Button>
@@ -168,13 +189,27 @@ onSuccess: () => {
   );
 }
 
-function Field({ label, value }: { label: string; value?: string }) {
+function Field({
+  label,
+  value,
+  multiline = false
+}: {
+  label: string;
+  value?: string;
+  multiline?: boolean;
+}) {
   return (
     <div>
       <label className="text-sm font-medium">{label}</label>
-      <div className="rounded-md border p-2 text-sm bg-muted/50">
-        {value ?? "—"}
-      </div>
+      {multiline ? (
+        <div className="rounded-md border p-3 text-sm bg-muted/50 whitespace-pre-wrap">
+          {value ?? "—"}
+        </div>
+      ) : (
+        <div className="rounded-md border p-2 text-sm bg-muted/50">
+          {value ?? "—"}
+        </div>
+      )}
     </div>
   );
 }

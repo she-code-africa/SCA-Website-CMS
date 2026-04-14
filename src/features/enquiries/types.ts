@@ -7,6 +7,7 @@ export type Enquiry = {
   email?: string;
   description?: string;
   status?: EnquiryStatus;
+  comment?: string;    
   createdAt?: string;
   updatedAt?: string;
 };
