@@ -1,10 +1,13 @@
 // src/features/enquiries/components/enquiry-table.tsx
+
 "use client";
 
 import * as React from "react";
+import { Eye, CheckCircle } from "lucide-react";
 import { cn } from "@/lib/utils/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -23,23 +26,42 @@ function fmtDate(v?: string) {
   return format(d, "dd MMM, yyyy");
 }
 
-function statusVariant(status?: string) {
-  if (status === "closed") return "secondary";
-  return "default"; // open
+function statusBadge(status?: string) {
+  const isClosed = status === "closed";
+  return (
+    <Badge
+      className={cn(
+        isClosed
+          ? "bg-green-100 text-green-800 hover:bg-green-100"
+          : "bg-red-100 text-red-800 hover:bg-red-100"
+      )}
+    >
+      {status ?? "open"}
+    </Badge>
+  );
 }
 
 export function EnquiryTable({
   rows,
   isLoading,
   isError,
-  onRowClick
+  onRowClick,
+  onMarkClosed
 }: {
   rows: Enquiry[];
   isLoading: boolean;
   isError: boolean;
   onRowClick: (r: Enquiry) => void;
+  onMarkClosed: (r: Enquiry) => void;
 }) {
-  const headers = ["Full Name", "Email", "Message", "Status", "Updated"];
+  const headers = [
+    "Full Name",
+    "Email",
+    "Message",
+    "Status",
+    "Updated",
+    "Action"
+  ];
 
   return (
     <Table>
@@ -74,37 +96,64 @@ export function EnquiryTable({
             </TableCell>
           </TableRow>
         ) : rows.length ? (
-          rows.map((e) => (
+          rows.map((enquiry) => (
             <TableRow
-              key={e._id}
-              onClick={() => onRowClick(e)}
+              key={enquiry._id}
+              onClick={() => onRowClick(enquiry)}
               className={cn("cursor-pointer hover:bg-muted/50")}
             >
               <TableCell className="whitespace-nowrap">
-                <span className="font-medium">{e.fullName ?? "—"}</span>
+                <span className="font-medium">{enquiry.fullName ?? "—"}</span>
               </TableCell>
 
               <TableCell className="whitespace-nowrap text-muted-foreground">
-                {e.email ?? "—"}
+                {enquiry.email ?? "—"}
               </TableCell>
 
               <TableCell className="max-w-105">
                 <p
                   className="text-sm text-muted-foreground line-clamp-2"
-                  title={e.description}
+                  title={enquiry.description}
                 >
-                  {e.description || "—"}
+                  {enquiry.description || "—"}
                 </p>
               </TableCell>
 
               <TableCell className="whitespace-nowrap">
-                <Badge variant={statusVariant(e.status)}>
-                  {e.status ?? "open"}
-                </Badge>
+                {statusBadge(enquiry.status)}
               </TableCell>
 
               <TableCell className="whitespace-nowrap text-muted-foreground">
-                {fmtDate(e.updatedAt)}
+                {fmtDate(enquiry.updatedAt)}
+              </TableCell>
+
+              <TableCell className="whitespace-nowrap">
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={(ev) => {
+                      ev.stopPropagation();
+                      onRowClick(enquiry);
+                    }}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                  {enquiry.status !== "closed" && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-green-600"
+                      onClick={(ev) => {
+                        ev.stopPropagation();
+                        onMarkClosed(enquiry);
+                      }}
+                    >
+                      <CheckCircle className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
               </TableCell>
             </TableRow>
           ))

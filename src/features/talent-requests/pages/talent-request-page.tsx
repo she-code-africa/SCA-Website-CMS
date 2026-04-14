@@ -1,4 +1,5 @@
 // app/admin/talent-request/page.tsx
+
 "use client";
 
 import * as React from "react";
@@ -140,6 +141,20 @@ export default function TalentRequestPage() {
     setSheetOpen(true);
   };
 
+  // For now, approve/reject open the same details sheet.
+  // Later you can implement direct API calls or pass a mode to the sheet.
+  const handleApprove = (t: TalentRequest) => {
+    setSelected(t);
+    setSheetOpen(true);
+    // Optional: set a mode so the sheet opens with approve focus
+  };
+
+  const handleReject = (t: TalentRequest) => {
+    setSelected(t);
+    setSheetOpen(true);
+    // Optional: set a mode for reject
+  };
+
   return (
     <PermissionGate permission={PERMISSIONS.VIEW_TALENT_REQUEST}>
       <TableShell title="Talent Requests" description="Review talent requests.">
@@ -192,6 +207,8 @@ export default function TalentRequestPage() {
                   isLoading={query.isLoading}
                   isError={query.isError}
                   onRowClick={handleRowClick}
+                  onApprove={handleApprove}
+                  onReject={handleReject}
                 />
               </TableFrame>
             </div>

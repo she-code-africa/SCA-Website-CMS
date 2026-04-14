@@ -1,4 +1,3 @@
-// src/features/enquiries/components/enquiry-details-sheet.tsx
 "use client";
 
 import * as React from "react";
@@ -16,6 +15,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectTrigger,
@@ -52,14 +52,28 @@ export function EnquiryDetailsSheet({
   }, [enquiry, open]);
 
   const mut = useMutation({
-    mutationFn: updateEnquiryStatus,
-    onSuccess: () => {
-      toast.success("Enquiry updated");
-      qc.invalidateQueries({ queryKey: ["enquiries"] });
-      qc.invalidateQueries({ queryKey: ["enquiry"] });
-      onOpenChange(false);
+    mutationFn: async ({
+      id,
+      status
+    }: {
+      id: string;
+      status: EnquiryStatus;
+    }) => {
+      console.log("🔍 Updating enquiry status:", { id, status });
+      return updateEnquiryStatus({ id, status });
     },
-    onError: () => toast.error("Failed to update enquiry")
+// In EnquiryDetailsSheet, onSuccess:
+onSuccess: () => {
+  toast.success("Enquiry updated");
+  qc.invalidateQueries({ queryKey: ["enquiries"] });
+  qc.invalidateQueries({ queryKey: ["enquiry", id] });
+  qc.refetchQueries({ queryKey: ["enquiries"] });
+  onOpenChange(false);
+},
+    onError: (err: any) => {
+      console.error("Update failed:", err);
+      toast.error(err?.response?.data?.message || "Failed to update enquiry");
+    }
   });
 
   return (
@@ -72,7 +86,28 @@ export function EnquiryDetailsSheet({
 
         <ScrollArea className="flex-1 px-6 py-6">
           {q.isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading…</p>
+            <div className="space-y-6">
+              <div className="flex justify-between">
+                <Skeleton className="h-8 w-24" />
+                <Skeleton className="h-9 w-20" />
+              </div>
+              <div className="space-y-3">
+                <Skeleton className="h-5 w-20" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+              <div className="space-y-3">
+                <Skeleton className="h-5 w-20" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+              <div className="space-y-3">
+                <Skeleton className="h-5 w-24" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+              <div className="space-y-3">
+                <Skeleton className="h-5 w-20" />
+                <Skeleton className="h-32 w-full" />
+              </div>
+            </div>
           ) : !enquiry ? (
             <p className="text-sm text-red-500">Failed to load enquiry.</p>
           ) : (

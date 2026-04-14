@@ -1,4 +1,5 @@
 // src/features/talent-requests/components/talent-table.tsx
+
 "use client";
 
 import * as React from "react";
@@ -8,7 +9,7 @@ import {
   useReactTable
 } from "@tanstack/react-table";
 import type { TalentRequest } from "../types";
-import { columns } from "./columns";
+import { getColumns } from "./columns";
 import { cn } from "@/lib/utils/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -20,17 +21,33 @@ import {
   TableRow
 } from "@/components/ui/table";
 
-export function TalentTable({
-  rows,
-  isLoading,
-  isError,
-  onRowClick
-}: {
+type Props = {
   rows: TalentRequest[];
   isLoading: boolean;
   isError: boolean;
   onRowClick: (v: TalentRequest) => void;
-}) {
+  onApprove: (v: TalentRequest) => void;
+  onReject: (v: TalentRequest) => void;
+};
+
+export function TalentTable({
+  rows,
+  isLoading,
+  isError,
+  onRowClick,
+  onApprove,
+  onReject
+}: Props) {
+  const columns = React.useMemo(
+    () =>
+      getColumns({
+        onView: onRowClick,
+        onApprove,
+        onReject
+      }),
+    [onRowClick, onApprove, onReject]
+  );
+
   const table = useReactTable({
     data: rows,
     columns,

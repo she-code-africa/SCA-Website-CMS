@@ -1,8 +1,9 @@
 // src/app/admin/enquiries/page.tsx
+
 "use client";
 
 import * as React from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Download } from "lucide-react";
 import { PermissionGate } from "@/components/PermissionGate";
 import { PERMISSIONS } from "@/lib/rbac/permissions";
@@ -12,7 +13,7 @@ import { toast } from "sonner";
 import { TableShell } from "@/components/templates/table-shell";
 import { TableFrame } from "@/components/templates/table-frame";
 
-import { getEnquiries } from "@/features/enquiries/api";
+import { getEnquiries, updateEnquiryStatus } from "@/features/enquiries/api";
 import type { Enquiry, EnquiryFilters } from "@/features/enquiries/types";
 
 import { EnquiryFilters as Filters } from "@/features/enquiries/components/enquiry-filters";
@@ -94,6 +95,7 @@ function applyClientFilters(rows: Enquiry[], f: EnquiryFilters) {
 }
 
 export default function EnquiriesPage() {
+  const qc = useQueryClient();
   const [filters, setFilters] = React.useState<EnquiryFilters>({
     search: "",
     status: "",
@@ -126,10 +128,44 @@ export default function EnquiriesPage() {
   const totalPages = Math.max(1, Math.ceil(rows.length / limit));
   const paged = rows.slice((page - 1) * limit, page * limit);
 
+const markClosedMutation = useMutation({
+  mutationFn: ({ id }: { id: string }) => {
+    console.log("Marking closed with id:", id);
+    return updateEnquiryStatus({ id, status: "closed" });
+  },
+  onSuccess: () => {
+    toast.success("Enquiry marked as closed");
+    qc.invalidateQueries({ queryKey: ["enquiries"] });
+  },
+  onError: () => toast.error("Failed to update status")
+});
+
+function handleMarkClosed(e: Enquiry) {
+  if (e.status === "closed") return;
+  const enquiryId = e._id || (e as any).id;
+  if (!enquiryId) {
+    console.error("Enquiry missing id:", e);
+    toast.error("Invalid enquiry ID");
+    return;
+  }
+  markClosedMutation.mutate({ id: enquiryId });
+}
+
   function openDetails(e: Enquiry) {
     setSelectedId(e._id);
     setDetailsOpen(true);
   }
+
+// function handleMarkClosed(e: Enquiry) {
+//   if (e.status === "closed") return;
+//   const enquiryId = e._id || (e as any).id; // fallback to id
+//   if (!enquiryId) {
+//     console.error("Enquiry missing id:", e);
+//     toast.error("Invalid enquiry ID");
+//     return;
+//   }
+//   markClosedMutation.mutate({ id: enquiryId, status: "closed" });
+// }
 
   async function exportEnquiries() {
     if (!query.data || query.data.length === 0) {
@@ -163,7 +199,6 @@ export default function EnquiriesPage() {
       >
         <div className="space-y-4 mt-4">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            {/* Left group: Filters + Export button */}
             <div className="flex flex-wrap items-center gap-2">
               <Filters
                 value={filters}
@@ -186,7 +221,6 @@ export default function EnquiriesPage() {
               </PermissionGate>
             </div>
 
-            {/* Right group: Pagination */}
             <EnquiryPagination
               currentPage={page}
               totalPages={totalPages}
@@ -231,6 +265,7 @@ export default function EnquiriesPage() {
                   isLoading={query.isLoading}
                   isError={query.isError}
                   onRowClick={openDetails}
+                  onMarkClosed={handleMarkClosed}
                 />
               </TableFrame>
             </div>
