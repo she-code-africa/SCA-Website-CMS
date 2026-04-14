@@ -1,4 +1,5 @@
 // src/app/admin/volunteers/roles/page.tsx
+
 "use client";
 
 import * as React from "react";
@@ -19,7 +20,6 @@ import { TableShell } from "@/components/templates/table-shell";
 import { TableFrame } from "@/components/templates/table-frame";
 
 import { VolunteerRoleSheet } from "@/features/volunteer-roles/components/volunteer-role-sheet";
-import { VolunteerRoleFormSheet } from "@/features/volunteer-roles/components/volunteer-role-form-sheet";
 
 function applyClientFilters(rows: VolunteerRole[], f: VolunteerRoleFilters) {
   let out = [...rows];
@@ -52,11 +52,11 @@ export default function VolunteerRolesPage() {
   const [page, setPage] = React.useState(1);
   const limit = 10;
 
-  // ✅ separate state: create sheet vs details sheet
-  const [createOpen, setCreateOpen] = React.useState(false);
-
-  const [detailsOpen, setDetailsOpen] = React.useState(false);
-  const [detailsMode, setDetailsMode] = React.useState<"view" | "edit">("view");
+  // Unified sheet state
+  const [sheetOpen, setSheetOpen] = React.useState(false);
+  const [sheetMode, setSheetMode] = React.useState<"create" | "view" | "edit">(
+    "view"
+  );
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
 
   React.useEffect(() => setPage(1), [filters.search]);
@@ -76,13 +76,15 @@ export default function VolunteerRolesPage() {
   const paged = rows.slice((page - 1) * limit, page * limit);
 
   function openCreate() {
-    setCreateOpen(true);
+    setSelectedId(null);
+    setSheetMode("create");
+    setSheetOpen(true);
   }
 
   function openView(r: VolunteerRole) {
     setSelectedId(r._id);
-    setDetailsMode("view");
-    setDetailsOpen(true);
+    setSheetMode("view");
+    setSheetOpen(true);
   }
 
   return (
@@ -160,17 +162,10 @@ export default function VolunteerRolesPage() {
           </TableFrame>
         </div>
 
-        {/* ✅ Create */}
-        <VolunteerRoleFormSheet
-          open={createOpen}
-          onOpenChange={setCreateOpen}
-        />
-
-        {/* ✅ View/Edit */}
         <VolunteerRoleSheet
-          open={detailsOpen}
-          onOpenChange={setDetailsOpen}
-          mode={detailsMode}
+          open={sheetOpen}
+          onOpenChange={setSheetOpen}
+          mode={sheetMode}
           roleId={selectedId}
         />
       </div>
