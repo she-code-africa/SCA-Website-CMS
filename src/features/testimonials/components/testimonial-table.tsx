@@ -1,8 +1,8 @@
-// src/features/testimonials/components/testimonial-table.tsx
 "use client";
 
 import * as React from "react";
 import { format } from "date-fns";
+import { Eye } from "lucide-react";
 import type {
   Testimonial,
   TestimonialState
@@ -10,6 +10,7 @@ import type {
 import { cn } from "@/lib/utils/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -56,7 +57,8 @@ export function TestimonialTable({
     "Testimonial",
     "State",
     "Updated",
-    "Created"
+    "Created",
+    "Action"
   ];
 
   return (
@@ -136,6 +138,21 @@ export function TestimonialTable({
 
               <TableCell className="whitespace-nowrap text-muted-foreground">
                 {fmtDate(t.createdAt)}
+              </TableCell>
+
+              {/* Action column */}
+              <TableCell className="whitespace-nowrap">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRowClick(t);
+                  }}
+                >
+                  <Eye className="h-4 w-4" />
+                </Button>
               </TableCell>
             </TableRow>
           ))
