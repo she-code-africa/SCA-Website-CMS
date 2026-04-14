@@ -7,17 +7,20 @@ import {
 	TableBody,
 } from "components/Table/DisplayTable";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import moment from "moment";
 import { sagEnquiries } from "utils/headers";
 import { ToastContainer, toast } from "react-toastify";
 import SAGEnquiriesModal from "./SAGEnquiriesModal";
+import { useQuery } from "react-query";
+import { getSAGEnquiries } from "services";
 
 const ContactSubmissions = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [selectedId, setSelectedId] = useState();
 	const [currentPage, setCurrentPage] = useState(1);
 	const [isEnquiryModalOpen, setIsEnquiryModalOpen] = useState(false);
+	const [enquiryData, setEnquiryData] = useState([]);
 
 	const handleEnquriesModal = () => {
 		setIsEnquiryModalOpen(!isEnquiryModalOpen);
@@ -41,6 +44,17 @@ const ContactSubmissions = () => {
 			createdAt: "2025-6-5",
 		},
 	];
+
+	const { isLoading: loading } = useQuery("enquiries", getSAGEnquiries, {
+		onSuccess: (data) => {
+			console.log(data);
+			setEnquiryData(data.data.data);
+		},
+		onError: () => {
+			toast.error("Error Fetching Enquiries");
+		},
+	});
+
 	return (
 		<>
 			<div className="w-full z-40 bg-white rounded-md shadow-lg">
@@ -56,9 +70,9 @@ const ContactSubmissions = () => {
 							})}
 							<TableHeader></TableHeader>
 						</TableHeaderRow>
-						<TableBody loading={isLoading}>
-							{dummy.length > 0 ? (
-								dummy.map(
+						<TableBody loading={loading}>
+							{enquiryData.length > 0 ? (
+								enquiryData.map(
 									({
 										_id,
 										fullName,
@@ -70,10 +84,10 @@ const ContactSubmissions = () => {
 									}) => (
 										<TableDataRow
 											key={_id}
-											className="grid grid-cols-6 px-4 py-3 gap-x-4 bg-white hover:bg-gray-50 cursor-pointer"
+											className="grid grid-cols-6 px-4 py-3 gap-x-4 bg-white hover:bg-gray-50"
 											onClick={() => {
 												setSelectedId(_id);
-												handleEnquriesModal();
+												// handleEnquriesModal();
 											}}>
 											<TableData>
 												<span>{fullName}</span>
@@ -112,7 +126,7 @@ const ContactSubmissions = () => {
 							) : (
 								<TableDataRow className="grid grid-cols-6 px-4 py-8 gap-x-4 bg-white">
 									<TableData className="col-span-6 text-center text-gray-500">
-										{isLoading
+										{loading
 											? "Loading..."
 											: "No enquiries found matching your criteria"}
 									</TableData>
