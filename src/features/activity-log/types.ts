@@ -68,3 +68,5 @@ export interface AuditLogPayload {
     totalPages: number;
   };
 }
+
+export type DateRangePreset = "all" | "today" | "last7" | "last30";

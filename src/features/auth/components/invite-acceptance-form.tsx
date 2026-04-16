@@ -743,7 +743,7 @@ export function InviteAcceptanceForm({ token }: Props) {
 
   if (isSuccess) {
     return (
-      <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-100">
+      <div className="mx-auto flex w-full flex-col justify-center items-center space-y-6 sm:w-100">
         <div className="grid gap-6 p-10 bg-white rounded-xl shadow-2xl border-t-4 border-emerald-500 text-center">
           <div className="mx-auto h-20 w-20 rounded-full bg-emerald-50 flex items-center justify-center">
             <CheckCircle2 className="h-10 w-10 text-emerald-500" />

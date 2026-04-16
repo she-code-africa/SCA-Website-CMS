@@ -25,9 +25,19 @@ function getStatusBadge(user: AdminUser) {
     return <Badge variant="outline">Pending</Badge>;
   }
   const isActive = user.isActive ?? user.status === "active";
+  if (isActive) {
+    return (
+      <Badge className="bg-green-600 text-white hover:bg-green-700">
+        Active
+      </Badge>
+    );
+  }
   return (
-    <Badge variant={isActive ? "default" : "destructive"}>
-      {isActive ? "Active" : "Deactivated"}
+    <Badge
+      variant="destructive"
+      className="bg-red-600 text-white hover:bg-red-700"
+    >
+      Deactivated
     </Badge>
   );
 }

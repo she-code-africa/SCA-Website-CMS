@@ -1,4 +1,3 @@
-// src/features/partners/components/partner-sheet.tsx
 "use client";
 
 import * as React from "react";
@@ -13,6 +12,7 @@ import {
 import type { Partner, PartnerUpsertInput } from "@/features/partners/types";
 import { PermissionGate } from "@/components/PermissionGate";
 import { PERMISSIONS } from "@/lib/rbac/permissions";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import {
   Sheet,
@@ -87,13 +87,7 @@ export function PartnerSheet({ open, onOpenChange, mode, partnerId }: Props) {
       const p = partnerQuery.data as Partner;
       setEditing(false);
       setImageFile(null);
-
-      if (p.image) {
-        setImagePreview(p.image);
-      } else {
-        setImagePreview(null);
-      }
-
+      setImagePreview(p.image ?? null);
       setForm({
         name: p.name ?? "",
         featured: p.featured ?? false,
@@ -107,9 +101,7 @@ export function PartnerSheet({ open, onOpenChange, mode, partnerId }: Props) {
     if (file) {
       setImageFile(file);
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
+      reader.onloadend = () => setImagePreview(reader.result as string);
       reader.readAsDataURL(file);
     }
   };
@@ -117,9 +109,7 @@ export function PartnerSheet({ open, onOpenChange, mode, partnerId }: Props) {
   const handleRemoveImage = () => {
     setImageFile(null);
     setImagePreview(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const createMut = useMutation({
@@ -129,7 +119,8 @@ export function PartnerSheet({ open, onOpenChange, mode, partnerId }: Props) {
       qc.invalidateQueries({ queryKey: ["partners"] });
       onOpenChange(false);
     },
-    onError: () => toast.error("Could not add partner")
+    onError: (err: any) =>
+      toast.error(err?.response?.data?.message || "Could not add partner")
   });
 
   const updateMut = useMutation({
@@ -140,7 +131,8 @@ export function PartnerSheet({ open, onOpenChange, mode, partnerId }: Props) {
       qc.invalidateQueries({ queryKey: ["partner"] });
       onOpenChange(false);
     },
-    onError: () => toast.error("Could not update partner")
+    onError: (err: any) =>
+      toast.error(err?.response?.data?.message || "Could not update partner")
   });
 
   const deleteMut = useMutation({
@@ -173,6 +165,34 @@ export function PartnerSheet({ open, onOpenChange, mode, partnerId }: Props) {
 
   const saving = createMut.isPending || updateMut.isPending;
 
+  // Skeleton loader while fetching
+  if (mode === "view" && partnerQuery.isLoading && !partnerQuery.data) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent
+          side="right"
+          className="w-full sm:max-w-xl p-0 flex flex-col"
+        >
+          <SheetHeader className="px-6 py-4 border-b">
+            <Skeleton className="h-6 w-40" />
+            <Skeleton className="h-4 w-64 mt-1" />
+          </SheetHeader>
+          <div className="flex-1 px-6 py-6 space-y-6">
+            <div className="flex flex-col sm:flex-row gap-4 items-center">
+              <Skeleton className="w-24 h-24 rounded-full" />
+              <div className="flex-1 space-y-3">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-9 w-32" />
+              </div>
+            </div>
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-16 w-full rounded-lg" />
+          </div>
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
@@ -186,7 +206,9 @@ export function PartnerSheet({ open, onOpenChange, mode, partnerId }: Props) {
           <SheetDescription>
             {mode === "create"
               ? "Add a new partner."
-              : "View, edit, or delete this partner."}
+              : editing
+                ? "Edit the partner details."
+                : "View partner details. Click Edit to modify."}
           </SheetDescription>
         </SheetHeader>
 
@@ -205,7 +227,7 @@ export function PartnerSheet({ open, onOpenChange, mode, partnerId }: Props) {
                   </Button>
                 </PermissionGate>
 
-                {/* Delete with confirmation */}
+                {/* Delete – only when NOT editing */}
                 {!editing && (
                   <PermissionGate permission={PERMISSIONS.DELETE_PARTNER}>
                     <AlertDialog>
@@ -284,11 +306,9 @@ export function PartnerSheet({ open, onOpenChange, mode, partnerId }: Props) {
                 </div>
 
                 <div className="flex-1 space-y-3">
-                  <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground">
-                      Recommended: Square logo, at least 200x200px. Max 2MB.
-                    </p>
-                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Recommended: Square logo, at least 200x200px. Max 2MB.
+                  </p>
 
                   {editing && (
                     <Button
@@ -345,12 +365,21 @@ export function PartnerSheet({ open, onOpenChange, mode, partnerId }: Props) {
         </ScrollArea>
 
         {/* Bottom action bar */}
-        {(mode === "create" && (
-          <PermissionGate permission={PERMISSIONS.CREATE_PARTNER}>
+        {(mode === "create" || (mode === "view" && editing)) && (
+          <PermissionGate
+            permission={
+              mode === "create"
+                ? PERMISSIONS.CREATE_PARTNER
+                : PERMISSIONS.UPDATE_PARTNER
+            }
+          >
             <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
               <Button
                 variant="outline"
-                onClick={() => onOpenChange(false)}
+                onClick={() => {
+                  if (editing && mode === "view") setEditing(false);
+                  else onOpenChange(false);
+                }}
                 disabled={saving}
               >
                 Cancel
@@ -360,30 +389,15 @@ export function PartnerSheet({ open, onOpenChange, mode, partnerId }: Props) {
                 onClick={submit}
                 disabled={saving}
               >
-                {saving ? "Saving…" : "Add Partner"}
+                {saving
+                  ? "Saving…"
+                  : mode === "create"
+                    ? "Add Partner"
+                    : "Save Changes"}
               </Button>
             </div>
           </PermissionGate>
-        )) ||
-          (mode === "view" && editing && (
-            <PermissionGate permission={PERMISSIONS.UPDATE_PARTNER}>
-              <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
-                <Button
-                  variant="outline"
-                  onClick={() => onOpenChange(false)}
-                  disabled={saving}
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  variant="default" 
-                  onClick={submit} 
-                  disabled={saving}>
-                  {saving ? "Saving…" : "Save Changes"}
-                </Button>
-              </div>
-            </PermissionGate>
-          ))}
+        )}
       </SheetContent>
     </Sheet>
   );

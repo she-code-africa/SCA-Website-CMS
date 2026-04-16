@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Calendar, Upload, X, Loader2 } from "lucide-react";
-import { addEvent, editEvent, deleteEvent } from "@/features/events/api";
+import { addEvent, editEvent, deleteEvent, getEvent } from "@/features/events/api";
 import type { Event, EventUpsertInput } from "@/features/events/types";
 import { PermissionGate } from "@/components/PermissionGate";
 import { PERMISSIONS } from "@/lib/rbac/permissions";

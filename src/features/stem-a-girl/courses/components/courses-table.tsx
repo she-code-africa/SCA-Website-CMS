@@ -1,12 +1,14 @@
 // src/features/stem-a-girl/courses/components/courses-table.tsx
+
 "use client";
 
 import * as React from "react";
-import { format } from "date-fns";
-import type { SAGCourse } from "../types";
+import { Eye, Pencil } from "lucide-react";
+import type { Course } from "../types";
 import { cn } from "@/lib/utils/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -15,34 +17,41 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table";
-import { activityLabel } from "../utils";
+import { fmtDate, getInitials, getActivityName } from "../utils";
 
-function fmtDate(v?: string) {
-  if (!v) return "—";
-  const d = new Date(v);
-  if (Number.isNaN(d.getTime())) return "—";
-  return format(d, "dd MMM, yyyy");
+function stateBadge(state?: string) {
+  if (state === "published")
+    return <Badge className="bg-green-600">Published</Badge>;
+  if (state === "archived")
+    return <Badge variant="destructive">Archived</Badge>;
+  return <Badge variant="secondary">Draft</Badge>;
 }
 
 export function CoursesTable({
   rows,
   isLoading,
   isError,
-  onRowClick
+  onView,
+  onEdit,
+  activityMap
 }: {
-  rows: SAGCourse[];
+  rows: Course[];
   isLoading: boolean;
   isError: boolean;
-  onRowClick: (c: SAGCourse) => void;
+  onView: (c: Course) => void;
+  onEdit: (c: Course) => void;
+  activityMap: Map<string, string>;
 }) {
   const headers = [
-    "Title",
+    "Course",
     "Description",
-    "Link",
+    "Difficulty",
+    "Est. Hours",
     "Activity",
+    "Featured",
     "State",
     "Updated",
-    "Created"
+    "Action"
   ];
 
   return (
@@ -58,13 +67,12 @@ export function CoursesTable({
               ))}
             </TableRow>
           </TableHeader>
-
           <TableBody>
             {isLoading ? (
               Array.from({ length: 8 }).map((_, idx) => (
                 <TableRow key={idx}>
                   {headers.map((_, cIdx) => (
-                    <TableCell key={cIdx} className="whitespace-nowrap">
+                    <TableCell key={cIdx}>
                       <Skeleton className="h-4 w-24" />
                     </TableCell>
                   ))}
@@ -79,74 +87,7 @@ export function CoursesTable({
                   Failed to load courses.
                 </TableCell>
               </TableRow>
-            ) : rows.length ? (
-              rows.map((c) => (
-                <TableRow
-                  key={c._id}
-                  onClick={() => onRowClick(c)}
-                  className={cn("cursor-pointer hover:bg-muted/50")}
-                >
-                  <TableCell className="whitespace-nowrap">
-                    <div className="flex items-center gap-2">
-                      {c.image ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={c.image}
-                          alt={c.title}
-                          className="h-8 w-8 rounded-full object-cover border"
-                        />
-                      ) : (
-                        <div className="h-8 w-8 rounded-full bg-muted border" />
-                      )}
-                      <span className="font-medium">{c.title ?? "—"}</span>
-                    </div>
-                  </TableCell>
-
-                  <TableCell className="max-w-[420px]">
-                    <span className="text-muted-foreground line-clamp-1">
-                      {c.description ?? "—"}
-                    </span>
-                  </TableCell>
-
-                  <TableCell className="max-w-[280px]">
-                    {c.link ? (
-                      <a
-                        href={c.link}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-primary underline underline-offset-4 line-clamp-1"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {c.link}
-                      </a>
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </TableCell>
-
-                  <TableCell className="whitespace-nowrap">
-                    {activityLabel(c)}
-                  </TableCell>
-
-                  <TableCell className="whitespace-nowrap">
-                    <Badge
-                      variant={
-                        c.state === "published" ? "default" : "secondary"
-                      }
-                    >
-                      {c.state ?? "draft"}
-                    </Badge>
-                  </TableCell>
-
-                  <TableCell className="whitespace-nowrap text-muted-foreground">
-                    {fmtDate(c.updatedAt)}
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap text-muted-foreground">
-                    {fmtDate(c.createdAt)}
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
+            ) : rows.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={headers.length}
@@ -155,6 +96,98 @@ export function CoursesTable({
                   No courses found.
                 </TableCell>
               </TableRow>
+            ) : (
+              rows.map((course) => (
+                <TableRow
+                  key={course._id}
+                  onClick={() => onView(course)}
+                  className={cn("cursor-pointer hover:bg-muted/50")}
+                >
+                  {/* Course column (image + title) */}
+                  <TableCell className="whitespace-normal min-w-[200px]">
+                    <div className="flex items-center gap-2">
+                      {course.image ? (
+                        <img
+                          src={course.image}
+                          alt={course.title}
+                          className="h-8 w-8 rounded-full object-cover border shrink-0"
+                        />
+                      ) : (
+                        <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-xs font-semibold shrink-0">
+                          {getInitials(course.title)}
+                        </div>
+                      )}
+                      <span className="font-medium break-words">
+                        {course.title}
+                      </span>
+                    </div>
+                  </TableCell>
+
+                  {/* Description */}
+                  <TableCell className="max-w-md truncate">
+                    {course.description}
+                  </TableCell>
+
+                  {/* Difficulty */}
+                  <TableCell className="whitespace-nowrap">
+                    {course.difficulty || "—"}
+                  </TableCell>
+
+                  {/* Est. Hours */}
+                  <TableCell className="whitespace-nowrap">
+                    {course.estimatedHours || "—"}
+                  </TableCell>
+
+                  {/* Activity */}
+                  <TableCell className="whitespace-nowrap">
+                    {getActivityName(course, activityMap)}
+                  </TableCell>
+
+                  {/* Featured */}
+                  <TableCell className="whitespace-nowrap">
+                    {course.featured ? (
+                      <Badge variant="default">Yes</Badge>
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
+
+                  {/* State */}
+                  <TableCell className="whitespace-nowrap">
+                    {stateBadge(course.state)}
+                  </TableCell>
+
+                  {/* Updated */}
+                  <TableCell className="whitespace-nowrap text-muted-foreground">
+                    {fmtDate(course.updatedAt)}
+                  </TableCell>
+
+                  {/* Actions */}
+                  <TableCell
+                    className="whitespace-nowrap"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => onView(course)}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => onEdit(course)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
             )}
           </TableBody>
         </Table>

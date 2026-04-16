@@ -184,7 +184,7 @@ export default function ReportsPage() {
                 rows={paged}
                 isLoading={query.isLoading}
                 isError={query.isError}
-                onRowClick={openView}
+                onView={openView}
               />
             </TableFrame>
           </div>

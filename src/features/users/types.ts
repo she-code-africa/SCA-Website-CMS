@@ -3,33 +3,37 @@
 export type UserStatus = "active" | "deactivated" | "pending";
 
 export interface UserRole {
-  _id: string; // backend uses _id
-  id?: string; // alias for convenience
+  _id: string;
+  id?: string;
   name: string;
   isDefault: boolean;
 }
 
 export interface AdminUser {
-  _id: string; // primary identifier
-  id?: string; // alias
+  _id: string;
+  id?: string;
   firstName: string;
   lastName: string;
   email: string;
-  role: string | UserRole; // can be ID string or full object
-  status: UserStatus; // "active" | "deactivated" | "pending"
-  isActive: boolean; // for existing users
+  role: string | UserRole;
+  status: UserStatus;
+  isActive: boolean;
   lastLogin?: string | null;
   createdAt: string;
 }
 
+// 👇 Update to match backend response
 export interface Invitation {
   _id: string;
   email: string;
-  roleName: string;
-  roleId: string; // ID of the assigned role
-  invitedAt: string;
+  role: string; // role ID (string)
+  status: string; // "PENDING" or "ACCEPTED"
+  invitedAt?: string; // from backend: createdAt
   expiresAt?: string;
-  status: "pending" | "accepted" | "expired";
+  createdAt: string;
+  updatedAt: string;
+  invitedBy: string;
+  tokenHash?: string;
 }
 
 export interface PaginatedUsers {

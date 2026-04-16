@@ -1,26 +1,18 @@
 // src/features/stem-a-girl/courses/components/mobile-course-card.tsx
+
 "use client";
 
-import { format } from "date-fns";
-import type { SAGCourse } from "../types";
+import type { Course } from "../types";
 import { Badge } from "@/components/ui/badge";
-import { activityLabel } from "../utils";
+import { fmtDate, getInitials, getActivityName } from "../utils";
 
-function fmtDate(v?: string) {
-  if (!v) return "—";
-  const d = new Date(v);
-  if (Number.isNaN(d.getTime())) return "—";
-  return format(d, "dd MMM, yyyy");
-}
-
-function initials(title?: string) {
-  const parts = (title ?? "").trim().split(" ").filter(Boolean);
-  const a = parts[0]?.[0] ?? "";
-  const b = parts[1]?.[0] ?? "";
-  return (a + b).toUpperCase() || "—";
-}
-
-export function MobileCourseCard({ course }: { course: SAGCourse }) {
+export function MobileCourseCard({
+  course,
+  activityMap
+}: {
+  course: Course;
+  activityMap: Map<string, string>;
+}) {
   return (
     <div className="rounded-xl border bg-background p-4 shadow-sm hover:bg-muted/50 transition-colors">
       <div className="flex items-start gap-3">
@@ -33,7 +25,7 @@ export function MobileCourseCard({ course }: { course: SAGCourse }) {
           />
         ) : (
           <div className="h-10 w-10 rounded-full border bg-muted flex items-center justify-center text-xs font-semibold">
-            {initials(course.title)}
+            {getInitials(course.title)}
           </div>
         )}
 
@@ -42,7 +34,8 @@ export function MobileCourseCard({ course }: { course: SAGCourse }) {
             {course.title ?? "—"}
           </p>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            {activityLabel(course)} • {course.link ? "Has link" : "No link"}
+            {getActivityName(course, activityMap)} •{" "}
+            {course.link ? "Has link" : "No link"}
           </p>
 
           <div className="mt-2 flex flex-wrap gap-2">

@@ -72,7 +72,7 @@ export default function ChapterEventsPage() {
     setSheetOpen(true);
   };
 
-  const openView = (ev: ChapterEvent) => {
+  const openEventView = (ev: ChapterEvent) => {
     setSelectedEventId(ev._id);
     setSheetMode("view");
     setSheetOpen(true);
@@ -142,7 +142,7 @@ export default function ChapterEventsPage() {
                     <button
                       key={event._id}
                       type="button"
-                      onClick={() => openView(event)}
+                      onClick={() => openEventView(event)}
                       className="text-left w-full"
                     >
                       <MobileChapterEventCard event={event} />
@@ -177,7 +177,7 @@ export default function ChapterEventsPage() {
                       rows={events}
                       isLoading={isLoading}
                       isError={isError}
-                      onRowClick={openView}
+                      onView={openEventView}
                     />
                   </TableFrame>
                 )}

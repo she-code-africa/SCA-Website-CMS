@@ -1,12 +1,13 @@
-// src/features/chapters/components/chapter-event-table.tsx
 "use client";
 
 import * as React from "react";
 import { format } from "date-fns";
+import { Eye } from "lucide-react";
 import type { ChapterEvent } from "@/features/chapters/types";
 import { cn } from "@/lib/utils/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -36,18 +37,22 @@ export function ChapterEventTable({
   rows,
   isLoading,
   isError,
-  onRowClick
+  onView
 }: {
   rows: ChapterEvent[];
   isLoading: boolean;
   isError: boolean;
-  onRowClick: (event: ChapterEvent) => void;
+  onView: (event: ChapterEvent) => void;
 }) {
-  const headers = ["Name", "Status", "Event Date", "Created"];
+  const headers = ["Name", "Status", "Event Date", "Created", "Action"];
+
+  const handleRowClick = (event: ChapterEvent) => {
+    onView(event);
+  };
 
   return (
     <div className="space-y-3">
-      {/* Mobile list */}
+      {/* Mobile list – no action column needed */}
       <div className="grid gap-3 md:hidden">
         {isLoading ? (
           Array.from({ length: 6 }).map((_, i) => (
@@ -62,7 +67,7 @@ export function ChapterEventTable({
             <button
               key={ev._id}
               type="button"
-              onClick={() => onRowClick(ev)}
+              onClick={() => onView(ev)}
               className="text-left w-full"
             >
               <MobileChapterEventCard event={ev} />
@@ -114,25 +119,44 @@ export function ChapterEventTable({
                   rows.map((ev) => (
                     <TableRow
                       key={ev._id}
-                      onClick={() => onRowClick(ev)}
+                      onClick={() => handleRowClick(ev)}
                       className={cn("cursor-pointer hover:bg-muted/50")}
                     >
+                      {/* Name column */}
                       <TableCell className="whitespace-nowrap">
                         <span className="font-medium">{ev.title ?? "—"}</span>
                       </TableCell>
 
+                      {/* Status column */}
                       <TableCell className="whitespace-nowrap">
                         <Badge variant={stateBadgeVariant(ev.eventState)}>
                           {ev.eventState ?? "draft"}
                         </Badge>
                       </TableCell>
 
+                      {/* Event Date column */}
                       <TableCell className="whitespace-nowrap text-muted-foreground">
                         {fmtDate(ev.eventDate)}
                       </TableCell>
 
+                      {/* Created column */}
                       <TableCell className="whitespace-nowrap text-muted-foreground">
                         {fmtDate(ev.createdAt)}
+                      </TableCell>
+
+                      {/* Action column */}
+                      <TableCell
+                        className="whitespace-nowrap"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => onView(ev)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))

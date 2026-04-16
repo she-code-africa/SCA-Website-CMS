@@ -1,13 +1,13 @@
-// src/features/initiatives/components/initiative-table.tsx
 "use client";
 
 import * as React from "react";
 import { format } from "date-fns";
-import { Lightbulb, ExternalLink } from "lucide-react";
+import { Lightbulb, ExternalLink, Eye } from "lucide-react";
 import type { Initiative } from "@/features/initiatives/types";
 import { cn } from "@/lib/utils/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -34,14 +34,25 @@ export function InitiativeTable({
   rows,
   isLoading,
   isError,
-  onRowClick
+  onView
 }: {
   rows: Initiative[];
   isLoading: boolean;
   isError: boolean;
-  onRowClick: (i: Initiative) => void;
+  onView: (i: Initiative) => void;
 }) {
-  const headers = ["Name", "Description", "Link", "Available", "Created"];
+  const headers = [
+    "Name",
+    "Description",
+    "Link",
+    "Available",
+    "Created",
+    "Action"
+  ];
+
+  const handleRowClick = (initiative: Initiative) => {
+    onView(initiative);
+  };
 
   return (
     <Table>
@@ -79,9 +90,10 @@ export function InitiativeTable({
           rows.map((i) => (
             <TableRow
               key={i._id}
-              onClick={() => onRowClick(i)}
+              onClick={() => handleRowClick(i)}
               className={cn("cursor-pointer hover:bg-muted/50")}
             >
+              {/* Name column */}
               <TableCell className="whitespace-nowrap">
                 <div className="flex items-center gap-2">
                   {i.image ? (
@@ -100,10 +112,12 @@ export function InitiativeTable({
                 </div>
               </TableCell>
 
+              {/* Description column */}
               <TableCell className="max-w-xs truncate">
                 {stripHtml(i.description ?? "—")}
               </TableCell>
 
+              {/* Link column */}
               <TableCell className="max-w-md">
                 {i.initiative_url ? (
                   <a
@@ -121,14 +135,31 @@ export function InitiativeTable({
                 )}
               </TableCell>
 
+              {/* Available column */}
               <TableCell className="whitespace-nowrap">
                 <Badge variant={i.isAvailable ? "default" : "secondary"}>
                   {i.isAvailable ? "Available" : "Unavailable"}
                 </Badge>
               </TableCell>
 
+              {/* Created column */}
               <TableCell className="whitespace-nowrap text-muted-foreground">
                 {fmtDate(i.createdAt)}
+              </TableCell>
+
+              {/* Action column */}
+              <TableCell
+                className="whitespace-nowrap"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => onView(i)}
+                >
+                  <Eye className="h-4 w-4" />
+                </Button>
               </TableCell>
             </TableRow>
           ))

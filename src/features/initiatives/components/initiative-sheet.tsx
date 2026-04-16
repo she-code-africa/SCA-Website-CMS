@@ -1,4 +1,3 @@
-// src/features/initiatives/components/initiative-sheet.tsx
 "use client";
 
 import * as React from "react";
@@ -14,6 +13,7 @@ import type {
   Initiative,
   InitiativeUpsertInput
 } from "@/features/initiatives/types";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import {
   Sheet,
@@ -49,6 +49,9 @@ type Props = {
   mode: "create" | "view";
   initiativeId?: string;
 };
+
+// Image compression helper (if needed, but backend accepts File via FormData)
+// Keeping as is, but we'll add skeleton loader and remove publish/archive.
 
 export function InitiativeSheet({
   open,
@@ -97,14 +100,7 @@ export function InitiativeSheet({
       const i = initiativeQuery.data as Initiative;
       setEditing(false);
       setImageFile(null);
-
-      // Set existing image preview if available
-      if (i.image) {
-        setImagePreview(i.image);
-      } else {
-        setImagePreview(null);
-      }
-
+      setImagePreview(i.image ?? null);
       setForm({
         title: i.title ?? "",
         description: i.description ?? "",
@@ -121,9 +117,7 @@ export function InitiativeSheet({
     if (file) {
       setImageFile(file);
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
+      reader.onloadend = () => setImagePreview(reader.result as string);
       reader.readAsDataURL(file);
     }
   };
@@ -131,9 +125,7 @@ export function InitiativeSheet({
   const handleRemoveImage = () => {
     setImageFile(null);
     setImagePreview(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const createMut = useMutation({
@@ -143,7 +135,8 @@ export function InitiativeSheet({
       qc.invalidateQueries({ queryKey: ["initiatives"] });
       onOpenChange(false);
     },
-    onError: () => toast.error("Could not add initiative")
+    onError: (err: any) =>
+      toast.error(err?.response?.data?.message || "Could not add initiative")
   });
 
   const updateMut = useMutation({
@@ -154,7 +147,8 @@ export function InitiativeSheet({
       qc.invalidateQueries({ queryKey: ["initiative"] });
       onOpenChange(false);
     },
-    onError: () => toast.error("Could not update initiative")
+    onError: (err: any) =>
+      toast.error(err?.response?.data?.message || "Could not update initiative")
   });
 
   const deleteMut = useMutation({
@@ -177,7 +171,6 @@ export function InitiativeSheet({
       return;
     }
 
-    // Validate URLs
     try {
       new URL(form.initiative_url);
       if (form.donation_url.trim()) {
@@ -206,6 +199,31 @@ export function InitiativeSheet({
 
   const saving = createMut.isPending || updateMut.isPending;
 
+  // Skeleton loader while fetching
+  if (mode === "view" && initiativeQuery.isLoading && !initiativeQuery.data) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent
+          side="right"
+          className="w-full sm:max-w-xl p-0 flex flex-col"
+        >
+          <SheetHeader className="px-6 py-4 border-b">
+            <Skeleton className="h-6 w-40" />
+            <Skeleton className="h-4 w-64 mt-1" />
+          </SheetHeader>
+          <div className="flex-1 px-6 py-6 space-y-6">
+            <Skeleton className="h-32 w-full rounded-lg" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-32 w-full" />
+            <Skeleton className="h-16 w-full rounded-lg" />
+          </div>
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
@@ -219,7 +237,9 @@ export function InitiativeSheet({
           <SheetDescription>
             {mode === "create"
               ? "Add a new initiative."
-              : "View, edit, or delete this initiative."}
+              : editing
+                ? "Edit the initiative details."
+                : "View initiative details. Click Edit to modify."}
           </SheetDescription>
         </SheetHeader>
 
@@ -236,7 +256,7 @@ export function InitiativeSheet({
                   {editing ? "View" : "Edit"}
                 </Button>
 
-                {/* Delete with confirmation */}
+                {/* Delete – only when NOT editing */}
                 {!editing && (
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
@@ -281,7 +301,6 @@ export function InitiativeSheet({
               </label>
 
               <div className="flex flex-col sm:flex-row gap-4 items-center">
-                {/* Image Preview */}
                 <div className="relative group">
                   <div
                     className={cn(
@@ -304,7 +323,6 @@ export function InitiativeSheet({
                     )}
                   </div>
 
-                  {/* Remove button */}
                   {editing && imagePreview && (
                     <button
                       type="button"
@@ -316,13 +334,10 @@ export function InitiativeSheet({
                   )}
                 </div>
 
-                {/* Upload Controls */}
                 <div className="flex-1 space-y-3">
-                  <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground">
-                      Recommended: Square image, at least 400x400px. Max 5MB.
-                    </p>
-                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Recommended: Square image, at least 400x400px. Max 5MB.
+                  </p>
 
                   {editing && (
                     <Button
@@ -337,7 +352,6 @@ export function InitiativeSheet({
                     </Button>
                   )}
 
-                  {/* Hidden file input */}
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -421,12 +435,15 @@ export function InitiativeSheet({
           </div>
         </ScrollArea>
 
-        {/* Bottom action bar - Fixed */}
+        {/* Bottom action bar */}
         {(mode === "create" || editing) && (
           <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
             <Button
               variant="outline"
-              onClick={() => onOpenChange(false)}
+              onClick={() => {
+                if (editing && mode === "view") setEditing(false);
+                else onOpenChange(false);
+              }}
               disabled={saving}
             >
               Cancel

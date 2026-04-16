@@ -5,7 +5,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   addTestimonial,
   editTestimonial,
-  deleteTestimonial
+  deleteTestimonial,
+  getTestimonial
 } from "@/features/testimonials/api";
 import type {
   Testimonial,

@@ -8,18 +8,35 @@
 
 // export default nextConfig;
 
-
 import type { NextConfig } from "next";
+
+const getDestination = (baseUrl: string | undefined, path: string) => {
+  if (!baseUrl) throw new Error(`Missing environment variable for ${path}`);
+  // Ensure baseUrl starts with http:// or https://
+  if (!baseUrl.startsWith("http://") && !baseUrl.startsWith("https://")) {
+    throw new Error(
+      `Invalid base URL: ${baseUrl}. Must start with http:// or https://`
+    );
+  }
+  // Remove trailing slash if present
+  const cleanUrl = baseUrl.replace(/\/$/, "");
+  return `${cleanUrl}/${path}`;
+};
 
 const nextConfig: NextConfig = {
   reactCompiler: false,
   async rewrites() {
     return [
       {
-        // This captures any request starting with /api/external
         source: "/api/external/:path*",
-        // And redirects it to your Heroku backend
-        destination: "https://rbac-be-0de7ff4ed1ef.herokuapp.com/api/:path*"
+        destination: getDestination(process.env.NEXT_PUBLIC_BASE_URL, ":path*")
+      },
+      {
+        source: "/api/stem/:path*",
+        destination: getDestination(
+          process.env.NEXT_PUBLIC_STEM_A_GIRL_BASE_URL,
+          ":path*"
+        )
       }
     ];
   }

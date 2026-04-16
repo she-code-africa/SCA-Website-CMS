@@ -1,11 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Info, Lock, Search, X } from "lucide-react";
 
-import { createRole, updateRole } from "@/features/roles/api";
+import { createRole, updateRole, getRoleById } from "@/features/roles/api";
+import { getUsers } from "@/features/users/api"; 
 import type { RoleDetail } from "@/features/roles/types";
 import { PERMISSIONS } from "@/lib/rbac/permissions";
 
@@ -18,12 +19,13 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-// import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils/utils";
 import { PermissionGate } from "@/components/PermissionGate";
+import { useRoleUserCounts } from "@/hooks/useRoleUserCounts";
 
 type Props = {
   open: boolean;
@@ -205,7 +207,6 @@ function PermissionMatrix({
                         <span className="text-xs uppercase tracking-wider">
                           {ACTION_LABELS[action]}
                         </span>
-                        {/* 👇 CHANGED: Removed !readOnly check, added disabled={readOnly} */}
                         {colPerms.length > 0 && (
                           <input
                             type="checkbox"
@@ -246,7 +247,6 @@ function PermissionMatrix({
                     >
                       <td className="py-2.5 px-3 border-r">
                         <div className="flex items-center gap-2">
-                          {/* 👇 REMOVED the !readOnly wrapper and added disabled={readOnly} */}
                           <input
                             type="checkbox"
                             checked={allOn}
@@ -314,8 +314,16 @@ function PermissionMatrix({
 
 export function RoleSheet({ open, onOpenChange, mode, role }: Props) {
   const qc = useQueryClient();
-  const [editing, setEditing] = React.useState(false);
 
+  // Fetch full role details when in view mode (to get usersCount)
+const { data: roleUserCounts, isLoading: isLoadingCounts } =
+  useRoleUserCounts();
+
+  const effectiveRole =  role;
+
+const userCount = roleUserCounts?.get(effectiveRole?._id ?? "") ?? 0;
+
+  const [editing, setEditing] = React.useState(false);
   const [name, setName] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [selectedPerms, setSelectedPerms] = React.useState<Set<string>>(
@@ -323,96 +331,101 @@ export function RoleSheet({ open, onOpenChange, mode, role }: Props) {
   );
   const [nameError, setNameError] = React.useState("");
 
-React.useEffect(() => {
-  if (!open) {
-    setNameError("");
-    return;
-  }
-  if (mode === "create") {
-    setEditing(true);
-    setName("");
-    setDescription("");
-    setSelectedPerms(new Set());
-  }
-  if (mode === "view" && role) {
-    setEditing(false);
-    setName(role.name);
-    setDescription(role.description);
+  // Use fetched role if available, otherwise fallback to passed role
+  // const effectiveRole = fullRole || role;
 
-    const rawPerms = role.permissions as Array<string | { name: string }>;
-    const mappedPerms = new Set<string>();
+  React.useEffect(() => {
+    if (!open) {
+      setNameError("");
+      return;
+    }
+    if (mode === "create") {
+      setEditing(true);
+      setName("");
+      setDescription("");
+      setSelectedPerms(new Set());
+    }
+    if (mode === "view" && effectiveRole) {
+      setEditing(false);
+      setName(effectiveRole.name);
+      setDescription(effectiveRole.description);
 
-    rawPerms.forEach((p) => {
-      const str = typeof p === "string" ? p : p?.name;
-      if (!str) return;
+      const rawPerms = effectiveRole.permissions as Array<
+        string | { name: string }
+      >;
+      const mappedPerms = new Set<string>();
 
-      const perm = str.trim();
+      rawPerms.forEach((p) => {
+        const str = typeof p === "string" ? p : p?.name;
+        if (!str) return;
 
-      // 1. If it's already uppercase (Custom Roles), just add it
-      if (
-        perm === perm.toUpperCase() &&
-        !perm.startsWith("read_") &&
-        !perm.startsWith("manage_")
-      ) {
-        mappedPerms.add(perm);
-        return;
-      }
+        const perm = str.trim();
 
-      // 2. Determine action and entity
-      let action = "";
-      let rawEntity = "";
+        // 1. If it's already uppercase (Custom Roles), just add it
+        if (
+          perm === perm.toUpperCase() &&
+          !perm.startsWith("read_") &&
+          !perm.startsWith("manage_")
+        ) {
+          mappedPerms.add(perm);
+          return;
+        }
 
-      if (perm.startsWith("read_")) {
-        action = "VIEW";
-        rawEntity = perm.replace("read_", "");
-      } else if (perm.startsWith("manage_")) {
-        action = "MANAGE"; // We'll expand this to VIEW, CREATE, UPDATE, DELETE
-        rawEntity = perm.replace("manage_", "");
-      }
+        // 2. Determine action and entity
+        let action = "";
+        let rawEntity = "";
 
-      if (!action) return;
+        if (perm.startsWith("read_")) {
+          action = "VIEW";
+          rawEntity = perm.replace("read_", "");
+        } else if (perm.startsWith("manage_")) {
+          action = "MANAGE";
+          rawEntity = perm.replace("manage_", "");
+        }
 
-      // 3. Convert camelCase to SNAKE_CASE (e.g., talentRequests -> TALENT_REQUESTS)
-      let entity = rawEntity.replace(/([A-Z])/g, "_$1").toUpperCase();
+        if (!action) return;
 
-      // 4. Normalize plurals and specific edge cases to match your constants
-      const pluralMappings: Record<string, string> = {
-        USERS: "USER",
-        PROGRAMS: "PROGRAM",
-        EVENTS: "EVENT",
-        JOBS: "JOB",
-        CHAPTERS: "CHAPTER",
-        COMPANIES: "COMPANY",
-        SCHOOLS: "SCHOOL",
-        COURSES: "COURSE",
-        PARTNERS: "PARTNER",
-        ENQUIRIES: "ENQUIRY",
-        TEAMS: "TEAM",
-        VOLUNTEER_REQUESTS: "VOLUNTEER_REQUEST",
-        TALENT_REQUESTS: "TALENT_REQUEST",
-        TESTIMONIALS: "TESTIMONIALS", // Keep plural if your constant has it
-        SUCCESS_STORIES: "SUCCESS_STORY",
-        OUR_REACH: "OUR_REACH"
-      };
+        // 3. Convert camelCase to SNAKE_CASE (e.g., talentRequests -> TALENT_REQUESTS)
+        let entity = rawEntity.replace(/([A-Z])/g, "_$1").toUpperCase();
 
-      if (pluralMappings[entity]) {
-        entity = pluralMappings[entity];
-      }
+        // 4. Normalize plurals and specific edge cases to match your constants
+        const pluralMappings: Record<string, string> = {
+          USERS: "USER",
+          PROGRAMS: "PROGRAM",
+          EVENTS: "EVENT",
+          JOBS: "JOB",
+          CHAPTERS: "CHAPTER",
+          COMPANIES: "COMPANY",
+          SCHOOLS: "SCHOOL",
+          COURSES: "COURSE",
+          PARTNERS: "PARTNER",
+          ENQUIRIES: "ENQUIRY",
+          TEAMS: "TEAM",
+          VOLUNTEER_REQUESTS: "VOLUNTEER_REQUEST",
+          TALENT_REQUESTS: "TALENT_REQUEST",
+          TESTIMONIALS: "TESTIMONIALS",
+          SUCCESS_STORIES: "SUCCESS_STORY",
+          OUR_REACH: "OUR_REACH"
+        };
 
-      // 5. Hydrate the permission set
-      if (action === "VIEW") {
-        mappedPerms.add(`VIEW_${entity}`);
-      } else if (action === "MANAGE") {
-        mappedPerms.add(`VIEW_${entity}`);
-        mappedPerms.add(`CREATE_${entity}`);
-        mappedPerms.add(`UPDATE_${entity}`);
-        mappedPerms.add(`DELETE_${entity}`);
-      }
-    });
+        if (pluralMappings[entity]) {
+          entity = pluralMappings[entity];
+        }
 
-    setSelectedPerms(mappedPerms);
-  }
-}, [open, mode, role]);
+        // 5. Hydrate the permission set
+        if (action === "VIEW") {
+          mappedPerms.add(`VIEW_${entity}`);
+        } else if (action === "MANAGE") {
+          mappedPerms.add(`VIEW_${entity}`);
+          mappedPerms.add(`CREATE_${entity}`);
+          mappedPerms.add(`UPDATE_${entity}`);
+          mappedPerms.add(`DELETE_${entity}`);
+        }
+      });
+
+      setSelectedPerms(mappedPerms);
+    }
+  }, [open, mode, effectiveRole]);
 
   const createMut = useMutation({
     mutationFn: createRole,
@@ -455,13 +468,12 @@ React.useEffect(() => {
       return;
     }
 
-    // 💡 Much cleaner! Since we sanitized state on load, this is already an array of strings.
     const permissions = Array.from(selectedPerms);
 
     if (mode === "create") {
       createMut.mutate({ name, description, permissions });
-    } else if (role) {
-      const roleId = role.id || role._id;
+    } else if (effectiveRole) {
+      const roleId = effectiveRole.id || effectiveRole._id;
 
       if (!roleId) {
         toast.error("Failed to update: Role ID is missing.");
@@ -473,8 +485,40 @@ React.useEffect(() => {
   };
 
   const saving = createMut.isPending || updateMut.isPending;
-  const isReadOnly = mode === "view" && (role?.is_system_role || !editing);
-  const canEdit = mode === "view" && !role?.is_system_role;
+  const isReadOnly =
+    mode === "view" && (effectiveRole?.is_system_role || !editing);
+  const canEdit = mode === "view" && !effectiveRole?.is_system_role;
+
+  // Skeleton loader while fetching role details
+  if (mode === "view" && isLoadingCounts && !effectiveRole) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent
+          side="right"
+          className="w-full sm:max-w-3xl p-0 flex flex-col"
+        >
+          <SheetHeader className="px-6 py-4 border-b">
+            <Skeleton className="h-6 w-40" />
+            <Skeleton className="h-4 w-64 mt-1" />
+          </SheetHeader>
+          <div className="flex-1 px-6 py-6 space-y-6">
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-24" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-32" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-24" />
+              <Skeleton className="h-32 w-full rounded-md" />
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
+    );
+  }
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -486,22 +530,24 @@ React.useEffect(() => {
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <SheetTitle>
-                {mode === "create" ? "Create Role" : (role?.name ?? "Role")}
+                {mode === "create"
+                  ? "Create Role"
+                  : (effectiveRole?.name ?? "Role")}
               </SheetTitle>
               <SheetDescription>
                 {mode === "create"
                   ? "Define a custom role with specific permissions."
-                  : role?.is_system_role
+                  : effectiveRole?.is_system_role
                     ? "System roles cannot be edited or deleted."
                     : "Edit this role's name and permissions."}
               </SheetDescription>
             </div>
-            {mode === "view" && role && (
+            {mode === "view" && effectiveRole && (
               <Badge
-                variant={role.is_system_role ? "secondary" : "outline"}
+                variant={effectiveRole.is_system_role ? "secondary" : "outline"}
                 className="shrink-0 mt-1"
               >
-                {role.is_system_role ? (
+                {effectiveRole.is_system_role ? (
                   <>
                     <Lock className="h-3 w-3 mr-1" /> System
                   </>
@@ -523,20 +569,22 @@ React.useEffect(() => {
                     size="sm"
                     onClick={() => {
                       if (editing) {
-                        setName(role!.name);
-                        setDescription(role!.description);
-                        const rawPerms = role!.permissions as Array<
-                          string | { name: string }
-                        >;
-                        const permissionStrings = rawPerms
-                          .map((p) => {
-                            if (typeof p === "string") return p;
-                            if (p && typeof p === "object" && "name" in p)
-                              return p.name;
-                            return "";
-                          })
-                          .filter(Boolean);
-                        setSelectedPerms(new Set(permissionStrings));
+                        if (effectiveRole) {
+                          setName(effectiveRole.name);
+                          setDescription(effectiveRole.description);
+                          const rawPerms = effectiveRole.permissions as Array<
+                            string | { name: string }
+                          >;
+                          const permissionStrings = rawPerms
+                            .map((p) => {
+                              if (typeof p === "string") return p;
+                              if (p && typeof p === "object" && "name" in p)
+                                return p.name;
+                              return "";
+                            })
+                            .filter(Boolean);
+                          setSelectedPerms(new Set(permissionStrings));
+                        }
                       }
                       setEditing((v) => !v);
                     }}
@@ -547,7 +595,7 @@ React.useEffect(() => {
               </div>
             )}
 
-            {mode === "view" && role?.is_system_role && (
+            {mode === "view" && effectiveRole?.is_system_role && (
               <div className="flex items-start gap-2 rounded-lg border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
                 <Info className="h-4 w-4 shrink-0 mt-0.5" />
                 <span>
@@ -557,7 +605,6 @@ React.useEffect(() => {
               </div>
             )}
 
-            {/* 👇 THE FIX: Your preferred layout loaded up right here */}
             <section className="grid gap-6">
               <div className="space-y-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
@@ -588,7 +635,11 @@ React.useEffect(() => {
                       Active Members
                     </label>
                     <div className="h-10 flex items-center px-3 rounded-md bg-muted/30 border border-dashed text-sm font-medium">
-                      {role?.usersCount || 0} user(s) assigned
+                      {isLoadingCounts ? (
+                        <Skeleton className="h-4 w-16" />
+                      ) : (
+                        `${userCount ?? 0} user(s) assigned`
+                      )}
                     </div>
                   </div>
                 </div>
@@ -650,12 +701,11 @@ React.useEffect(() => {
             <Button
               variant="outline"
               onClick={() => {
-                if (mode === "view") {
+                if (mode === "view" && effectiveRole) {
                   setEditing(false);
-                  setName(role!.name);
-                  setDescription(role!.description);
-
-                  const rawPerms = role!.permissions as Array<
+                  setName(effectiveRole.name);
+                  setDescription(effectiveRole.description);
+                  const rawPerms = effectiveRole.permissions as Array<
                     string | { name: string }
                   >;
                   const permissionStrings = rawPerms
@@ -666,7 +716,6 @@ React.useEffect(() => {
                       return "";
                     })
                     .filter(Boolean);
-
                   setSelectedPerms(new Set(permissionStrings));
                 } else {
                   onOpenChange(false);

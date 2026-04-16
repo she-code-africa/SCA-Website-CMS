@@ -1,13 +1,13 @@
-// src/features/reports/components/report-table.tsx
 "use client";
 
 import * as React from "react";
 import { format } from "date-fns";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Eye } from "lucide-react";
 import type { Report } from "@/features/reports/types";
 import { cn } from "@/lib/utils/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -28,14 +28,18 @@ export function ReportTable({
   rows,
   isLoading,
   isError,
-  onRowClick
+  onView
 }: {
   rows: Report[];
   isLoading: boolean;
   isError: boolean;
-  onRowClick: (r: Report) => void;
+  onView: (r: Report) => void;
 }) {
-  const headers = ["Year", "Link", "Updated", "Created"];
+  const headers = ["Year", "Link", "Updated", "Created", "Action"];
+
+  const handleRowClick = (report: Report) => {
+    onView(report);
+  };
 
   return (
     <Table>
@@ -73,15 +77,17 @@ export function ReportTable({
           rows.map((r) => (
             <TableRow
               key={r._id}
-              onClick={() => onRowClick(r)}
+              onClick={() => handleRowClick(r)}
               className={cn("cursor-pointer hover:bg-muted/50")}
             >
+              {/* Year column */}
               <TableCell className="whitespace-nowrap">
                 <Badge variant="outline" className="font-semibold">
                   {r.year ?? "—"}
                 </Badge>
               </TableCell>
 
+              {/* Link column */}
               <TableCell className="max-w-md">
                 <a
                   href={r.link}
@@ -95,12 +101,29 @@ export function ReportTable({
                 </a>
               </TableCell>
 
+              {/* Updated column */}
               <TableCell className="whitespace-nowrap text-muted-foreground">
                 {fmtDate(r.updatedAt)}
               </TableCell>
 
+              {/* Created column */}
               <TableCell className="whitespace-nowrap text-muted-foreground">
                 {fmtDate(r.createdAt)}
+              </TableCell>
+
+              {/* Action column */}
+              <TableCell
+                className="whitespace-nowrap"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => onView(r)}
+                >
+                  <Eye className="h-4 w-4" />
+                </Button>
               </TableCell>
             </TableRow>
           ))

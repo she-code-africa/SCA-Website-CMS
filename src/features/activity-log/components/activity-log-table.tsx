@@ -1,4 +1,5 @@
 // src/features/activity-log/components/activity-log-table.tsx
+
 "use client";
 
 import * as React from "react";
@@ -13,9 +14,16 @@ import {
 import { format } from "date-fns";
 import { toast } from "sonner";
 
-import { getActivityLog, exportActivityLogs } from "@/features/activity-log/api";
+import {
+  getActivityLog,
+  exportActivityLogs
+} from "@/features/activity-log/api";
 import { normalizeActivityLogPayload } from "@/features/activity-log/normalize";
-import type { AuditLogEntry } from "@/features/activity-log/types";
+import type {
+  AuditLogEntry,
+  DateRangePreset
+} from "@/features/activity-log/types";
+import { resolveDatePreset } from "@/features/activity-log/utils";
 
 import { ActivityLogDetailsDrawer } from "@/features/activity-log/components/activity-log-details-drawer";
 import { ActivityLogFilters } from "@/features/activity-log/components/activity-log-filters";
@@ -26,7 +34,12 @@ import { MobileSkeletonCard } from "@/features/activity-log/components/mobile-sk
 import { columns } from "@/features/activity-log/components/columns";
 import { globalFilterFn } from "@/features/activity-log/utils";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -36,13 +49,18 @@ const PAGE_SIZE = 10;
 export function ActivityLogTable() {
   const { can } = usePermissions();
 
-  // ── Pagination (owned entirely by the client) ──────────────────────────────
+  // ── Pagination ─────────────────────────────────────────────────────────────
   const [page, setPage] = React.useState(1);
 
   // ── Filters ────────────────────────────────────────────────────────────────
-  const [startDate, setStartDate] = React.useState<Date | null>(null);
-  const [endDate, setEndDate] = React.useState<Date | null>(null);
   const [globalFilter, setGlobalFilter] = React.useState("");
+  const [datePreset, setDatePreset] = React.useState<DateRangePreset>("all");
+
+  // Compute actual date range from the preset
+  const { startDate, endDate } = React.useMemo(
+    () => resolveDatePreset(datePreset),
+    [datePreset]
+  );
 
   // ── Export dialog ──────────────────────────────────────────────────────────
   const [exportOpen, setExportOpen] = React.useState(false);
@@ -52,9 +70,11 @@ export function ActivityLogTable() {
 
   // ── Row detail drawer ──────────────────────────────────────────────────────
   const [detailsOpen, setDetailsOpen] = React.useState(false);
-  const [selectedRow, setSelectedRow] = React.useState<AuditLogEntry | null>(null);
+  const [selectedRow, setSelectedRow] = React.useState<AuditLogEntry | null>(
+    null
+  );
 
-  // ── Auth guard (runs once on mount) ───────────────────────────────────────
+  // ── Auth guard ─────────────────────────────────────────────────────────────
   const hasToken = React.useMemo(
     () => Boolean(localStorage.getItem("token")),
     []
@@ -76,11 +96,10 @@ export function ActivityLogTable() {
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     staleTime: 30_000,
-    placeholderData: (prev) => prev  // keeps previous page visible while loading
+    placeholderData: (prev) => prev
   });
 
   // ── Normalise payload ──────────────────────────────────────────────────────
-  // totalPages comes directly from the server — never from local state.
   const { rows, totalPages } = React.useMemo(
     () => normalizeActivityLogPayload(query.data ?? {}),
     [query.data]
@@ -98,25 +117,24 @@ export function ActivityLogTable() {
   }
 
   function handleNext() {
-    // Guard against going past what the server says exists
     setPage((p) => Math.min(totalPages, p + 1));
   }
 
   function handleReset() {
-    setStartDate(null);
-    setEndDate(null);
+    setDatePreset("all");
     setGlobalFilter("");
-    setPage(1); // always reset to page 1 when filters clear
-  }
-
-  function handleStartDateChange(date: Date | null) {
-    setStartDate(date);
-    setPage(1); // new filter → start from page 1
-  }
-
-  function handleEndDateChange(date: Date | null) {
-    setEndDate(date);
     setPage(1);
+  }
+
+  function handleDatePresetChange(preset: DateRangePreset) {
+    setDatePreset(preset);
+    setPage(1);
+  }
+
+  function handleExportClick() {
+    setExportStart(startDate);
+    setExportEnd(endDate);
+    setExportOpen(true);
   }
 
   function openDetails(row: AuditLogEntry) {
@@ -133,10 +151,16 @@ export function ActivityLogTable() {
 
     setIsExporting(true);
     try {
-      const blob = await exportActivityLogs({ startDate: exportStart, endDate: exportEnd });
+      const blob = await exportActivityLogs({
+        startDate: exportStart,
+        endDate: exportEnd
+      });
       const url = URL.createObjectURL(blob);
       const filename = `activity_log_${format(exportStart, "dd-MM-yyyy")}_to_${format(exportEnd, "dd-MM-yyyy")}.csv`;
-      const a = Object.assign(document.createElement("a"), { href: url, download: filename });
+      const a = Object.assign(document.createElement("a"), {
+        href: url,
+        download: filename
+      });
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -144,8 +168,13 @@ export function ActivityLogTable() {
       toast.success("CSV exported successfully");
       setExportOpen(false);
     } catch (err: unknown) {
-      const e = err as { response?: { data?: { message?: string } }; message?: string };
-      toast.error(e?.response?.data?.message ?? e?.message ?? "Failed to export logs.");
+      const e = err as {
+        response?: { data?: { message?: string } };
+        message?: string;
+      };
+      toast.error(
+        e?.response?.data?.message ?? e?.message ?? "Failed to export logs."
+      );
     } finally {
       setIsExporting(false);
     }
@@ -170,12 +199,10 @@ export function ActivityLogTable() {
         <ActivityLogFilters
           globalFilter={globalFilter}
           onGlobalFilterChange={setGlobalFilter}
-          startDate={startDate}
-          onStartDateChange={handleStartDateChange}
-          endDate={endDate}
-          onEndDateChange={handleEndDateChange}
+          datePreset={datePreset}
+          onDatePresetChange={handleDatePresetChange}
           onReset={handleReset}
-          onExportClick={() => setExportOpen(true)}
+          onExportClick={handleExportClick}
         />
 
         <ActivityLogPagination
@@ -190,8 +217,10 @@ export function ActivityLogTable() {
       <div className="space-y-3">
         {/* ── Mobile cards ── */}
         <div className="grid gap-3 md:hidden">
-          {query.isLoading ? (
-            Array.from({ length: 6 }).map((_, i) => <MobileSkeletonCard key={i} />)
+          {query.isFetching ? (
+            Array.from({ length: 6 }).map((_, i) => (
+              <MobileSkeletonCard key={i} />
+            ))
           ) : table.getRowModel().rows.length ? (
             table.getRowModel().rows.map((r) => (
               <button
@@ -225,7 +254,10 @@ export function ActivityLogTable() {
                         >
                           {header.isPlaceholder
                             ? null
-                            : flexRender(header.column.columnDef.header, header.getContext())}
+                            : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
                         </TableHead>
                       ))}
                     </TableRow>
@@ -233,14 +265,13 @@ export function ActivityLogTable() {
                 </TableHeader>
 
                 <TableBody>
-                  {query.isLoading ? (
+                  {query.isFetching ? (
                     Array.from({ length: PAGE_SIZE }).map((_, idx) => (
                       <TableRow key={idx} className="hover:bg-transparent">
                         {columns.map((_, cIdx) => (
                           <TableCell key={cIdx}>
                             <Skeleton className="h-4 w-full" />
                           </TableCell>
-                          
                         ))}
                       </TableRow>
                     ))
@@ -252,8 +283,14 @@ export function ActivityLogTable() {
                         className="cursor-pointer hover:bg-primary/5"
                       >
                         {row.getVisibleCells().map((cell) => (
-                          <TableCell key={cell.id} className="whitespace-nowrap">
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          <TableCell
+                            key={cell.id}
+                            className="whitespace-nowrap"
+                          >
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            )}
                           </TableCell>
                         ))}
                       </TableRow>

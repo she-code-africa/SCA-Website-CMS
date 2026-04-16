@@ -1,21 +1,19 @@
-// src/features/jobs/components/job-sheet.tsx
 "use client";
 
 import * as React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   addJob,
-  archiveJob,
   editJob,
-  getJob,
-  publishJob,
   deleteJob,
+  getJob,
   getJobCategories,
   getJobTypes
 } from "@/features/jobs/api";
 import type { Job, JobUpsertInput } from "@/features/jobs/types";
 import { PermissionGate } from "@/components/PermissionGate";
 import { PERMISSIONS } from "@/lib/rbac/permissions";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import {
   Sheet,
@@ -67,12 +65,14 @@ export function JobSheet({ open, onOpenChange, mode, jobId }: Props) {
 
   const { data: categories = [] } = useQuery({
     queryKey: ["job-categories"],
-    queryFn: getJobCategories
+    queryFn: getJobCategories,
+    enabled: open
   });
 
   const { data: types = [] } = useQuery({
     queryKey: ["job-types"],
-    queryFn: getJobTypes
+    queryFn: getJobTypes,
+    enabled: open
   });
 
   const jobQuery = useQuery({
@@ -105,55 +105,56 @@ export function JobSheet({ open, onOpenChange, mode, jobId }: Props) {
 
   const [form, setForm] = React.useState<JobUpsertInput>(initialForm);
 
+  // Reset form when opening in create mode
   React.useEffect(() => {
     if (!open) return;
-
     if (mode === "create") {
       setEditing(true);
       setForm(initialForm);
-      return;
     }
+  }, [open, mode, initialForm]);
 
-    if (jobQuery.data) {
-      const j = jobQuery.data as Job;
-      setEditing(false);
+  // Populate form when job data is loaded
+  React.useEffect(() => {
+    if (!open || mode !== "view" || !jobQuery.data) return;
+    const j = jobQuery.data as Job;
+    setEditing(false);
 
-      const jobTypeId =
-        typeof j.jobType === "string" ? j.jobType : j.jobType?._id || "";
-      const jobCategoryId =
-        typeof j.jobCategory === "string"
-          ? j.jobCategory
-          : j.jobCategory?._id || "";
+    const jobTypeId =
+      typeof j.jobType === "string" ? j.jobType : j.jobType?._id || "";
+    const jobCategoryId =
+      typeof j.jobCategory === "string"
+        ? j.jobCategory
+        : j.jobCategory?._id || "";
 
-      setForm({
-        title: j.title ?? "",
-        description: j.description ?? "",
-        location: j.location ?? "",
-        deadline: j.deadline
-          ? format(new Date(j.deadline), "yyyy-MM-dd")
-          : format(new Date(), "yyyy-MM-dd"),
-        minimumExperience: j.minimumExperience ?? "",
-        applicationLink: j.applicationLink ?? "",
-        salaryCurrency: j.salaryCurrency ?? "",
-        salaryRange: j.salaryRange ?? "",
-        jobType: jobTypeId,
-        jobCategory: jobCategoryId,
-        guestPost: j.guestPost ?? true,
-        guestPostMetaData: {
-          companyName: j.guestPostMetaData?.companyName || "",
-          companyEmail: j.guestPostMetaData?.companyEmail || "",
-          companyUrl: j.guestPostMetaData?.companyUrl || ""
-        },
-        company: j.company
-          ? {
-              companyName: j.company.companyName || "",
-              email: j.company.email || "",
-              companyUrl: j.company.companyUrl || ""
-            }
-          : undefined
-      });
-    }
-  }, [open, mode, jobQuery.data, initialForm]);
+    setForm({
+      title: j.title ?? "",
+      description: j.description ?? "",
+      location: j.location ?? "",
+      deadline: j.deadline
+        ? format(new Date(j.deadline), "yyyy-MM-dd")
+        : format(new Date(), "yyyy-MM-dd"),
+      minimumExperience: j.minimumExperience ?? "",
+      applicationLink: j.applicationLink ?? "",
+      salaryCurrency: j.salaryCurrency ?? "",
+      salaryRange: j.salaryRange ?? "",
+      jobType: jobTypeId,
+      jobCategory: jobCategoryId,
+      guestPost: j.guestPost ?? true,
+      guestPostMetaData: {
+        companyName: j.guestPostMetaData?.companyName || "",
+        companyEmail: j.guestPostMetaData?.companyEmail || "",
+        companyUrl: j.guestPostMetaData?.companyUrl || ""
+      },
+      company: j.company
+        ? {
+            companyName: j.company.companyName || "",
+            email: j.company.email || "",
+            companyUrl: j.company.companyUrl || ""
+          }
+        : undefined
+    });
+  }, [open, mode, jobQuery.data]);
 
   const createMut = useMutation({
     mutationFn: addJob,
@@ -162,7 +163,9 @@ export function JobSheet({ open, onOpenChange, mode, jobId }: Props) {
       qc.invalidateQueries({ queryKey: ["jobs"] });
       onOpenChange(false);
     },
-    onError: () => toast.error("Could not add job")
+    onError: (err: any) => {
+      toast.error(err?.response?.data?.message || "Could not add job");
+    }
   });
 
   const updateMut = useMutation({
@@ -173,27 +176,9 @@ export function JobSheet({ open, onOpenChange, mode, jobId }: Props) {
       qc.invalidateQueries({ queryKey: ["job"] });
       onOpenChange(false);
     },
-    onError: () => toast.error("Could not update job")
-  });
-
-  const publishMut = useMutation({
-    mutationFn: publishJob,
-    onSuccess: () => {
-      toast.success("Published");
-      qc.invalidateQueries({ queryKey: ["jobs"] });
-      qc.invalidateQueries({ queryKey: ["job"] });
-    },
-    onError: () => toast.error("Could not publish")
-  });
-
-  const archiveMut = useMutation({
-    mutationFn: archiveJob,
-    onSuccess: () => {
-      toast.success("Archived");
-      qc.invalidateQueries({ queryKey: ["jobs"] });
-      qc.invalidateQueries({ queryKey: ["job"] });
-    },
-    onError: () => toast.error("Could not archive")
+    onError: (err: any) => {
+      toast.error(err?.response?.data?.message || "Could not update job");
+    }
   });
 
   const deleteMut = useMutation({
@@ -234,28 +219,48 @@ export function JobSheet({ open, onOpenChange, mode, jobId }: Props) {
         !form.guestPostMetaData.companyName?.trim() &&
         !form.guestPostMetaData.companyEmail?.trim() &&
         !form.guestPostMetaData.companyUrl?.trim();
-
       if (isEmpty) delete payload.guestPostMetaData;
     } else if (form.company) {
       const isEmpty =
         !form.company.companyName?.trim() &&
         !form.company.email?.trim() &&
         !form.company.companyUrl?.trim();
-
       if (isEmpty) delete payload.company;
     }
 
     if (mode === "create") {
       createMut.mutate(payload);
-      return;
+    } else if (jobId) {
+      updateMut.mutate({ id: jobId, data: payload });
     }
-
-    if (!jobId) return;
-    updateMut.mutate({ id: jobId, data: payload });
   };
 
-  const currentState = (jobQuery.data as Job | undefined)?.state;
   const saving = createMut.isPending || updateMut.isPending;
+
+  // Skeleton loader for view mode
+  if (mode === "view" && jobQuery.isLoading && !jobQuery.data) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent
+          side="right"
+          className="w-full sm:max-w-2xl p-0 flex flex-col"
+        >
+          <SheetHeader className="px-6 py-4 border-b">
+            <Skeleton className="h-6 w-40" />
+            <Skeleton className="h-4 w-64 mt-1" />
+          </SheetHeader>
+          <div className="flex-1 px-6 py-6 space-y-6">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-32 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+        </SheetContent>
+      </Sheet>
+    );
+  }
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -270,13 +275,15 @@ export function JobSheet({ open, onOpenChange, mode, jobId }: Props) {
           <SheetDescription>
             {mode === "create"
               ? "Add a new job posting."
-              : "View, edit, publish/archive, or delete this job."}
+              : editing
+                ? "Edit the job details."
+                : "View job details. Click Edit to modify."}
           </SheetDescription>
         </SheetHeader>
 
         <ScrollArea className="flex-1 px-6">
           <div className="py-6 space-y-6">
-            {/* Top actions row */}
+            {/* Top actions row (view mode only) */}
             {mode === "view" && (
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <PermissionGate permission={PERMISSIONS.UPDATE_JOB}>
@@ -289,60 +296,38 @@ export function JobSheet({ open, onOpenChange, mode, jobId }: Props) {
                   </Button>
                 </PermissionGate>
 
-                <div className="flex gap-2 w-full sm:w-auto">
-                  <PermissionGate permission={PERMISSIONS.UPDATE_JOB}>
-                    <Button
-                      variant="outline"
-                      className="flex-1 sm:flex-none"
-                      onClick={() => {
-                        if (!jobId) return;
-                        if (currentState === "published")
-                          archiveMut.mutate(jobId);
-                        else publishMut.mutate(jobId);
-                      }}
-                      disabled={publishMut.isPending || archiveMut.isPending}
-                    >
-                      {currentState === "published" ? "Archive" : "Publish"}
-                    </Button>
-                  </PermissionGate>
-
-                  {!editing && (
-                    <PermissionGate permission={PERMISSIONS.DELETE_JOB}>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="destructive"
-                            className="flex-1 sm:flex-none"
+                {/* Delete button (only when NOT editing) */}
+                {!editing && (
+                  <PermissionGate permission={PERMISSIONS.DELETE_JOB}>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive">Delete</Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete job?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => {
+                              if (!jobId) return;
+                              deleteMut.mutate(jobId);
+                            }}
+                            className={cn(
+                              "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            )}
                           >
                             Delete
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete job?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => {
-                                if (!jobId) return;
-                                deleteMut.mutate(jobId);
-                              }}
-                              className={cn(
-                                "bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              )}
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </PermissionGate>
-                  )}
-                </div>
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </PermissionGate>
+                )}
               </div>
             )}
 
@@ -627,12 +612,21 @@ export function JobSheet({ open, onOpenChange, mode, jobId }: Props) {
         </ScrollArea>
 
         {/* Bottom action bar */}
-        {(mode === "create" && (
-          <PermissionGate permission={PERMISSIONS.CREATE_JOB}>
+        {(mode === "create" || (mode === "view" && editing)) && (
+          <PermissionGate
+            permission={
+              mode === "create"
+                ? PERMISSIONS.CREATE_JOB
+                : PERMISSIONS.UPDATE_JOB
+            }
+          >
             <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
               <Button
                 variant="outline"
-                onClick={() => onOpenChange(false)}
+                onClick={() => {
+                  if (editing && mode === "view") setEditing(false);
+                  else onOpenChange(false);
+                }}
                 disabled={saving}
               >
                 Cancel
@@ -642,31 +636,15 @@ export function JobSheet({ open, onOpenChange, mode, jobId }: Props) {
                 onClick={submit}
                 disabled={saving}
               >
-                {saving ? "Saving…" : "Add Job"}
+                {saving
+                  ? "Saving…"
+                  : mode === "create"
+                    ? "Add Job"
+                    : "Save Changes"}
               </Button>
             </div>
           </PermissionGate>
-        )) ||
-          (mode === "view" && editing && (
-            <PermissionGate permission={PERMISSIONS.UPDATE_JOB}>
-              <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
-                <Button
-                  variant="outline"
-                  onClick={() => onOpenChange(false)}
-                  disabled={saving}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  className="bg-pink-600 hover:bg-pink-700"
-                  onClick={submit}
-                  disabled={saving}
-                >
-                  {saving ? "Saving…" : "Save Changes"}
-                </Button>
-              </div>
-            </PermissionGate>
-          ))}
+        )}
       </SheetContent>
     </Sheet>
   );

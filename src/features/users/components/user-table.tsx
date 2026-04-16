@@ -1,10 +1,11 @@
-// src/features/users/components/user-table.tsx
 "use client";
 
 import { format } from "date-fns";
+import { Eye } from "lucide-react";
 import type { AdminUser } from "@/features/users/types";
 import { cn } from "@/lib/utils/utils";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -12,7 +13,7 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
+  TableRow
 } from "@/components/ui/table";
 
 function fmtDate(v?: string) {
@@ -33,9 +34,19 @@ function getStatusBadge(user: AdminUser) {
     return <Badge variant="outline">Pending</Badge>;
   }
   const isActive = user.isActive ?? user.status === "active";
+  if (isActive) {
+    return (
+      <Badge className="bg-green-600 text-white hover:bg-green-700">
+        Active
+      </Badge>
+    );
+  }
   return (
-    <Badge variant={isActive ? "default" : "destructive"}>
-      {isActive ? "Active" : "Deactivated"}
+    <Badge
+      variant="destructive"
+      className="bg-red-600 text-white hover:bg-red-700"
+    >
+      Deactivated
     </Badge>
   );
 }
@@ -49,7 +60,7 @@ type Props = {
   onRowClick: (u: AdminUser) => void;
 };
 
-const headers = ["User", "Role", "Status", "Joined"];
+const headers = ["User", "Role", "Status", "Joined", "Action"];
 
 export function UserTable({
   rows,
@@ -57,7 +68,7 @@ export function UserTable({
   isLoading,
   isError,
   canEdit = true,
-  onRowClick,
+  onRowClick
 }: Props) {
   const resolveRoleName = (user: any) => {
     const roleValue =
@@ -68,8 +79,10 @@ export function UserTable({
     const matchedRole = roles.find(
       (r) => r._id === roleValue || r.id === roleValue
     );
-    return matchedRole?.name ||
-      (roleValue.length > 20 ? `ID: ${roleValue.substring(0, 6)}` : roleValue);
+    return (
+      matchedRole?.name ||
+      (roleValue.length > 20 ? `ID: ${roleValue.substring(0, 6)}` : roleValue)
+    );
   };
 
   return (
@@ -144,7 +157,7 @@ export function UserTable({
                       </div>
                     </TableCell>
 
-                    {/* Clickable Role Cell – opens the sheet */}
+                    {/* Role Cell – clickable */}
                     <TableCell
                       className="whitespace-nowrap cursor-pointer"
                       onClick={(e) => {
@@ -164,11 +177,24 @@ export function UserTable({
                     <TableCell className="whitespace-nowrap">
                       {getStatusBadge(u)}
                     </TableCell>
-                    {/* <TableCell className="whitespace-nowrap text-muted-foreground">
-                      {fmtDate(u.lastLogin)}
-                    </TableCell> */}
+
                     <TableCell className="whitespace-nowrap text-muted-foreground">
                       {fmtDate(u.createdAt)}
+                    </TableCell>
+
+                    {/* Action Column */}
+                    <TableCell
+                      className="whitespace-nowrap"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => onRowClick(u)}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 );

@@ -90,7 +90,6 @@ export const adminRoutes: NavItem[] = [
     icon: MessageSquareText,
     path: "/admin/testimonials",
     permission: PERMISSIONS.VIEW_TESTIMONIALS
-
   },
   {
     name: "reports",
@@ -145,6 +144,12 @@ export const adminRoutes: NavItem[] = [
         label: "Impact Stories",
         path: "/admin/stem-a-girl/impact-stories",
         permission: PERMISSIONS.VIEW_IMPACT_STORIES
+      },
+      {
+        name: "courses",
+        label: "Courses",
+        path: "/admin/stem-a-girl/courses",
+        // permission: PERMISSIONS.VIEW_IMPACT_STORIES
       }
     ]
   },

@@ -1,3 +1,5 @@
+// src/app/admin/users/page.tsx
+
 "use client";
 
 import * as React from "react";
@@ -29,7 +31,6 @@ import type {
 import { PermissionGate } from "@/components/PermissionGate";
 import { PERMISSIONS } from "@/lib/rbac/permissions";
 
-// API error response shape (adjust based on your backend)
 interface ApiErrorResponse {
   message?: string;
   error?: string;
@@ -47,36 +48,32 @@ const getErrorMessage = (error: unknown): string => {
 export default function UsersPage() {
   const qc = useQueryClient();
 
+  // Filter state – no page/limit here
   const [filters, setFilters] = React.useState<UsersFilters>({
-    page: 1,
-    limit: 10,
     search: "",
     roleId: "",
     status: ""
   });
+
+  // Pagination state
+  const [page, setPage] = React.useState(1);
+  const limit = 10;
 
   const [sheetOpen, setSheetOpen] = React.useState(false);
   const [selectedUser, setSelectedUser] = React.useState<AdminUser | null>(
     null
   );
   const [sheetMode, setSheetMode] = React.useState<"invite" | "view">("view");
+  
 
-  // Reset page when role or status changes (search is client‑side)
+  // Reset page when any filter changes
   React.useEffect(() => {
-    setFilters((prev) => ({ ...prev, page: 1 }));
-  }, [filters.roleId, filters.status]);
+    setPage(1);
+  }, [filters.search, filters.roleId, filters.status]);
 
-  // Queries
+  // Queries – fetch all users (no server pagination)
   const usersQuery = useQuery({
-    queryKey: [
-      "users",
-      {
-        roleId: filters.roleId,
-        status: filters.status,
-        page: filters.page,
-        limit: filters.limit
-      }
-    ],
+    queryKey: ["users", { roleId: filters.roleId, status: filters.status }],
     queryFn: () => getUsers({ ...filters, search: "" })
   });
   const rolesQuery = useQuery({
@@ -88,33 +85,48 @@ export default function UsersPage() {
     queryFn: getInvitations
   });
 
-  const totalPages = usersQuery.data?.totalPages ?? 1;
-
-  // Merge active users + pending invitations
+  // Merge active users + pending invitations, then sort: pending first, then active, then deactivated
   const allRows = React.useMemo(() => {
     const users = usersQuery.data?.users ?? [];
     const roles = rolesQuery.data ?? [];
     const invitations = invitationsQuery.data ?? [];
 
+    // Create role map for fast lookup
+    const roleMap = new Map(roles.map((r) => [r._id, r]));
+
+    // Filter only pending invitations (case‑insensitive)
     const pendingInvites = invitations.filter(
-      (inv: Invitation) => inv.status === "pending"
+      (inv: Invitation) => inv.status?.toLowerCase() === "pending"
     );
+
     const inviteRows: AdminUser[] = pendingInvites.map((inv) => {
-      const roleObj = roles.find((r) => r._id === inv.roleId);
+      const roleObj = roleMap.get(inv.role);
       return {
         _id: inv._id,
         id: inv._id,
         firstName: "",
         lastName: "",
         email: inv.email,
-        role: roleObj ? roleObj._id : inv.roleId,
+        role: roleObj ? roleObj._id : inv.role, // store role ID
         status: "pending",
         isActive: false,
-        createdAt: inv.invitedAt,
+        createdAt: inv.createdAt, // backend uses createdAt for invited date
         lastLogin: null
       };
     });
-    return [...users, ...inviteRows];
+
+    // Combine all users (including pending invites)
+    const all = [...inviteRows, ...users];
+
+    // Sort: pending (0) → active (1) → deactivated (2)
+    return all.sort((a, b) => {
+      const getStatusOrder = (user: AdminUser): number => {
+        if (user.status === "pending") return 0;
+        const isActive = user.isActive ?? user.status === "active";
+        return isActive ? 1 : 2;
+      };
+      return getStatusOrder(a) - getStatusOrder(b);
+    });
   }, [usersQuery.data, rolesQuery.data, invitationsQuery.data]);
 
   // Client‑side search filtering
@@ -132,17 +144,15 @@ export default function UsersPage() {
     });
   }, [allRows, filters.search]);
 
-  // Pagination: if search is active, show all results on one page
-  const paginatedRows = React.useMemo(() => {
-    if (filters.search?.trim()) return filteredRows;
-    const start = ((filters.page ?? 1) - 1) * (filters.limit ?? 10);
-    const end = start + (filters.limit ?? 10);
-    return filteredRows.slice(start, end);
-  }, [filteredRows, filters.page, filters.limit, filters.search]);
+  // Client‑side pagination
+  const totalPages = Math.max(1, Math.ceil(filteredRows.length / limit));
+  const pagedRows = filteredRows.slice((page - 1) * limit, page * limit);
 
-  const displayedTotalPages = filters.search?.trim() ? 1 : totalPages;
+  // Handlers
+  const handlePrevious = () => setPage((p) => Math.max(1, p - 1));
+  const handleNext = () => setPage((p) => Math.min(totalPages, p + 1));
 
-  // Mutations with proper error handling
+  // Mutations
   const inviteMutation = useMutation({
     mutationFn: (input: InviteUserInput) => inviteUser(input),
     onSuccess: () => {
@@ -151,9 +161,7 @@ export default function UsersPage() {
       qc.invalidateQueries({ queryKey: ["invitations"] });
       setSheetOpen(false);
     },
-    onError: (error: unknown) => {
-      toast.error(getErrorMessage(error));
-    }
+    onError: (error: unknown) => toast.error(getErrorMessage(error))
   });
 
   const roleUpdateMutation = useMutation({
@@ -163,9 +171,7 @@ export default function UsersPage() {
       toast.success("Role updated");
       qc.invalidateQueries({ queryKey: ["users"] });
     },
-    onError: (error: unknown) => {
-      toast.error(getErrorMessage(error));
-    }
+    onError: (error: unknown) => toast.error(getErrorMessage(error))
   });
 
   const toggleStatusMutation = useMutation({
@@ -191,7 +197,7 @@ export default function UsersPage() {
     onError: () => toast.error("Delete failed")
   });
 
-  // Handlers
+  // Handlers for user actions
   const handleInvite = async (email: string, roleId: string) => {
     const roles = rolesQuery.data ?? [];
     const selectedRole = roles.find((r) => r._id === roleId);
@@ -210,19 +216,19 @@ export default function UsersPage() {
     await roleUpdateMutation.mutateAsync({ userId, roleId: newRoleId });
   };
 
-const handleToggleStatus = async (user: AdminUser) => {
-  if (user.status === "pending") {
-    toast.warning("Cannot activate/deactivate pending invitation.");
-    return;
-  }
-  await toggleStatusMutation.mutateAsync(user);
-};
+  const handleToggleStatus = async (user: AdminUser) => {
+    if (user.status === "pending") {
+      toast.warning("Cannot activate/deactivate pending invitation.");
+      return;
+    }
+    await toggleStatusMutation.mutateAsync(user);
+  };
 
-const handleDelete = (user: AdminUser) => {
-  if (window.confirm(`Delete ${user.email} permanently?`)) {
-    deleteMutation.mutate(user._id);
-  }
-};
+  const handleDelete = (user: AdminUser) => {
+    if (window.confirm(`Delete ${user.email} permanently?`)) {
+      deleteMutation.mutate(user._id);
+    }
+  };
 
   const openSheet = (user: AdminUser | null, mode: "invite" | "view") => {
     setSelectedUser(user);
@@ -231,31 +237,12 @@ const handleDelete = (user: AdminUser) => {
   };
 
   const handleFilterChange = (newFilters: UsersFilters) => {
-    setFilters((prev) => ({ ...prev, ...newFilters, page: 1 }));
+    setFilters((prev) => ({ ...prev, ...newFilters }));
   };
 
   const handleResetFilters = () => {
-    setFilters({
-      page: 1,
-      limit: 10,
-      search: "",
-      roleId: "",
-      status: ""
-    });
-  };
-
-  const goToPreviousPage = () => {
-    setFilters((prev) => ({
-      ...prev,
-      page: Math.max(1, (prev.page ?? 1) - 1)
-    }));
-  };
-
-  const goToNextPage = () => {
-    setFilters((prev) => ({
-      ...prev,
-      page: Math.min(displayedTotalPages, (prev.page ?? 1) + 1)
-    }));
+    setFilters({ search: "", roleId: "", status: "" });
+    setPage(1);
   };
 
   const rolesForFilters = React.useMemo(() => {
@@ -280,10 +267,10 @@ const handleDelete = (user: AdminUser) => {
               onInvite={() => openSheet(null, "invite")}
             />
             <UserPagination
-              currentPage={filters.page ?? 1}
-              totalPages={displayedTotalPages}
-              onPrevious={goToPreviousPage}
-              onNext={goToNextPage}
+              currentPage={page}
+              totalPages={totalPages}
+              onPrevious={handlePrevious}
+              onNext={handleNext}
               isLoading={isLoading}
             />
           </div>
@@ -298,8 +285,8 @@ const handleDelete = (user: AdminUser) => {
               <div className="rounded-xl border bg-background p-6 text-center text-sm text-red-500">
                 Failed to load users.
               </div>
-            ) : paginatedRows.length ? (
-              paginatedRows.map((u) => (
+            ) : pagedRows.length ? (
+              pagedRows.map((u) => (
                 <MobileUserCard
                   key={u._id || u.id}
                   user={u}
@@ -317,7 +304,7 @@ const handleDelete = (user: AdminUser) => {
           {/* Desktop table */}
           <div className="hidden md:block">
             <UserTable
-              rows={paginatedRows}
+              rows={pagedRows}
               roles={rolesQuery.data ?? []}
               isLoading={isLoading}
               isError={isError}

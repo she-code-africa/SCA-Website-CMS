@@ -1,143 +1,177 @@
-// src/app/(dashboard)/stem-a-girl/courses/page.tsx
+// src/features/stem-a-girl/courses/pages/courses-page.tsx
+
 "use client";
 
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
-
-import { getSAGCourses } from "@/features/stem-a-girl/courses/api";
-import type {
-  SAGCourse,
-  SAGCoursesFilters
-} from "@/features/stem-a-girl/courses/types";
-
-import { CoursesFilters } from "@/features/stem-a-girl/courses/components/courses-filters";
-import { CoursesTable } from "@/features/stem-a-girl/courses/components/courses-table";
-import { MobileCourseCard } from "@/features/stem-a-girl/courses/components/mobile-course-card";
-import { MobileCourseSkeletonCard } from "@/features/stem-a-girl/courses/components/mobile-course-skeleton-card";
-import { CourseSheet } from "@/features/stem-a-girl/courses/components/course-sheet";
-
-import { TeamPagination } from "@/features/team/components/team-pagination";
+import { getCourses } from "../api";
+import { getSAGActivities } from "@/features/stem-a-girl/activities/api";
+import type { Course, CourseFilters } from "../types";
+import type { SAGActivity } from "@/features/stem-a-girl/activities/types";
+import { CoursesTable } from "../components/courses-table";
+import { CourseSheet } from "../components/course-sheet";
 import { TableShell } from "@/components/templates/table-shell";
 import { TableFrame } from "@/components/templates/table-frame";
+import { CoursesFilters } from "../components/courses-filters";
+import { CoursesPagination } from "../components/courses-pagination";
+import { MobileCourseCard } from "../components/mobile-course-card";
+import { MobileCourseSkeletonCard } from "../components/mobile-course-skeleton-card";
+
+function applyFilters(rows: Course[], filters: CourseFilters) {
+  let out = [...rows];
+  const search = filters.search?.trim().toLowerCase();
+  if (search) {
+    out = out.filter(
+      (c) =>
+        c.title.toLowerCase().includes(search) ||
+        c.description.toLowerCase().includes(search)
+    );
+  }
+  if (filters.state) out = out.filter((c) => c.state === filters.state);
+  return out;
+}
 
 export default function CoursesPage() {
-  const [filters, setFilters] = React.useState<SAGCoursesFilters>({
+  const [filters, setFilters] = React.useState<CourseFilters>({
     search: "",
     state: "",
-    activity: ""
+    sortBy: ""
   });
-
   const [page, setPage] = React.useState(1);
   const limit = 10;
-
   const [sheetOpen, setSheetOpen] = React.useState(false);
   const [sheetMode, setSheetMode] = React.useState<"create" | "view">("create");
-  const [selected, setSelected] = React.useState<SAGCourse | null>(null);
+  const [selectedId, setSelectedId] = React.useState<string | null>(null);
 
-  React.useEffect(() => {
-    const handler = () => {
-      setSelected(null);
-      setSheetMode("create");
-      setSheetOpen(true);
-    };
-    window.addEventListener("sag-course:add", handler);
-    return () => window.removeEventListener("sag-course:add", handler);
-  }, []);
-
-  React.useEffect(() => {
-    setPage(1);
-  }, [filters.search, filters.state, filters.activity]);
-
-  const query = useQuery({
-    queryKey: ["sag-courses", filters],
-    queryFn: () => getSAGCourses(filters),
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["courses"],
+    queryFn: getCourses,
     staleTime: 30_000
   });
 
-  const rows = React.useMemo(() => query.data ?? [], [query.data]);
-  const totalPages = Math.max(1, Math.ceil(rows.length / limit));
-  const paged = rows.slice((page - 1) * limit, page * limit);
+  const { data: activitiesData, isLoading: isLoadingActivities } = useQuery({
+    queryKey: ["sag-activities"],
+    queryFn: () => getSAGActivities({}),
+    staleTime: 60_000
+  });
 
-  const openView = (c: SAGCourse) => {
-    setSelected(c);
+  const courses = React.useMemo(() => (Array.isArray(data) ? data : []), [data]);
+  const activities = React.useMemo(() => (activitiesData as SAGActivity[]) ?? [], [activitiesData]);
+  
+  // Create a lookup map: activity ID -> activity name
+  const activityMap = React.useMemo(() => {
+    const map = new Map<string, string>();
+    activities.forEach((act) => {
+      map.set(act._id, act.title);
+    });
+    return map;
+  }, [activities]);
+
+  const filtered = React.useMemo(
+    () => applyFilters(courses, filters),
+    [courses, filters]
+  );
+  const totalPages = Math.max(1, Math.ceil(filtered.length / limit));
+  const paged = filtered.slice((page - 1) * limit, page * limit);
+
+  // Listen for "Add Course" event from the filters component
+  React.useEffect(() => {
+    const handleAdd = () => {
+      setSelectedId(null);
+      setSheetMode("create");
+      setSheetOpen(true);
+    };
+    window.addEventListener("sag-course:add", handleAdd);
+    return () => window.removeEventListener("sag-course:add", handleAdd);
+  }, []);
+
+  const openView = (c: Course) => {
+    setSelectedId(c._id);
+    setSheetMode("view");
+    setSheetOpen(true);
+  };
+  const openEdit = (c: Course) => {
+    setSelectedId(c._id);
     setSheetMode("view");
     setSheetOpen(true);
   };
 
+  const isLoadingAny = isLoading || isLoadingActivities;
+
   return (
     <TableShell
       title="Courses"
-      description="Manage Stem-A-Girl courses."
+      description="Manage Stem-a-Girl courses."
       right={
         <div className="text-sm text-muted-foreground">
-          {query.isLoading ? "Loading…" : `${rows.length} course(s)`}
+          {isLoadingAny ? "Loading…" : `${filtered.length} course(s)`}
         </div>
       }
     >
       <div className="space-y-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex justify-between items-center">
           <CoursesFilters
             value={filters}
             onChange={setFilters}
-            onReset={() => setFilters({ search: "", state: "", activity: "" })}
+            onReset={() => setFilters({ search: "", state: "", sortBy: "" })}
           />
-
-          <TeamPagination
+        </div>
+        <div className="flex justify-end">
+          <CoursesPagination
             currentPage={page}
             totalPages={totalPages}
             onPrevious={() => setPage((p) => Math.max(1, p - 1))}
             onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
-            isLoading={query.isFetching}
+            isLoading={isLoadingAny}
           />
         </div>
 
-        <div className="space-y-3">
-          {/* Mobile */}
-          <div className="grid gap-3 md:hidden">
-            {query.isLoading ? (
-              Array.from({ length: 6 }).map((_, i) => (
-                <MobileCourseSkeletonCard key={i} />
-              ))
-            ) : query.isError ? (
-              <div className="rounded-xl border bg-background p-6 text-center text-sm text-red-500">
-                Failed to load courses.
-              </div>
-            ) : paged.length ? (
-              paged.map((c) => (
-                <button
-                  key={c._id}
-                  type="button"
-                  onClick={() => openView(c)}
-                  className="text-left w-full"
-                >
-                  <MobileCourseCard course={c} />
-                </button>
-              ))
-            ) : (
-              <div className="rounded-xl border bg-background p-6 text-center text-sm text-muted-foreground">
-                No courses found.
-              </div>
-            )}
-          </div>
+        {/* Mobile */}
+        <div className="grid gap-3 md:hidden">
+          {isLoadingAny ? (
+            Array.from({ length: 6 }).map((_, i) => (
+              <MobileCourseSkeletonCard key={i} />
+            ))
+          ) : isError ? (
+            <div className="text-center text-red-500">
+              Failed to load courses
+            </div>
+          ) : paged.length ? (
+            paged.map((c) => (
+              <button
+                key={c._id}
+                onClick={() => openView(c)}
+                className="text-left w-full"
+              >
+                <MobileCourseCard course={c} activityMap={activityMap} />
+              </button>
+            ))
+          ) : (
+            <div className="text-center text-muted-foreground">
+              No courses found
+            </div>
+          )}
+        </div>
 
-          {/* Desktop */}
-          <div className="hidden md:block">
-            <TableFrame>
-              <CoursesTable
-                rows={paged}
-                isLoading={query.isLoading}
-                isError={query.isError}
-                onRowClick={openView}
-              />
-            </TableFrame>
-          </div>
+        {/* Desktop */}
+        <div className="hidden md:block">
+          <TableFrame>
+            <CoursesTable
+              rows={paged}
+              isLoading={isLoadingAny}
+              isError={isError}
+              onView={openView}
+              onEdit={openEdit}
+              activityMap={activityMap}
+            />
+          </TableFrame>
         </div>
 
         <CourseSheet
           open={sheetOpen}
           onOpenChange={setSheetOpen}
           mode={sheetMode}
-          courseId={selected?._id}
+          courseId={selectedId || undefined}
         />
       </div>
     </TableShell>

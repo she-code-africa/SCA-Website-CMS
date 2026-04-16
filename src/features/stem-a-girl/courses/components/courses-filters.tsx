@@ -1,9 +1,8 @@
-// src/features/stem-a-girl/courses/components/courses-filters.tsx
 "use client";
 
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
-import type { SAGCoursesFilters } from "../types";
+import type { CourseFilters } from "../types";
 import { getSAGActivities } from "@/features/stem-a-girl/activities/api";
 import type { SAGActivity } from "@/features/stem-a-girl/activities/types";
 
@@ -23,8 +22,8 @@ import {
 } from "@/components/ui/select";
 
 type Props = {
-  value: SAGCoursesFilters;
-  onChange: (next: SAGCoursesFilters) => void;
+  value: CourseFilters;
+  onChange: (next: CourseFilters) => void;
   onReset: () => void;
 };
 
@@ -62,7 +61,7 @@ export function CoursesFilters({ value, onChange, onReset }: Props) {
           <PopoverContent
             align="start"
             sideOffset={8}
-            className="z-50 w-[340px] max-w-[calc(100vw-2rem)] rounded-md border p-4 shadow-md"
+            className="z-50 w-85 max-w-[calc(100vw-2rem)] rounded-md border p-4 shadow-md"
           >
             <div className="grid gap-3">
               <div className="grid gap-1">
@@ -125,9 +124,7 @@ export function CoursesFilters({ value, onChange, onReset }: Props) {
         <Button
           variant="default"
           className="w-full sm:w-auto"
-          onClick={() =>
-            window.dispatchEvent(new CustomEvent("sag-course:add"))
-          }
+          onClick={() => window.dispatchEvent(new CustomEvent("sag-course:add"))}
         >
           Add Course
         </Button>

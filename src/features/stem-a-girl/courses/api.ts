@@ -1,71 +1,44 @@
-import { api } from "@/lib/api/client";
-import { sagUrl } from "@/lib/api/sag";
-import type {
-  SAGCourse,
-  SAGCoursesFilters,
-  SAGCourseUpsertInput
-} from "./types";
+// src/features/stem-a-girl/courses/api.ts
 
-type ApiListResponse<T> = T[] | { data?: T[] } | { data?: { data?: T[] } };
+import { stemApi as api } from "@/lib/api/client";
+import type { Course, CourseUpsertInput } from "./types";
 
-function normalizeList<T>(res: unknown): T[] {
-  if (Array.isArray(res)) return res as T[];
-  const r = res as any;
-  if (Array.isArray(r?.data)) return r.data as T[];
-  if (Array.isArray(r?.data?.data)) return r.data.data as T[];
-  return [];
+// function toFormData(input: CourseUpsertInput): FormData {
+//   const fd = new FormData();
+//   fd.append("title", input.title);
+//   if (input.slug) fd.append("slug", input.slug);
+//   fd.append("description", input.description);
+//   if (input.image) fd.append("image", input.image);
+//   if (input.icon) fd.append("icon", input.icon);
+//   if (input.difficulty) fd.append("difficulty", input.difficulty);
+//   if (input.estimatedHours) fd.append("estimatedHours", input.estimatedHours);
+//   if (input.link) fd.append("link", input.link);
+//   if (input.featured !== undefined)
+//     fd.append("featured", String(input.featured));
+//   if (input.state) fd.append("state", input.state);
+//   if (input.activity) fd.append("activity", input.activity);
+//   if (input.modules) fd.append("modules", JSON.stringify(input.modules));
+//   return fd;
+// }
+
+export async function getCourses(): Promise<Course[]> {
+  const res = await api.get("/course");
+  return Array.isArray(res) ? res : [];
 }
 
-function buildQuery(filters: SAGCoursesFilters) {
-  const params = new URLSearchParams();
-  if (filters.search?.trim()) params.set("search", filters.search.trim());
-  if (filters.state) params.set("state", filters.state);
-  if (filters.activity) params.set("activity", filters.activity);
-  const qs = params.toString();
-  return qs ? `?${qs}` : "";
+export async function getCourse(id: string): Promise<Course> {
+  return await api.get(`/course/${id}`);
 }
 
-export async function getSAGCourses(
-  filters: SAGCoursesFilters = {}
-): Promise<SAGCourse[]> {
-  const qs = buildQuery(filters);
-  const res: ApiListResponse<SAGCourse> = await api.get(sagUrl(`/course${qs}`));
-  return normalizeList<SAGCourse>(res);
+export async function createCourse(input: CourseUpsertInput): Promise<Course> {
+  // Send JSON, not FormData
+  return await api.post("/course", input);
 }
 
-export async function getSAGCourse(id: string): Promise<SAGCourse> {
-  return api.get(sagUrl(`/course/${id}`));
+export async function updateCourse(id: string, input: CourseUpsertInput): Promise<Course> {
+  return await api.put(`/course/${id}`, input);
 }
 
-export async function createSAGCourse(input: SAGCourseUpsertInput) {
-  const fd = new FormData();
-  fd.append("title", input.title);
-  fd.append("description", input.description);
-  fd.append("link", input.link);
-  fd.append("activity", input.activity);
-  fd.append("state", input.state ?? "draft");
-  if (input.image) fd.append("image", input.image);
-
-  return api.post(sagUrl(`/course`), fd);
-}
-
-export async function editSAGCourse(payload: {
-  id: string;
-  data: Partial<SAGCourseUpsertInput>;
-}) {
-  const fd = new FormData();
-  const d = payload.data;
-
-  if (d.title !== undefined) fd.append("title", d.title);
-  if (d.description !== undefined) fd.append("description", d.description);
-  if (d.link !== undefined) fd.append("link", d.link);
-  if (d.activity !== undefined) fd.append("activity", d.activity);
-  if (d.state !== undefined) fd.append("state", d.state);
-  if (d.image !== undefined && d.image !== null) fd.append("image", d.image);
-
-  return api.put(sagUrl(`/course/${payload.id}`), fd);
-}
-
-export async function deleteSAGCourse(id: string) {
-  return api.delete(sagUrl(`/course/${id}`));
+export async function deleteCourse(id: string): Promise<void> {
+  await api.delete(`/course/${id}`);
 }

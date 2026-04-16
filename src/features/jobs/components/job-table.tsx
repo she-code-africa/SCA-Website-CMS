@@ -1,13 +1,13 @@
-// src/features/jobs/components/job-table.tsx
 "use client";
 
 import * as React from "react";
 import { format } from "date-fns";
-import { Briefcase } from "lucide-react";
+import { Briefcase, Eye, Pencil } from "lucide-react";
 import type { Job } from "@/features/jobs/types";
 import { cn } from "@/lib/utils/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -34,21 +34,28 @@ export function JobTable({
   rows,
   isLoading,
   isError,
-  onRowClick
+  onView,
+  onEdit
 }: {
   rows: Job[];
   isLoading: boolean;
   isError: boolean;
-  onRowClick: (j: Job) => void;
+  onView: (j: Job) => void;
+  onEdit: (j: Job) => void;
 }) {
   const headers = [
-    "Title",
-    "Description",
+    "Job title",
+    "Company",
     "Location",
     "Deadline",
     "State",
-    "Created"
+    "Created",
+    "Action"
   ];
+
+  const handleRowClick = (job: Job) => {
+    onView(job);
+  };
 
   return (
     <Table>
@@ -86,9 +93,10 @@ export function JobTable({
           rows.map((j) => (
             <TableRow
               key={j._id}
-              onClick={() => onRowClick(j)}
+              onClick={() => handleRowClick(j)}
               className={cn("cursor-pointer hover:bg-muted/50")}
             >
+              {/* Job title */}
               <TableCell className="whitespace-nowrap">
                 <div className="flex items-center gap-2">
                   <div className="h-8 w-8 rounded bg-muted flex items-center justify-center">
@@ -98,26 +106,56 @@ export function JobTable({
                 </div>
               </TableCell>
 
-              <TableCell className="max-w-md truncate">
-                {j.description ?? "—"}
+              {/* Company */}
+              <TableCell className="whitespace-nowrap">
+                {j.company?.companyName ?? "—"}
               </TableCell>
 
+              {/* Location */}
               <TableCell className="whitespace-nowrap">
                 {j.location ?? "—"}
               </TableCell>
 
+              {/* Deadline */}
               <TableCell className="whitespace-nowrap text-muted-foreground">
                 {fmtDate(j.deadline)}
               </TableCell>
 
+              {/* State */}
               <TableCell className="whitespace-nowrap">
                 <Badge variant={stateBadgeVariant(j.state)}>
                   {j.state ?? "draft"}
                 </Badge>
               </TableCell>
 
+              {/* Created */}
               <TableCell className="whitespace-nowrap text-muted-foreground">
                 {fmtDate(j.createdAt)}
+              </TableCell>
+
+              {/* Action */}
+              <TableCell
+                className="whitespace-nowrap"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => onView(j)}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => onEdit(j)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                </div>
               </TableCell>
             </TableRow>
           ))

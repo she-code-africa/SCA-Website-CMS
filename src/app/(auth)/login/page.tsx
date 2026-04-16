@@ -251,7 +251,6 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { AxiosError } from "axios";
-
 import { login } from "@/features/auth/api/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -318,20 +317,34 @@ export default function LoginPage() {
       toast.success("Welcome back!");
       router.push("/admin/dashboard");
     },
-    onError: (err: AxiosError<{ message?: string }>) => {
-      const status = err?.response?.status;
-      const backendMessage = err?.response?.data?.message;
+    // onError: (err: AxiosError<{ message?: string }>) => {
+    //   console.error("Login error:", err);
+    //   const backendMessage = (err.response?.data as any)?.message;
+    //   const status = err.response?.status;
 
-      if (status === 401) {
-        toast.error("Invalid credentials", {
-          description: "The email or password you entered is incorrect."
-        });
-      } else if (status === 400 && backendMessage) {
-        toast.error("Login Failed", { description: backendMessage });
+    //   if (status === 401) {
+    //     toast.error(backendMessage || "Invalid credentials", {
+    //       description: "Please check your email and password and try again."
+    //     });
+    //   } else if (status === 400 && backendMessage) {
+    //     toast.error("Login Failed", { description: backendMessage });
+    //   } else if (status === 404) {
+    //     toast.error("Service Unavailable", {
+    //       description:
+    //         "Login service is temporarily unavailable. Please try again later."
+    //     });
+    //   } else {
+    //     toast.error("Connection Error", {
+    //       description: "Could not reach the server. Please try again later."
+    //     });
+    //   }
+    // }
+    onError: (err: any) => {
+      const backendMessage = err?.response?.data?.message;
+      if (backendMessage) {
+        toast.error(backendMessage);
       } else {
-        toast.error("Connection Error", {
-          description: "Could not reach the server. Please try again later."
-        });
+        toast.error("Login failed. Please try again.");
       }
     }
   });

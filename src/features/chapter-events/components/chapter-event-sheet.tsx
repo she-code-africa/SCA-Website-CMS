@@ -2,18 +2,17 @@
 
 import * as React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Upload, Archive, FileCheck, X, Calendar } from "lucide-react";
+import { Upload, X, Calendar } from "lucide-react";
 import {
   addChapterEvent,
   editChapterEvent,
   getChapterEvent,
-  publishChapterEvent,
-  archiveChapterEvent,
   deleteChapterEvent
 } from "@/features/chapters/api";
 import type { ChapterEvent } from "@/features/chapters/types";
 import { PermissionGate } from "@/components/PermissionGate";
 import { PERMISSIONS } from "@/lib/rbac/permissions";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import {
   Sheet,
@@ -124,7 +123,7 @@ export function ChapterEventSheet({
       qc.invalidateQueries({ queryKey: ["chapter-events"] });
       onOpenChange(false);
     },
-    onError: () => toast.error("Could not add event")
+    onError: (err: any) => toast.error(err?.response?.data?.message || "Could not add event")
   });
 
   const updateMut = useMutation({
@@ -135,27 +134,7 @@ export function ChapterEventSheet({
       qc.invalidateQueries({ queryKey: ["chapter-event"] });
       onOpenChange(false);
     },
-    onError: () => toast.error("Could not update event")
-  });
-
-  const publishMut = useMutation({
-    mutationFn: publishChapterEvent,
-    onSuccess: () => {
-      toast.success("Event published");
-      qc.invalidateQueries({ queryKey: ["chapter-events"] });
-      qc.invalidateQueries({ queryKey: ["chapter-event"] });
-    },
-    onError: () => toast.error("Could not publish event")
-  });
-
-  const archiveMut = useMutation({
-    mutationFn: archiveChapterEvent,
-    onSuccess: () => {
-      toast.success("Event archived");
-      qc.invalidateQueries({ queryKey: ["chapter-events"] });
-      qc.invalidateQueries({ queryKey: ["chapter-event"] });
-    },
-    onError: () => toast.error("Could not archive event")
+    onError: (err: any) => toast.error(err?.response?.data?.message || "Could not update event")
   });
 
   const deleteMut = useMutation({
@@ -214,9 +193,29 @@ export function ChapterEventSheet({
     updateMut.mutate({ id: eventId, data: formData as any });
   };
 
-  const currentState = (eventQuery.data as ChapterEvent | undefined)
-    ?.eventState;
   const saving = createMut.isPending || updateMut.isPending;
+
+  // Skeleton loader while fetching
+  if (mode === "view" && eventQuery.isLoading && !eventQuery.data) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent side="right" className="w-full sm:max-w-xl p-0 flex flex-col">
+          <SheetHeader className="px-6 py-4 border-b">
+            <Skeleton className="h-6 w-40" />
+            <Skeleton className="h-4 w-64 mt-1" />
+          </SheetHeader>
+          <div className="flex-1 px-6 py-6 space-y-6">
+            <Skeleton className="h-32 w-full rounded-lg" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-32 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
   const canEdit = mode === "create" || editing;
 
   return (
@@ -232,13 +231,15 @@ export function ChapterEventSheet({
           <SheetDescription>
             {mode === "create"
               ? "Add a new chapter event."
-              : "View, edit, publish/archive, or delete this event."}
+              : editing
+              ? "Edit the event details."
+              : "View event details. Click Edit to modify."}
           </SheetDescription>
         </SheetHeader>
 
         <ScrollArea className="flex-1 px-6">
           <div className="py-6 space-y-6">
-            {/* Top actions row */}
+            {/* Top actions row (view mode only) */}
             {mode === "view" && (
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <PermissionGate permission={PERMISSIONS.UPDATE_EVENT}>
@@ -251,72 +252,40 @@ export function ChapterEventSheet({
                   </Button>
                 </PermissionGate>
 
-                <div className="flex gap-2 w-full sm:w-auto">
-                  <PermissionGate permission={PERMISSIONS.UPDATE_EVENT}>
-                    <Button
-                      variant="outline"
-                      className="flex-1 sm:flex-none"
-                      onClick={() => {
-                        if (!eventId) return;
-                        if (currentState === "published") {
-                          archiveMut.mutate(eventId);
-                        } else {
-                          publishMut.mutate(eventId);
-                        }
-                      }}
-                      disabled={publishMut.isPending || archiveMut.isPending}
-                    >
-                      {currentState === "published" ? (
-                        <>
-                          <Archive className="h-4 w-4 mr-2" />
-                          Archive
-                        </>
-                      ) : (
-                        <>
-                          <FileCheck className="h-4 w-4 mr-2" />
-                          Publish
-                        </>
-                      )}
-                    </Button>
-                  </PermissionGate>
-
-                  {!editing && (
-                    <PermissionGate permission={PERMISSIONS.DELETE_EVENT}>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="destructive"
-                            className="flex-1 sm:flex-none"
+                {/* Delete – only when NOT editing */}
+                {!editing && (
+                  <PermissionGate permission={PERMISSIONS.DELETE_EVENT}>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" className="w-full sm:w-auto">
+                          Delete
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete event?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => {
+                              if (!eventId) return;
+                              deleteMut.mutate(eventId);
+                            }}
+                            className={cn(
+                              "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            )}
                           >
-                            Delete
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete event?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => {
-                                if (!eventId) return;
-                                deleteMut.mutate(eventId);
-                              }}
-                              className={cn(
-                                "bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              )}
-                            >
-                              {deleteMut.isPending ? "Deleting…" : "Delete"}
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </PermissionGate>
-                  )}
-                </div>
+                            {deleteMut.isPending ? "Deleting…" : "Delete"}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </PermissionGate>
+                )}
               </div>
             )}
 
@@ -359,11 +328,9 @@ export function ChapterEventSheet({
                 </div>
 
                 <div className="flex-1 space-y-3">
-                  <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground">
-                      Recommended: Square image, at least 400x400px. Max 5MB.
-                    </p>
-                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Recommended: Square image, at least 400x400px. Max 5MB.
+                  </p>
 
                   {canEdit && (
                     <Button
@@ -442,38 +409,25 @@ export function ChapterEventSheet({
         </ScrollArea>
 
         {/* Bottom action bar */}
-        {(mode === "create" && (
-          <PermissionGate permission={PERMISSIONS.CREATE_EVENT}>
+        {(mode === "create" || (mode === "view" && editing)) && (
+          <PermissionGate permission={mode === "create" ? PERMISSIONS.CREATE_EVENT : PERMISSIONS.UPDATE_EVENT}>
             <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
               <Button
                 variant="outline"
-                onClick={() => onOpenChange(false)}
+                onClick={() => {
+                  if (editing && mode === "view") setEditing(false);
+                  else onOpenChange(false);
+                }}
                 disabled={saving}
               >
                 Cancel
               </Button>
               <Button variant="default" onClick={submit} disabled={saving}>
-                {saving ? "Saving…" : "Add Event"}
+                {saving ? "Saving…" : mode === "create" ? "Add Event" : "Save Changes"}
               </Button>
             </div>
           </PermissionGate>
-        )) ||
-          (mode === "view" && editing && (
-            <PermissionGate permission={PERMISSIONS.UPDATE_EVENT}>
-              <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
-                <Button
-                  variant="outline"
-                  onClick={() => onOpenChange(false)}
-                  disabled={saving}
-                >
-                  Cancel
-                </Button>
-                <Button variant="default" onClick={submit} disabled={saving}>
-                  {saving ? "Saving…" : "Save Changes"}
-                </Button>
-              </div>
-            </PermissionGate>
-          ))}
+        )}
       </SheetContent>
     </Sheet>
   );

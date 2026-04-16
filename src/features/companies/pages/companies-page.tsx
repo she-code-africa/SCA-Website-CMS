@@ -1,7 +1,11 @@
+// src/app/admin/companies/page.tsx
+
 "use client";
 
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
 
 import { getCompanies } from "@/features/companies/api";
 import type { Company, CompanyFilters } from "@/features/companies/types";
@@ -87,80 +91,82 @@ export default function CompaniesPage() {
   };
 
   return (
-    <TableShell
-      title="Companies"
-      description="Companies are automatically registered when they post jobs."
-      right={
-        <div className="text-sm text-muted-foreground">
-          {query.isLoading ? "Loading…" : `${rows.length} company(s)`}
-        </div>
-      }
-    >
-      <div className="space-y-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <Filters
-            value={filters}
-            onChange={setFilters}
-            onReset={() => setFilters({ search: "", state: "", sortBy: "" })}
-          />
+    <PermissionGate permission={PERMISSIONS.VIEW_COMPANY}>
+      <TableShell
+        title="Companies"
+        description="Companies are automatically registered when they post jobs."
+        right={
+          <div className="text-sm text-muted-foreground">
+            {query.isLoading ? "Loading…" : `${rows.length} company(s)`}
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <Filters
+              value={filters}
+              onChange={setFilters}
+              onReset={() => setFilters({ search: "", state: "", sortBy: "" })}
+            />
 
-          <CompanyPagination
-            currentPage={page}
-            totalPages={totalPages}
-            onPrevious={() => setPage((p) => Math.max(1, p - 1))}
-            onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
-            isLoading={query.isFetching}
-          />
-        </div>
+            <CompanyPagination
+              currentPage={page}
+              totalPages={totalPages}
+              onPrevious={() => setPage((p) => Math.max(1, p - 1))}
+              onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
+              isLoading={query.isFetching}
+            />
+          </div>
 
-        <div className="grid grid-cols-12 gap-4">
-          <div className="col-span-12 lg:col-span-12 space-y-3">
-            <div className="grid gap-3 md:hidden">
-              {query.isLoading ? (
-                Array.from({ length: 6 }).map((_, i) => (
-                  <MobileCompanySkeletonCard key={`comp-skeleton-${i}`} />
-                ))
-              ) : query.isError ? (
-                <div className="rounded-xl border bg-background p-6 text-center text-sm text-red-500">
-                  Failed to load companies.
-                </div>
-              ) : paged.length ? (
-                paged.map((c) => (
-                  <button
-                    key={c._id}
-                    type="button"
-                    onClick={() => openView(c)}
-                    className="text-left w-full"
-                  >
-                    <MobileCompanyCard company={c} />
-                  </button>
-                ))
-              ) : (
-                <div className="rounded-xl border bg-background p-6 text-center text-sm text-muted-foreground">
-                  No companies found.
-                </div>
-              )}
-            </div>
+          <div className="grid grid-cols-12 gap-4">
+            <div className="col-span-12 lg:col-span-12 space-y-3">
+              <div className="grid gap-3 md:hidden">
+                {query.isLoading ? (
+                  Array.from({ length: 6 }).map((_, i) => (
+                    <MobileCompanySkeletonCard key={`comp-skeleton-${i}`} />
+                  ))
+                ) : query.isError ? (
+                  <div className="rounded-xl border bg-background p-6 text-center text-sm text-red-500">
+                    Failed to load companies.
+                  </div>
+                ) : paged.length ? (
+                  paged.map((c) => (
+                    <button
+                      key={c._id}
+                      type="button"
+                      onClick={() => openView(c)}
+                      className="text-left w-full"
+                    >
+                      <MobileCompanyCard company={c} />
+                    </button>
+                  ))
+                ) : (
+                  <div className="rounded-xl border bg-background p-6 text-center text-sm text-muted-foreground">
+                    No companies found.
+                  </div>
+                )}
+              </div>
 
-            <div className="hidden md:block">
-              <TableFrame>
-                <CompanyTable
-                  rows={paged}
-                  isLoading={query.isLoading}
-                  isError={query.isError}
-                  onRowClick={openView}
-                />
-              </TableFrame>
+              <div className="hidden md:block">
+                <TableFrame>
+                  <CompanyTable
+                    rows={paged}
+                    isLoading={query.isLoading}
+                    isError={query.isError}
+                    onView={openView}
+                  />
+                </TableFrame>
+              </div>
             </div>
           </div>
-        </div>
 
-        <CompanySheet
-          open={modalOpen}
-          onOpenChange={setModalOpen}
-          companyId={selected?._id}
-        />
-      </div>
-    </TableShell>
+          <CompanySheet
+            open={modalOpen}
+            onOpenChange={setModalOpen}
+            companyId={selected?._id}
+          />
+        </div>
+      </TableShell>
+    </PermissionGate>
   );
 }

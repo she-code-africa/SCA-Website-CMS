@@ -1,4 +1,3 @@
-// src/features/companies/components/company-sheet.tsx
 "use client";
 
 import * as React from "react";
@@ -11,6 +10,9 @@ import {
   unarchiveCompany
 } from "@/features/companies/api";
 import type { Company, CompanyUpdateInput } from "@/features/companies/types";
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import {
   Sheet,
@@ -84,7 +86,8 @@ export function CompanySheet({ open, onOpenChange, companyId }: Props) {
       qc.invalidateQueries({ queryKey: ["company"] });
       setEditing(false);
     },
-    onError: () => toast.error("Could not update company")
+    onError: (err: any) =>
+      toast.error(err?.response?.data?.message || "Could not update company")
   });
 
   const archiveMut = useMutation({
@@ -113,14 +116,12 @@ export function CompanySheet({ open, onOpenChange, companyId }: Props) {
       return;
     }
 
-    // Validate email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(form.email)) {
       toast.error("Please enter a valid email");
       return;
     }
 
-    // Validate URL if provided
     if (form.companyUrl.trim()) {
       try {
         new URL(form.companyUrl);
@@ -145,6 +146,37 @@ export function CompanySheet({ open, onOpenChange, companyId }: Props) {
       ? (companyQuery.data[0] as Company)
       : null;
 
+  // Skeleton loader while fetching
+  if (companyQuery.isLoading && !companyQuery.data) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent
+          side="right"
+          className="w-full sm:max-w-2xl p-0 flex flex-col"
+        >
+          <SheetHeader className="px-6 py-4 border-b">
+            <Skeleton className="h-6 w-40" />
+            <Skeleton className="h-4 w-64 mt-1" />
+          </SheetHeader>
+          <div className="flex-1 px-6 py-6 space-y-6">
+            <div className="flex gap-2">
+              <Skeleton className="h-9 w-20" />
+              <Skeleton className="h-9 w-24" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[...Array(7)].map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <Skeleton className="h-5 w-24" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
@@ -163,26 +195,30 @@ export function CompanySheet({ open, onOpenChange, companyId }: Props) {
           <div className="py-6 space-y-6">
             {/* Top actions row */}
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <Button
-                variant="outline"
-                className="w-full sm:w-auto"
-                onClick={() => setEditing((v) => !v)}
-              >
-                {editing ? "View" : "Edit"}
-              </Button>
+              <PermissionGate permission={PERMISSIONS.UPDATE_COMPANY}>
+                <Button
+                  variant="outline"
+                  className="w-full sm:w-auto"
+                  onClick={() => setEditing((v) => !v)}
+                >
+                  {editing ? "View" : "Edit"}
+                </Button>
+              </PermissionGate>
 
-              <Button
-                variant="outline"
-                className="w-full sm:w-auto"
-                onClick={() => {
-                  if (!companyId) return;
-                  if (currentState === "active") archiveMut.mutate(companyId);
-                  else unarchiveMut.mutate(companyId);
-                }}
-                disabled={archiveMut.isPending || unarchiveMut.isPending}
-              >
-                {currentState === "active" ? "Archive" : "Unarchive"}
-              </Button>
+              <PermissionGate permission={PERMISSIONS.UPDATE_COMPANY}>
+                <Button
+                  variant="outline"
+                  className="w-full sm:w-auto"
+                  onClick={() => {
+                    if (!companyId) return;
+                    if (currentState === "active") archiveMut.mutate(companyId);
+                    else unarchiveMut.mutate(companyId);
+                  }}
+                  disabled={archiveMut.isPending || unarchiveMut.isPending}
+                >
+                  {currentState === "active" ? "Archive" : "Unarchive"}
+                </Button>
+              </PermissionGate>
             </div>
 
             {/* Company header with link */}
@@ -324,22 +360,24 @@ export function CompanySheet({ open, onOpenChange, companyId }: Props) {
 
         {/* Bottom action bar - Fixed */}
         {editing && (
-          <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
-            <Button
-              variant="outline"
-              onClick={() => setEditing(false)}
-              disabled={saving}
-            >
-              Cancel
-            </Button>
-            <Button
-              className="bg-pink-600 hover:bg-pink-700"
-              onClick={submit}
-              disabled={saving}
-            >
-              {saving ? "Saving…" : "Save Changes"}
-            </Button>
-          </div>
+          <PermissionGate permission={PERMISSIONS.UPDATE_COMPANY}>
+            <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
+              <Button
+                variant="outline"
+                onClick={() => setEditing(false)}
+                disabled={saving}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="bg-pink-600 hover:bg-pink-700"
+                onClick={submit}
+                disabled={saving}
+              >
+                {saving ? "Saving…" : "Save Changes"}
+              </Button>
+            </div>
+          </PermissionGate>
         )}
       </SheetContent>
     </Sheet>

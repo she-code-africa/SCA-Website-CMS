@@ -175,7 +175,7 @@ export default function InitiativesPage() {
                     rows={paged}
                     isLoading={query.isLoading}
                     isError={query.isError}
-                    onRowClick={openView}
+                    onView={openView}
                   />
                 </TableFrame>
               </div>

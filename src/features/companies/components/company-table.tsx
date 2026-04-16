@@ -1,13 +1,13 @@
-// src/features/companies/components/company-table.tsx
 "use client";
 
 import * as React from "react";
 import { format } from "date-fns";
-import { Building2 } from "lucide-react";
+import { Building2, Eye } from "lucide-react";
 import type { Company } from "@/features/companies/types";
 import { cn } from "@/lib/utils/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -33,12 +33,12 @@ export function CompanyTable({
   rows,
   isLoading,
   isError,
-  onRowClick
+  onView
 }: {
   rows: Company[];
   isLoading: boolean;
   isError: boolean;
-  onRowClick: (c: Company) => void;
+  onView: (c: Company) => void;
 }) {
   const headers = [
     "Company Name",
@@ -46,8 +46,13 @@ export function CompanyTable({
     "Location",
     "Phone",
     "State",
-    "Updated"
+    "Updated",
+    "Action"
   ];
+
+  const handleRowClick = (company: Company) => {
+    onView(company);
+  };
 
   return (
     <Table>
@@ -85,9 +90,10 @@ export function CompanyTable({
           rows.map((c) => (
             <TableRow
               key={c._id}
-              onClick={() => onRowClick(c)}
+              onClick={() => handleRowClick(c)}
               className={cn("cursor-pointer hover:bg-muted/50")}
             >
+              {/* Company Name */}
               <TableCell className="whitespace-nowrap">
                 <div className="flex items-center gap-2">
                   <div className="h-8 w-8 rounded bg-muted flex items-center justify-center">
@@ -97,26 +103,46 @@ export function CompanyTable({
                 </div>
               </TableCell>
 
+              {/* Email */}
               <TableCell className="max-w-xs truncate">
                 {c.email ?? "—"}
               </TableCell>
 
+              {/* Location */}
               <TableCell className="whitespace-nowrap">
                 {c.companyLocation ?? "—"}
               </TableCell>
 
+              {/* Phone */}
               <TableCell className="whitespace-nowrap">
                 {c.companyPhone ?? "—"}
               </TableCell>
 
+              {/* State */}
               <TableCell className="whitespace-nowrap">
                 <Badge variant={stateBadgeVariant(c.state)}>
                   {c.state ?? "active"}
                 </Badge>
               </TableCell>
 
+              {/* Updated */}
               <TableCell className="whitespace-nowrap text-muted-foreground">
                 {fmtDate(c.updatedAt)}
+              </TableCell>
+
+              {/* Action */}
+              <TableCell
+                className="whitespace-nowrap"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => onView(c)}
+                >
+                  <Eye className="h-4 w-4" />
+                </Button>
               </TableCell>
             </TableRow>
           ))

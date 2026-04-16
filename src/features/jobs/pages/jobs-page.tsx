@@ -106,6 +106,13 @@ export default function JobsPage() {
     setModalOpen(true);
   };
 
+  const openEdit = (j: Job) => {
+    // The sheet has an Edit button inside, so we open in view mode
+    setSelected(j);
+    setModalMode("view");
+    setModalOpen(true);
+  };
+
   return (
     <PermissionGate permission={PERMISSIONS.VIEW_JOB}>
       <TableShell
@@ -176,7 +183,8 @@ export default function JobsPage() {
                     rows={paged}
                     isLoading={query.isLoading}
                     isError={query.isError}
-                    onRowClick={openView}
+                    onView={openView}
+                    onEdit={openEdit}
                   />
                 </TableFrame>
               </div>
