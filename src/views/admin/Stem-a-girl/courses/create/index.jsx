@@ -5,7 +5,7 @@ import CustomTextArea from "components/Inputs/CustomTextArea";
 import CustomSelect from "components/Inputs/CustomSelect";
 import Modules from "./Modules";
 import { createSAGCourse } from "services";
-import { useMutation, useQuery, useQueryClient } from "react-query";
+import { useMutation, useQueryClient } from "react-query";
 import { ToastContainer, toast } from "react-toastify";
 import { useHistory } from "react-router-dom";
 
@@ -20,7 +20,7 @@ const defaultLesson = () => ({
 	order: "",
 	// isPreview: false,
 	practiceTask: "",
-	resources: [{ title: "", url: "" }],
+	resources: [],
 });
 
 const defaultModule = () => ({
@@ -212,9 +212,18 @@ const CreateCoursesPage = () => {
 		},
 	);
 
-	const handleSubmit = () => {
-		console.log(formValues, modules);
+	const sanitizeModules = (modules) =>
+		modules.map((mod) => ({
+			...mod,
+			lessons: mod.lessons.map((lesson) => ({
+				...lesson,
+				resources: lesson.resources.filter(
+					(res) => res.title.trim() || res.url.trim(),
+				),
+			})),
+		}));
 
+	const handleSubmit = () => {
 		const {
 			title,
 			description,
@@ -234,8 +243,10 @@ const CreateCoursesPage = () => {
 		formData.append("difficulty", difficulty);
 		formData.append("slug", slug);
 		formData.append("state", state);
-		formData.append("modules", JSON.stringify(modules));
+		// formData.append("modules", JSON.stringify(modules));
 		// formData.append("modules", JSON.stringify(sanitizeModules(modules)));
+		formData.append("modules", JSON.stringify(sanitizeModules(modules)));
+		console.log(formValues, modules);
 		addCourse(formData);
 	};
 
