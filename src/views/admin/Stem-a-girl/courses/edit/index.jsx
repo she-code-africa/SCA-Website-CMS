@@ -24,7 +24,7 @@ const defaultLesson = () => ({
 	order: "",
 	// isPreview: false,
 	practiceTask: "",
-	resources: [{ title: "", url: "" }],
+	resources: [],
 });
 
 const defaultModule = () => ({
