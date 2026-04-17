@@ -1,16 +1,18 @@
 import React from "react";
-import Modal from "components/Modal";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import useSagEnquiries from "./useSagEquiries";
 import { MdOutlineModeEditOutline } from "react-icons/md";
 import { GrView } from "react-icons/gr";
+import Modal from "components/Modal";
 import Tooltip from "components/Tooltip";
+
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 import Loader from "components/Loader";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { Input, InputGroup, Select, Textarea } from "components/Base";
-import useEnquiriesModal from "./useEnquiriesModal";
 
-const EnquiriesModal = ({ isOpen, handleModal, id, canDelete}) => {
+const SAGEnquiriesModal = ({ isOpen, handleModal, id, canDelete }) => {
 	const {
 		enquiry,
 		edit,
@@ -20,8 +22,8 @@ const EnquiriesModal = ({ isOpen, handleModal, id, canDelete}) => {
 		updating,
 		handleInputChange,
 		handleStatusSelect,
-	} = useEnquiriesModal({ id, handleModal });
-	const { fullName, email, description, status } = enquiry;
+	} = useSagEnquiries({ id, handleModal });
+	const { fullName, email, description, subject, status } = enquiry;
 
 	const header = () => {
 		return (
@@ -43,7 +45,6 @@ const EnquiriesModal = ({ isOpen, handleModal, id, canDelete}) => {
 			</div>
 		);
 	};
-
 	return (
 		<>
 			{isOpen && (
@@ -131,4 +132,4 @@ const EnquiriesModal = ({ isOpen, handleModal, id, canDelete}) => {
 	);
 };
 
-export default EnquiriesModal;
+export default SAGEnquiriesModal;

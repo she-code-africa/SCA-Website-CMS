@@ -35,7 +35,7 @@ const useEnquiriesModal = ({ id, handleModal }) => {
 			onError: () => {
 				toast.error("Could not update Enquiry");
 			},
-		}
+		},
 	);
 
 	const handleInputChange = useCallback(
@@ -46,7 +46,7 @@ const useEnquiriesModal = ({ id, handleModal }) => {
 				[name]: value,
 			}));
 		},
-		[setEnquiry]
+		[setEnquiry],
 	);
 
 	const handleStatusSelect = (e) => {
