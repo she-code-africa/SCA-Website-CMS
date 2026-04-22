@@ -1,3 +1,5 @@
+// src/features/partners/components/partner-sheet.tsx
+
 "use client";
 
 import * as React from "react";
@@ -13,6 +15,7 @@ import type { Partner, PartnerUpsertInput } from "@/features/partners/types";
 import { PermissionGate } from "@/components/PermissionGate";
 import { PERMISSIONS } from "@/lib/rbac/permissions";
 import { Skeleton } from "@/components/ui/skeleton";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 import {
   Sheet,
@@ -21,7 +24,6 @@ import {
   SheetTitle,
   SheetDescription
 } from "@/components/ui/sheet";
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,7 +35,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -46,6 +47,49 @@ type Props = {
   onOpenChange: (v: boolean) => void;
   mode: "create" | "view";
   partnerId?: string;
+};
+
+// ─── Image compression helper ────────────────────────────────────────────────
+const compressImage = (
+  file: File,
+  maxWidth = 800,
+  maxHeight = 800,
+  quality = 0.7
+): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (e) => {
+      const img = new Image();
+      img.src = e.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxWidth) {
+            height *= maxWidth / width;
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width *= maxHeight / height;
+            height = maxHeight;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx?.drawImage(img, 0, 0, width, height);
+        const base64 = canvas.toDataURL("image/jpeg", quality);
+        resolve(base64);
+      };
+      img.onerror = reject;
+    };
+    reader.onerror = reject;
+  });
 };
 
 export function PartnerSheet({ open, onOpenChange, mode, partnerId }: Props) {
@@ -151,15 +195,31 @@ export function PartnerSheet({ open, onOpenChange, mode, partnerId }: Props) {
       return;
     }
 
+    let imageValue: string | undefined = undefined;
+    if (imageFile) {
+      try {
+        imageValue = await compressImage(imageFile, 800, 800, 0.7);
+      } catch {
+        toast.error("Failed to process image");
+        return;
+      }
+    }
+
+    const payload = {
+      name: form.name.trim(),
+      featured: form.featured
+    };
+    if (imageValue) (payload as any).image = imageValue;
+
     if (mode === "create") {
-      createMut.mutate({ ...form, image: imageFile });
+      createMut.mutate(payload);
       return;
     }
 
     if (!partnerId) return;
     updateMut.mutate({
       id: partnerId,
-      data: { ...form, image: imageFile ?? undefined }
+      data: payload
     });
   };
 
@@ -173,6 +233,9 @@ export function PartnerSheet({ open, onOpenChange, mode, partnerId }: Props) {
           side="right"
           className="w-full sm:max-w-xl p-0 flex flex-col"
         >
+          <VisuallyHidden>
+            <SheetTitle>Loading partner details</SheetTitle>
+          </VisuallyHidden>
           <SheetHeader className="px-6 py-4 border-b">
             <Skeleton className="h-6 w-40" />
             <Skeleton className="h-4 w-64 mt-1" />
@@ -214,7 +277,6 @@ export function PartnerSheet({ open, onOpenChange, mode, partnerId }: Props) {
 
         <ScrollArea className="flex-1 px-6">
           <div className="py-6 space-y-6">
-            {/* Top actions row */}
             {mode === "view" && (
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <PermissionGate permission={PERMISSIONS.UPDATE_PARTNER}>
@@ -227,7 +289,6 @@ export function PartnerSheet({ open, onOpenChange, mode, partnerId }: Props) {
                   </Button>
                 </PermissionGate>
 
-                {/* Delete – only when NOT editing */}
                 {!editing && (
                   <PermissionGate permission={PERMISSIONS.DELETE_PARTNER}>
                     <AlertDialog>
@@ -270,7 +331,6 @@ export function PartnerSheet({ open, onOpenChange, mode, partnerId }: Props) {
             {/* Partner Logo Upload Section */}
             <div className="grid gap-3">
               <label className="text-sm font-medium">Partner Logo</label>
-
               <div className="flex flex-col sm:flex-row gap-4 items-center">
                 <div className="relative group">
                   <div
@@ -293,23 +353,20 @@ export function PartnerSheet({ open, onOpenChange, mode, partnerId }: Props) {
                       </div>
                     )}
                   </div>
-
                   {editing && imagePreview && (
                     <button
                       type="button"
                       onClick={handleRemoveImage}
-                      className="absolute -top-2 -right-2 p-1 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors"
+                      className="absolute -top-2 -right-2 p-1 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
                     >
-                      <X className="w-4 h-4" />
+                      <X className="h-4 w-4" />
                     </button>
                   )}
                 </div>
-
                 <div className="flex-1 space-y-3">
                   <p className="text-xs text-muted-foreground">
                     Recommended: Square logo, at least 200x200px. Max 2MB.
                   </p>
-
                   {editing && (
                     <Button
                       type="button"
@@ -322,7 +379,6 @@ export function PartnerSheet({ open, onOpenChange, mode, partnerId }: Props) {
                       Choose Logo
                     </Button>
                   )}
-
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -346,7 +402,6 @@ export function PartnerSheet({ open, onOpenChange, mode, partnerId }: Props) {
                   placeholder="Partner Company Name"
                 />
               </div>
-
               <div className="flex items-center justify-between rounded-lg border p-4">
                 <div className="space-y-0.5">
                   <p className="text-sm font-medium">Featured Partner</p>
@@ -364,7 +419,6 @@ export function PartnerSheet({ open, onOpenChange, mode, partnerId }: Props) {
           </div>
         </ScrollArea>
 
-        {/* Bottom action bar */}
         {(mode === "create" || (mode === "view" && editing)) && (
           <PermissionGate
             permission={

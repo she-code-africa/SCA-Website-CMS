@@ -1,11 +1,15 @@
+// src/features/courses/components/course-table.tsx
+
 "use client";
 
 import * as React from "react";
 import { format } from "date-fns";
+import { Eye, Pencil } from "lucide-react";
 import type { Course } from "@/features/courses/types";
 import { cn } from "@/lib/utils/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { GraduationCap } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -34,18 +38,31 @@ export function CourseTable({
   rows,
   isLoading,
   isError,
-  onRowClick
+  onView,
+  onEdit
 }: {
   rows: Course[];
   isLoading: boolean;
   isError: boolean;
-  onRowClick: (course: Course) => void;
+  onView: (course: Course) => void;
+  onEdit: (course: Course) => void;
 }) {
-  const headers = ["Course Name", "Description", "School", "Updated", "Created"];
+  const headers = [
+    "Course Name",
+    "Description",
+    "School",
+    "Updated",
+    "Created",
+    "Action"
+  ];
+
+  const handleRowClick = (course: Course) => {
+    onView(course);
+  };
 
   return (
     <div className="space-y-3">
-      {/* Mobile list */}
+      {/* Mobile list – no action column needed */}
       <div className="grid gap-3 md:hidden">
         {isLoading ? (
           Array.from({ length: 6 }).map((_, i) => (
@@ -60,7 +77,7 @@ export function CourseTable({
             <button
               key={course._id}
               type="button"
-              onClick={() => onRowClick(course)}
+              onClick={() => onView(course)}
               className="text-left w-full"
             >
               <MobileCourseCard course={course} />
@@ -109,53 +126,78 @@ export function CourseTable({
                     </TableCell>
                   </TableRow>
                 ) : rows.length ? (
-                  rows.map((course) => {
-                    return (
-                      <TableRow
-                        key={course._id}
-                        onClick={() => onRowClick(course)}
-                        className={cn("cursor-pointer hover:bg-muted/50")}
+                  rows.map((course) => (
+                    <TableRow
+                      key={course._id}
+                      onClick={() => handleRowClick(course)}
+                      className={cn("cursor-pointer hover:bg-muted/50")}
+                    >
+                      {/* Course Name column – allows wrapping */}
+                      <TableCell className="whitespace-normal min-w-50 wrap-break-word">
+                        <div className="flex items-center gap-2">
+                          {course.image ? (
+                            <img
+                              src={course.image}
+                              alt={course.name}
+                              className="h-8 w-8 rounded object-cover shrink-0"
+                            />
+                          ) : (
+                            <div className="h-8 w-8 rounded bg-muted flex items-center justify-center shrink-0">
+                              <GraduationCap className="w-4 h-4 text-muted-foreground" />
+                            </div>
+                          )}
+                          <span className="font-medium wrap-break-word">
+                            {course.name ?? "—"}
+                          </span>
+                        </div>
+                      </TableCell>
+
+                      {/* Description column – truncates */}
+                      <TableCell className="max-w-md truncate">
+                        {course.shortDescription ?? "—"}
+                      </TableCell>
+
+                      {/* School column */}
+                      <TableCell className="whitespace-nowrap">
+                        {schoolName(course)}
+                      </TableCell>
+
+                      {/* Updated column */}
+                      <TableCell className="whitespace-nowrap text-muted-foreground">
+                        {fmtDate(course.updatedAt)}
+                      </TableCell>
+
+                      {/* Created column */}
+                      <TableCell className="whitespace-nowrap text-muted-foreground">
+                        {fmtDate(course.createdAt)}
+                      </TableCell>
+
+                      {/* Action column */}
+                      <TableCell
+                        className="whitespace-nowrap"
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        <TableCell className="whitespace-nowrap">
-                          <div className="flex items-center gap-2">
-                            {course.image ? (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img
-                                src={course.image}
-                                alt={course.name}
-                                className="h-8 w-8 rounded object-cover"
-                              />
-                            ) : (
-                              <div className="h-8 w-8 rounded bg-muted flex items-center justify-center">
-                                <GraduationCap className="w-4 h-4 text-muted-foreground" />
-                              </div>
-                            )}
-                            <span className="font-medium">
-                              {course.name ?? "—"}
-                            </span>
-                          </div>
-                        </TableCell>
-
-                        <TableCell className="max-w-md">
-                          <div className="truncate">
-                            {course.shortDescription ?? "—"}
-                          </div>
-                        </TableCell>
-
-                        <TableCell className="whitespace-nowrap">
-                          {schoolName(course)}
-                        </TableCell>
-
-                        <TableCell className="whitespace-nowrap text-muted-foreground">
-                          {fmtDate(course.updatedAt)}
-                        </TableCell>
-
-                        <TableCell className="whitespace-nowrap text-muted-foreground">
-                          {fmtDate(course.createdAt)}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => onView(course)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => onEdit(course)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
                 ) : (
                   <TableRow>
                     <TableCell

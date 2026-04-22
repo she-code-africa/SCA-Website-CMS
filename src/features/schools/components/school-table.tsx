@@ -1,10 +1,14 @@
+// src/features/schools/components/school-table.tsx
+
 "use client";
 
 import * as React from "react";
 import { format } from "date-fns";
+import { Eye, Pencil } from "lucide-react";
 import type { School } from "@/features/schools/types";
 import { cn } from "@/lib/utils/utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -27,18 +31,24 @@ export function SchoolTable({
   rows,
   isLoading,
   isError,
-  onRowClick
+  onView,
+  onEdit
 }: {
   rows: School[];
   isLoading: boolean;
   isError: boolean;
-  onRowClick: (school: School) => void;
+  onView: (school: School) => void;
+  onEdit: (school: School) => void;
 }) {
-  const headers = ["Name", "Description", "Updated", "Created"];
+  const headers = ["Name", "Description", "Updated", "Created", "Action"];
+
+  const handleRowClick = (school: School) => {
+    onView(school);
+  };
 
   return (
     <div className="space-y-3">
-      {/* Mobile list */}
+      {/* Mobile list – no action column */}
       <div className="grid gap-3 md:hidden">
         {isLoading ? (
           Array.from({ length: 6 }).map((_, i) => (
@@ -53,7 +63,7 @@ export function SchoolTable({
             <button
               key={school._id}
               type="button"
-              onClick={() => onRowClick(school)}
+              onClick={() => onView(school)}
               className="text-left w-full"
             >
               <MobileSchoolCard school={school} />
@@ -102,32 +112,54 @@ export function SchoolTable({
                     </TableCell>
                   </TableRow>
                 ) : rows.length ? (
-                  rows.map((school) => {
-                    return (
-                      <TableRow
-                        key={school._id}
-                        onClick={() => onRowClick(school)}
-                        className={cn("cursor-pointer hover:bg-muted/50")}
+                  rows.map((school) => (
+                    <TableRow
+                      key={school._id}
+                      onClick={() => handleRowClick(school)}
+                      className={cn("cursor-pointer hover:bg-muted/50")}
+                    >
+                      <TableCell className="whitespace-nowrap font-medium">
+                        {school.name ?? "—"}
+                      </TableCell>
+
+                      <TableCell className="max-w-md truncate">
+                        {school.description ?? "—"}
+                      </TableCell>
+
+                      <TableCell className="whitespace-nowrap text-muted-foreground">
+                        {fmtDate(school.updatedAt)}
+                      </TableCell>
+
+                      <TableCell className="whitespace-nowrap text-muted-foreground">
+                        {fmtDate(school.createdAt)}
+                      </TableCell>
+
+                      {/* Action column */}
+                      <TableCell
+                        className="whitespace-nowrap"
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        <TableCell className="whitespace-nowrap font-medium">
-                          {school.name ?? "—"}
-                        </TableCell>
-
-                        <TableCell className="max-w-md">
-                          <div className="truncate">
-                            {school.description ?? "—"}
-                          </div>
-                        </TableCell>
-
-                        <TableCell className="whitespace-nowrap text-muted-foreground">
-                          {fmtDate(school.updatedAt)}
-                        </TableCell>
-                        <TableCell className="whitespace-nowrap text-muted-foreground">
-                          {fmtDate(school.createdAt)}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => onView(school)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => onEdit(school)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
                 ) : (
                   <TableRow>
                     <TableCell

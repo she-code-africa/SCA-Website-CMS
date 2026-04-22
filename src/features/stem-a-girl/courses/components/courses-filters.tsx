@@ -21,6 +21,9 @@ import {
   SelectValue
 } from "@/components/ui/select";
 
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
+
 type Props = {
   value: CourseFilters;
   onChange: (next: CourseFilters) => void;
@@ -121,13 +124,17 @@ export function CoursesFilters({ value, onChange, onReset }: Props) {
           </PopoverContent>
         </Popover>
 
-        <Button
-          variant="default"
-          className="w-full sm:w-auto"
-          onClick={() => window.dispatchEvent(new CustomEvent("sag-course:add"))}
-        >
-          Add Course
-        </Button>
+        <PermissionGate permission={PERMISSIONS.CREATE_SAG_COURSE}>
+          <Button
+            variant="default"
+            className="w-full sm:w-auto"
+            onClick={() =>
+              window.dispatchEvent(new CustomEvent("sag-course:add"))
+            }
+          >
+            Add Course
+          </Button>
+        </PermissionGate>
       </div>
     </div>
   );

@@ -27,7 +27,6 @@ export default function CoursesPage() {
   const [modalMode, setModalMode] = React.useState<"create" | "view">("create");
   const [selected, setSelected] = React.useState<Course | null>(null);
 
-  // Trigger add course via custom event (kept for compatibility)
   React.useEffect(() => {
     const handler = () => {
       setSelected(null);
@@ -53,6 +52,12 @@ export default function CoursesPage() {
   const paged = rows.slice((page - 1) * limit, page * limit);
 
   const openView = (course: Course) => {
+    setSelected(course);
+    setModalMode("view");
+    setModalOpen(true);
+  };
+
+  const openEdit = (course: Course) => {
     setSelected(course);
     setModalMode("view");
     setModalOpen(true);
@@ -103,7 +108,8 @@ export default function CoursesPage() {
                 rows={paged}
                 isLoading={query.isLoading}
                 isError={query.isError}
-                onRowClick={openView}
+                onView={openView}
+                onEdit={openEdit}
               />
             </div>
             <div className="hidden md:block">
@@ -112,7 +118,8 @@ export default function CoursesPage() {
                   rows={paged}
                   isLoading={query.isLoading}
                   isError={query.isError}
-                  onRowClick={openView}
+                  onView={openView}
+                  onEdit={openEdit}
                 />
               </TableFrame>
             </div>

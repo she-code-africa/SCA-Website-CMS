@@ -104,7 +104,7 @@ export function CoursesTable({
                   className={cn("cursor-pointer hover:bg-muted/50")}
                 >
                   {/* Course column (image + title) */}
-                  <TableCell className="whitespace-normal min-w-[200px]">
+                  <TableCell className="whitespace-normal min-w-50">
                     <div className="flex items-center gap-2">
                       {course.image ? (
                         <img
@@ -117,7 +117,7 @@ export function CoursesTable({
                           {getInitials(course.title)}
                         </div>
                       )}
-                      <span className="font-medium break-words">
+                      <span className="font-medium wrap-break-word">
                         {course.title}
                       </span>
                     </div>

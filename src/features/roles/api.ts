@@ -111,3 +111,59 @@ export async function detachPermissions(
   );
   return normalizeRole(response);
 }
+
+
+
+// // src/features/roles/api.ts (add at the bottom)
+
+// // Mock storage key
+// const MOCK_PERMISSIONS_KEY = "mock_permissions";
+
+// // Helper to load mock permissions from localStorage
+// function loadMockPermissions(): Array<{ _id: string; name: string }> {
+//   if (typeof window === "undefined") return [];
+//   const stored = localStorage.getItem(MOCK_PERMISSIONS_KEY);
+//   if (stored) return JSON.parse(stored);
+//   return [];
+// }
+
+// // Helper to save mock permissions to localStorage
+// function saveMockPermissions(perms: Array<{ _id: string; name: string }>) {
+//   if (typeof window !== "undefined") {
+//     localStorage.setItem(MOCK_PERMISSIONS_KEY, JSON.stringify(perms));
+//   }
+// }
+
+// // Mock implementations
+// export async function createPermissionMock(name: string): Promise<{ _id: string; name: string }> {
+//   const mockPerms = loadMockPermissions();
+//   const newId = `mock_${Date.now()}_${Math.random().toString(36).substr(2, 8)}`;
+//   const newPerm = { _id: newId, name };
+//   saveMockPermissions([...mockPerms, newPerm]);
+//   return newPerm;
+// }
+
+// export async function deletePermissionMock(id: string): Promise<void> {
+//   const mockPerms = loadMockPermissions();
+//   const filtered = mockPerms.filter(p => p._id !== id);
+//   if (filtered.length === mockPerms.length) {
+//     throw new Error("Permission not found");
+//   }
+//   saveMockPermissions(filtered);
+// }
+
+// // Real implementations (to be used when backend is ready)
+// // export async function createPermissionReal(name: string): Promise<{ _id: string; name: string }> {
+// //   const response = await api.post<{ data: { _id: string; name: string } }>("/permissions", { name });
+// //   return response as { _id: string; name: string };
+// // }
+
+// // export async function deletePermissionReal(id: string): Promise<void> {
+// //   await api.delete(`/permissions/${id}`);
+// // }
+
+// // Switchable exports – change this flag to false when backend is ready
+// const USE_MOCK = true; // 👈 set to false after backend implements endpoints
+
+// export const createPermission = USE_MOCK ? createPermissionMock : createPermissionReal;
+// export const deletePermission = USE_MOCK ? deletePermissionMock : deletePermissionReal;

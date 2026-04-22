@@ -191,49 +191,49 @@ export function JobSheet({ open, onOpenChange, mode, jobId }: Props) {
     onError: () => toast.error("Could not delete")
   });
 
-  const submit = async () => {
-    if (
-      !form.title.trim() ||
-      !form.description.trim() ||
-      !form.location.trim() ||
-      !form.applicationLink.trim() ||
-      !form.deadline ||
-      !form.jobType ||
-      !form.jobCategory
-    ) {
-      toast.error("Please fill all required fields");
-      return;
-    }
+const submit = async () => {
+  if (
+    !form.title.trim() ||
+    !form.description.trim() ||
+    !form.location.trim() ||
+    !form.applicationLink.trim() ||
+    !form.deadline ||
+    !form.jobType ||
+    !form.jobCategory
+  ) {
+    toast.error("Please fill all required fields");
+    return;
+  }
 
-    try {
-      new URL(form.applicationLink);
-    } catch {
-      toast.error("Please enter a valid application link");
-      return;
-    }
+  try {
+    new URL(form.applicationLink);
+  } catch {
+    toast.error("Please enter a valid application link");
+    return;
+  }
 
-    const payload: JobUpsertInput = { ...form };
+  const payload: JobUpsertInput = { ...form };
 
-    if (form.guestPost && form.guestPostMetaData) {
-      const isEmpty =
-        !form.guestPostMetaData.companyName?.trim() &&
-        !form.guestPostMetaData.companyEmail?.trim() &&
-        !form.guestPostMetaData.companyUrl?.trim();
-      if (isEmpty) delete payload.guestPostMetaData;
-    } else if (form.company) {
-      const isEmpty =
-        !form.company.companyName?.trim() &&
-        !form.company.email?.trim() &&
-        !form.company.companyUrl?.trim();
-      if (isEmpty) delete payload.company;
-    }
+  // Force guestPost to true and remove the company object
+  payload.guestPost = true;
+  delete payload.company;
 
-    if (mode === "create") {
-      createMut.mutate(payload);
-    } else if (jobId) {
-      updateMut.mutate({ id: jobId, data: payload });
-    }
-  };
+  // If guestPostMetaData is empty, delete it as well
+  if (
+    payload.guestPostMetaData &&
+    !payload.guestPostMetaData.companyName?.trim() &&
+    !payload.guestPostMetaData.companyEmail?.trim() &&
+    !payload.guestPostMetaData.companyUrl?.trim()
+  ) {
+    delete payload.guestPostMetaData;
+  }
+
+  if (mode === "create") {
+    createMut.mutate(payload);
+  } else if (jobId) {
+    updateMut.mutate({ id: jobId, data: payload });
+  }
+};
 
   const saving = createMut.isPending || updateMut.isPending;
 

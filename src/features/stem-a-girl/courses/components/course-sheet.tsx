@@ -46,6 +46,8 @@ import {
   AlertDialogAction
 } from "@/components/ui/alert-dialog";
 import { Switch } from "@/components/ui/switch";
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
 
 type Props = {
   open: boolean;
@@ -283,42 +285,53 @@ export function CourseSheet({ open, onOpenChange, mode, courseId }: Props) {
           <div className="py-6 space-y-6">
             {mode === "view" && (
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <Button variant="outline" onClick={() => setEditing((v) => !v)}>
-                  {editing ? "View" : "Edit"}
-                </Button>
+                {/* Edit button – requires UPDATE permission */}
+                <PermissionGate permission={PERMISSIONS.UPDATE_SAG_COURSE}>
+                  <Button
+                    variant="outline"
+                    onClick={() => setEditing((v) => !v)}
+                  >
+                    {editing ? "View" : "Edit"}
+                  </Button>
+                </PermissionGate>
 
+                {/* Delete button – requires DELETE permission */}
                 {!editing && (
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="destructive">
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete course?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => courseId && deleteMut.mutate(courseId)}
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          disabled={deleteMut.isPending}
-                        >
-                          {deleteMut.isPending ? "Deleting…" : "Delete"}
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  <PermissionGate permission={PERMISSIONS.DELETE_SAG_COURSE}>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive">
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete course?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() =>
+                              courseId && deleteMut.mutate(courseId)
+                            }
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            disabled={deleteMut.isPending}
+                          >
+                            {deleteMut.isPending ? "Deleting…" : "Delete"}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </PermissionGate>
                 )}
               </div>
             )}
 
-            {/* Image upload */}
+            {/* Image upload (always visible but disabled when not editing) */}
             <div className="grid gap-3">
               <label className="text-sm font-medium">Course Image</label>
               <div className="flex flex-col sm:flex-row gap-4 items-center">
@@ -381,6 +394,7 @@ export function CourseSheet({ open, onOpenChange, mode, courseId }: Props) {
 
             {/* Form fields */}
             <div className="grid gap-4">
+              {/* ... existing fields (unchanged) ... */}
               <div className="grid gap-2">
                 <label className="text-sm font-medium">Title *</label>
                 <Input
@@ -506,26 +520,35 @@ export function CourseSheet({ open, onOpenChange, mode, courseId }: Props) {
           </div>
         </ScrollArea>
 
+        {/* Bottom action bar – requires CREATE permission for create mode, UPDATE for edit mode */}
         {(mode === "create" || (mode === "view" && editing)) && (
-          <div className="border-t px-6 py-4 flex justify-end gap-2 bg-background">
-            <Button
-              variant="outline"
-              onClick={() => {
-                if (editing && mode === "view") setEditing(false);
-                else onOpenChange(false);
-              }}
-              disabled={saving}
-            >
-              Cancel
-            </Button>
-            <Button variant="default" onClick={submit} disabled={saving}>
-              {saving
-                ? "Saving…"
-                : mode === "create"
-                  ? "Add Course"
-                  : "Save Changes"}
-            </Button>
-          </div>
+          <PermissionGate
+            permission={
+              mode === "create"
+                ? PERMISSIONS.CREATE_SAG_COURSE
+                : PERMISSIONS.UPDATE_SAG_COURSE
+            }
+          >
+            <div className="border-t px-6 py-4 flex justify-end gap-2 bg-background">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  if (editing && mode === "view") setEditing(false);
+                  else onOpenChange(false);
+                }}
+                disabled={saving}
+              >
+                Cancel
+              </Button>
+              <Button variant="default" onClick={submit} disabled={saving}>
+                {saving
+                  ? "Saving…"
+                  : mode === "create"
+                    ? "Add Course"
+                    : "Save Changes"}
+              </Button>
+            </div>
+          </PermissionGate>
         )}
       </SheetContent>
     </Sheet>

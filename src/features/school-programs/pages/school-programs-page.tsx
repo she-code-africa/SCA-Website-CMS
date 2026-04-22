@@ -29,7 +29,6 @@ export default function SchoolProgramsPage() {
   const [modalMode, setModalMode] = React.useState<"create" | "view">("create");
   const [selected, setSelected] = React.useState<SchoolProgram | null>(null);
 
-  // Listen for custom add event (optional, kept for compatibility)
   React.useEffect(() => {
     const handler = () => {
       setSelected(null);
@@ -55,6 +54,12 @@ export default function SchoolProgramsPage() {
   const paged = rows.slice((page - 1) * limit, page * limit);
 
   const openView = (program: SchoolProgram) => {
+    setSelected(program);
+    setModalMode("view");
+    setModalOpen(true);
+  };
+
+  const openEdit = (program: SchoolProgram) => {
     setSelected(program);
     setModalMode("view");
     setModalOpen(true);
@@ -95,7 +100,8 @@ export default function SchoolProgramsPage() {
                 rows={paged}
                 isLoading={query.isLoading}
                 isError={query.isError}
-                onRowClick={openView}
+                onView={openView}
+                onEdit={openEdit}
               />
             </div>
             <div className="hidden md:block">
@@ -104,7 +110,8 @@ export default function SchoolProgramsPage() {
                   rows={paged}
                   isLoading={query.isLoading}
                   isError={query.isError}
-                  onRowClick={openView}
+                  onView={openView}
+                  onEdit={openEdit}
                 />
               </TableFrame>
             </div>

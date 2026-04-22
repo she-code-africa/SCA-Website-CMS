@@ -9,6 +9,7 @@ export const routePermissions: Record<string, string> = {
   "/admin/settings/users": PERMISSIONS.VIEW_USER,
   "/admin/settings/roles": PERMISSIONS.VIEW_ROLE,
   "/admin/settings/reach": PERMISSIONS.VIEW_OUR_REACH,
+  // "/admin/settings/permissions": PERMISSIONS.VIEW_OUR_REACH,
 
   // Team
   "/admin/team": PERMISSIONS.VIEW_TEAM,
@@ -58,10 +59,14 @@ export const routePermissions: Record<string, string> = {
   "/admin/academy/school-programs": PERMISSIONS.VIEW_SCHOOLPROGRAM,
 
   // STEM-A-GIRL
-  "/admin/stem-a-girl/courses": PERMISSIONS.VIEW_COURSE,
+  // "/admin/stem-a-girl/courses": PERMISSIONS.VIEW_COURSE,
   "/admin/stem-a-girl/schools": PERMISSIONS.VIEW_SCHOOL,
   "/admin/stem-a-girl/activities": PERMISSIONS.VIEW_ACTIVITY,
-  "/admin/stem-a-girl/events": PERMISSIONS.VIEW_EVENT
+  "/admin/stem-a-girl/events": PERMISSIONS.VIEW_EVENT,
+  "/admin/stem-a-girl/courses": PERMISSIONS.VIEW_SAG_COURSE,
+  "/admin/stem-a-girl/impact-stories": PERMISSIONS.VIEW_SAG_IMPACT_STORY,
+  "/admin/stem-a-girl/outreach": PERMISSIONS.VIEW_SAG_OUTREACH,
+  "/admin/stem-a-girl/enquiries": PERMISSIONS.VIEW_SAG_ENQUIRY
 };
 
 /**

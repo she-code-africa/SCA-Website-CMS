@@ -17,6 +17,10 @@ import { CoursesPagination } from "../components/courses-pagination";
 import { MobileCourseCard } from "../components/mobile-course-card";
 import { MobileCourseSkeletonCard } from "../components/mobile-course-skeleton-card";
 
+// 👇 Import PermissionGate and permissions
+import { PermissionGate } from "@/components/PermissionGate";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
+
 function applyFilters(rows: Course[], filters: CourseFilters) {
   let out = [...rows];
   const search = filters.search?.trim().toLowerCase();
@@ -55,10 +59,15 @@ export default function CoursesPage() {
     staleTime: 60_000
   });
 
-  const courses = React.useMemo(() => (Array.isArray(data) ? data : []), [data]);
-  const activities = React.useMemo(() => (activitiesData as SAGActivity[]) ?? [], [activitiesData]);
-  
-  // Create a lookup map: activity ID -> activity name
+  const courses = React.useMemo(
+    () => (Array.isArray(data) ? data : []),
+    [data]
+  );
+  const activities = React.useMemo(
+    () => (activitiesData as SAGActivity[]) ?? [],
+    [activitiesData]
+  );
+
   const activityMap = React.useMemo(() => {
     const map = new Map<string, string>();
     activities.forEach((act) => {
@@ -74,7 +83,6 @@ export default function CoursesPage() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / limit));
   const paged = filtered.slice((page - 1) * limit, page * limit);
 
-  // Listen for "Add Course" event from the filters component
   React.useEffect(() => {
     const handleAdd = () => {
       setSelectedId(null);
@@ -99,81 +107,90 @@ export default function CoursesPage() {
   const isLoadingAny = isLoading || isLoadingActivities;
 
   return (
-    <TableShell
-      title="Courses"
-      description="Manage Stem-a-Girl courses."
-      right={
-        <div className="text-sm text-muted-foreground">
-          {isLoadingAny ? "Loading…" : `${filtered.length} course(s)`}
+    <PermissionGate
+      permission={PERMISSIONS.VIEW_SAG_COURSE}
+      fallback={
+        <div className="p-8 text-center">
+          You do not have permission to view this page.
         </div>
       }
     >
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <CoursesFilters
-            value={filters}
-            onChange={setFilters}
-            onReset={() => setFilters({ search: "", state: "", sortBy: "" })}
-          />
-        </div>
-        <div className="flex justify-end">
-          <CoursesPagination
-            currentPage={page}
-            totalPages={totalPages}
-            onPrevious={() => setPage((p) => Math.max(1, p - 1))}
-            onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
-            isLoading={isLoadingAny}
-          />
-        </div>
-
-        {/* Mobile */}
-        <div className="grid gap-3 md:hidden">
-          {isLoadingAny ? (
-            Array.from({ length: 6 }).map((_, i) => (
-              <MobileCourseSkeletonCard key={i} />
-            ))
-          ) : isError ? (
-            <div className="text-center text-red-500">
-              Failed to load courses
-            </div>
-          ) : paged.length ? (
-            paged.map((c) => (
-              <button
-                key={c._id}
-                onClick={() => openView(c)}
-                className="text-left w-full"
-              >
-                <MobileCourseCard course={c} activityMap={activityMap} />
-              </button>
-            ))
-          ) : (
-            <div className="text-center text-muted-foreground">
-              No courses found
-            </div>
-          )}
-        </div>
-
-        {/* Desktop */}
-        <div className="hidden md:block">
-          <TableFrame>
-            <CoursesTable
-              rows={paged}
-              isLoading={isLoadingAny}
-              isError={isError}
-              onView={openView}
-              onEdit={openEdit}
-              activityMap={activityMap}
+      <TableShell
+        title="Courses"
+        description="Manage Stem-a-Girl courses."
+        right={
+          <div className="text-sm text-muted-foreground">
+            {isLoadingAny ? "Loading…" : `${filtered.length} course(s)`}
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <CoursesFilters
+              value={filters}
+              onChange={setFilters}
+              onReset={() => setFilters({ search: "", state: "", sortBy: "" })}
             />
-          </TableFrame>
-        </div>
+          </div>
+          <div className="flex justify-end">
+            <CoursesPagination
+              currentPage={page}
+              totalPages={totalPages}
+              onPrevious={() => setPage((p) => Math.max(1, p - 1))}
+              onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
+              isLoading={isLoadingAny}
+            />
+          </div>
 
-        <CourseSheet
-          open={sheetOpen}
-          onOpenChange={setSheetOpen}
-          mode={sheetMode}
-          courseId={selectedId || undefined}
-        />
-      </div>
-    </TableShell>
+          {/* Mobile */}
+          <div className="grid gap-3 md:hidden">
+            {isLoadingAny ? (
+              Array.from({ length: 6 }).map((_, i) => (
+                <MobileCourseSkeletonCard key={i} />
+              ))
+            ) : isError ? (
+              <div className="text-center text-red-500">
+                Failed to load courses
+              </div>
+            ) : paged.length ? (
+              paged.map((c) => (
+                <button
+                  key={c._id}
+                  onClick={() => openView(c)}
+                  className="text-left w-full"
+                >
+                  <MobileCourseCard course={c} activityMap={activityMap} />
+                </button>
+              ))
+            ) : (
+              <div className="text-center text-muted-foreground">
+                No courses found
+              </div>
+            )}
+          </div>
+
+          {/* Desktop */}
+          <div className="hidden md:block">
+            <TableFrame>
+              <CoursesTable
+                rows={paged}
+                isLoading={isLoadingAny}
+                isError={isError}
+                onView={openView}
+                onEdit={openEdit}
+                activityMap={activityMap}
+              />
+            </TableFrame>
+          </div>
+
+          <CourseSheet
+            open={sheetOpen}
+            onOpenChange={setSheetOpen}
+            mode={sheetMode}
+            courseId={selectedId || undefined}
+          />
+        </div>
+      </TableShell>
+    </PermissionGate>
   );
 }

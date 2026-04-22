@@ -62,7 +62,7 @@ export type JobFilters = {
 export type JobUpsertInput = {
   title: string;
   description: string;
-  deadline: string; // ISO format YYYY-MM-DD
+  deadline: string;
   minimumExperience: string;
   applicationLink: string;
   salaryCurrency: string;
@@ -71,6 +71,7 @@ export type JobUpsertInput = {
   jobType: string;
   jobCategory: string;
   guestPost: boolean;
+  companyProfileId?: string; 
   guestPostMetaData?: {
     companyName: string;
     companyEmail: string;

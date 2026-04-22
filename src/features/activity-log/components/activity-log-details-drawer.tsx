@@ -1,11 +1,11 @@
-// src/features/activity-log/components/activity-log-details-drawer.tsx
 "use client";
 
 import { format } from "date-fns";
 import type { AuditLogEntry } from "@/features/activity-log/types";
 import {
   getFriendlyAction,
-  getFriendlyResource
+  getFriendlyResource,
+  getUserDisplay
 } from "@/features/activity-log/utils";
 import {
   Sheet,
@@ -37,6 +37,8 @@ export function ActivityLogDetailsDrawer({
 }) {
   if (!row) return null;
 
+  const { name, email, isSystem } = getUserDisplay(row.user);
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full sm:max-w-md">
@@ -48,7 +50,23 @@ export function ActivityLogDetailsDrawer({
         </SheetHeader>
 
         <div className="mt-6 space-y-4 text-sm">
-          <Row label="User" value={row.user?.email ?? "System (no user)"} />
+          <Row
+            label="User"
+            value={
+              isSystem ? (
+                <span className="italic text-muted-foreground">{name}</span>
+              ) : (
+                <div>
+                  <div className="font-medium">{name}</div>
+                  {email && (
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      {email}
+                    </div>
+                  )}
+                </div>
+              )
+            }
+          />
 
           <div className="flex flex-wrap gap-2">
             <Badge>{getFriendlyAction(row)}</Badge>

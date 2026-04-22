@@ -1,14 +1,12 @@
 // src/features/partners/types.ts
+
 export type Partner = {
   _id: string;
   name: string;
   image?: string | null;
   featured?: boolean;
-
-  createdAt?: string; // ISO string
-  updatedAt?: string; // ISO string
-
-  [key: string]: any;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export type PartnerFilters = {
@@ -20,5 +18,5 @@ export type PartnerFilters = {
 export type PartnerUpsertInput = {
   name: string;
   featured: boolean;
-  image?: File | null;
+  image?: string | null; // base64 string, not File
 };

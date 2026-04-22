@@ -54,6 +54,11 @@ export default function SchoolsPage() {
     setModalOpen(true);
   };
 
+  const openEdit = (school: School) => {
+    setSelected(school);
+    setModalMode("view");
+    setModalOpen(true);
+  };
 
   return (
     <PermissionGate permission={PERMISSIONS.VIEW_SCHOOL}>
@@ -90,7 +95,8 @@ export default function SchoolsPage() {
                 rows={paged}
                 isLoading={query.isLoading}
                 isError={query.isError}
-                onRowClick={openView}
+                onView={openView}
+                onEdit={openEdit}
               />
             </div>
             <div className="hidden md:block">
@@ -99,7 +105,8 @@ export default function SchoolsPage() {
                   rows={paged}
                   isLoading={query.isLoading}
                   isError={query.isError}
-                  onRowClick={openView}
+                  onView={openView}
+                  onEdit={openEdit}
                 />
               </TableFrame>
             </div>

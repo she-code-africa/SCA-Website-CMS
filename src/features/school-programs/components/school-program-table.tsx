@@ -1,11 +1,15 @@
+// src/features/school-programs/components/school-program-table.tsx
+
 "use client";
 
 import * as React from "react";
 import { format } from "date-fns";
+import { Eye, Pencil } from "lucide-react";
 import type { SchoolProgram } from "@/features/school-programs/types";
 import { cn } from "@/lib/utils/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
 import {
   Table,
@@ -35,12 +39,14 @@ export function SchoolProgramTable({
   rows,
   isLoading,
   isError,
-  onRowClick
+  onView,
+  onEdit
 }: {
   rows: SchoolProgram[];
   isLoading: boolean;
   isError: boolean;
-  onRowClick: (program: SchoolProgram) => void;
+  onView: (program: SchoolProgram) => void;
+  onEdit: (program: SchoolProgram) => void;
 }) {
   const headers = [
     "Title",
@@ -49,8 +55,13 @@ export function SchoolProgramTable({
     "State",
     "Published",
     "Updated",
-    "Created"
+    "Created",
+    "Action"
   ];
+
+  const handleRowClick = (program: SchoolProgram) => {
+    onView(program);
+  };
 
   return (
     <div className="space-y-3">
@@ -69,7 +80,7 @@ export function SchoolProgramTable({
             <button
               key={program._id}
               type="button"
-              onClick={() => onRowClick(program)}
+              onClick={() => onView(program)}
               className="text-left w-full"
             >
               <MobileSchoolProgramCard program={program} />
@@ -118,71 +129,94 @@ export function SchoolProgramTable({
                     </TableCell>
                   </TableRow>
                 ) : rows.length ? (
-                  rows.map((program) => {
-                    return (
-                      <TableRow
-                        key={program._id}
-                        onClick={() => onRowClick(program)}
-                        className={cn("cursor-pointer hover:bg-muted/50")}
-                      >
-                        <TableCell className="whitespace-nowrap">
-                          <div className="flex items-center gap-2">
-                            {program.image ? (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img
-                                src={program.image}
-                                alt={program.title}
-                                className="h-8 w-8 rounded object-cover"
-                              />
-                            ) : (
-                              <div className="h-8 w-8 rounded bg-muted flex items-center justify-center">
-                                <FileText className="w-4 h-4 text-muted-foreground" />
-                              </div>
-                            )}
-                            <span className="font-medium">
-                              {program.title ?? "—"}
-                            </span>
-                          </div>
-                        </TableCell>
-
-                        <TableCell className="whitespace-nowrap">
-                          {program.cohort ?? "—"}
-                        </TableCell>
-
-                        <TableCell className="whitespace-nowrap">
-                          {schoolName(program)}
-                        </TableCell>
-
-                        <TableCell className="whitespace-nowrap">
-                          {program.state ? (
-                            <Badge
-                              variant={
-                                program.state === "published"
-                                  ? "default"
-                                  : "outline"
-                              }
-                            >
-                              {program.state}
-                            </Badge>
+                  rows.map((program) => (
+                    <TableRow
+                      key={program._id}
+                      onClick={() => handleRowClick(program)}
+                      className={cn("cursor-pointer hover:bg-muted/50")}
+                    >
+                      {/* Title with image */}
+                      <TableCell className="whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          {program.image ? (
+                            <img
+                              src={program.image}
+                              alt={program.title}
+                              className="h-8 w-8 rounded object-cover"
+                            />
                           ) : (
-                            "—"
+                            <div className="h-8 w-8 rounded bg-muted flex items-center justify-center">
+                              <FileText className="w-4 h-4 text-muted-foreground" />
+                            </div>
                           )}
-                        </TableCell>
+                          <span className="font-medium">
+                            {program.title ?? "—"}
+                          </span>
+                        </div>
+                      </TableCell>
 
-                        <TableCell className="whitespace-nowrap text-muted-foreground">
-                          {fmtDate(program.publishDate)}
-                        </TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        {program.cohort ?? "—"}
+                      </TableCell>
 
-                        <TableCell className="whitespace-nowrap text-muted-foreground">
-                          {fmtDate(program.updatedAt)}
-                        </TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        {schoolName(program)}
+                      </TableCell>
 
-                        <TableCell className="whitespace-nowrap text-muted-foreground">
-                          {fmtDate(program.createdAt)}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
+                      <TableCell className="whitespace-nowrap">
+                        {program.state ? (
+                          <Badge
+                            variant={
+                              program.state === "published"
+                                ? "default"
+                                : "outline"
+                            }
+                          >
+                            {program.state}
+                          </Badge>
+                        ) : (
+                          "—"
+                        )}
+                      </TableCell>
+
+                      <TableCell className="whitespace-nowrap text-muted-foreground">
+                        {fmtDate(program.publishDate)}
+                      </TableCell>
+
+                      <TableCell className="whitespace-nowrap text-muted-foreground">
+                        {fmtDate(program.updatedAt)}
+                      </TableCell>
+
+                      <TableCell className="whitespace-nowrap text-muted-foreground">
+                        {fmtDate(program.createdAt)}
+                      </TableCell>
+
+                      {/* Action column */}
+                      <TableCell
+                        className="whitespace-nowrap"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => onView(program)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => onEdit(program)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
                 ) : (
                   <TableRow>
                     <TableCell

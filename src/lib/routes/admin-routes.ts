@@ -143,12 +143,25 @@ export const adminRoutes: NavItem[] = [
         name: "impact-stories",
         label: "Impact Stories",
         path: "/admin/stem-a-girl/impact-stories",
-        permission: PERMISSIONS.VIEW_IMPACT_STORIES
+        permission: PERMISSIONS.VIEW_SAG_IMPACT_STORY
+        
       },
       {
         name: "courses",
         label: "Courses",
-        path: "/admin/stem-a-girl/courses",
+        path: "/admin/stem-a-girl/courses"
+        // permission: PERMISSIONS.VIEW_IMPACT_STORIES
+      },
+      {
+        name: "outreach",
+        label: "Out Reach",
+        path: "/admin/stem-a-girl/outreach"
+        // permission: PERMISSIONS.VIEW_IMPACT_STORIES
+      },
+      {
+        name: "enquiries",
+        label: "Enquiries",
+        path: "/admin/stem-a-girl/enquiries"
         // permission: PERMISSIONS.VIEW_IMPACT_STORIES
       }
     ]
@@ -232,7 +245,13 @@ export const adminRoutes: NavItem[] = [
         label: "Roles & Permissions",
         path: "/admin/settings/roles",
         permission: PERMISSIONS.VIEW_ROLE
-      }
+      },
+      //       {
+      //   name: "permissions",
+      //   label: "Permission Manager",
+      //   path: "/admin/settings/permissions",
+      //   // permission: PERMISSIONS.VIEW_ROLE
+      // }
     ]
   }
 ];

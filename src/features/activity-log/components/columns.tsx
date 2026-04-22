@@ -4,20 +4,28 @@ import { format } from "date-fns";
 import type { AuditLogEntry } from "@/features/activity-log/types";
 import {
   getFriendlyAction,
-  getFriendlyResource
+  getFriendlyResource,
+  getUserDisplay
 } from "@/features/activity-log/utils";
 
 export const columns: ColumnDef<AuditLogEntry>[] = [
   {
     id: "user",
     header: "User",
-    cell: ({ row }) => (
-      <div className="font-medium">
-        {row.original.user?.email ?? (
-          <span className="text-muted-foreground italic">System</span>
-        )}
-      </div>
-    )
+    cell: ({ row }) => {
+      const { name, email, isSystem } = getUserDisplay(row.original.user);
+      if (isSystem) {
+        return <span className="italic text-muted-foreground">{name}</span>;
+      }
+      return (
+        <div>
+          <div className="font-medium">{name}</div>
+          {email && (
+            <div className="text-xs text-muted-foreground">{email}</div>
+          )}
+        </div>
+      );
+    }
   },
   {
     id: "action",

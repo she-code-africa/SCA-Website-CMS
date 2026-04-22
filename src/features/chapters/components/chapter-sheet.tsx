@@ -1,8 +1,14 @@
+// src/features/chapters/components/chapter-sheet.tsx
+
 "use client";
 
 import * as React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Upload, UsersRound, X } from "lucide-react";
+import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+
 import {
   addChapter,
   editChapter,
@@ -46,7 +52,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { toast } from "sonner";
 import { cn } from "@/lib/utils/utils";
 
 type Props = {
@@ -66,6 +71,49 @@ type ChapterFormState = {
   description: string;
 };
 
+// Image compression helper
+const compressImage = (
+  file: File,
+  maxWidth = 800,
+  maxHeight = 800,
+  quality = 0.7
+): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (e) => {
+      const img = new Image();
+      img.src = e.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxWidth) {
+            height *= maxWidth / width;
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width *= maxHeight / height;
+            height = maxHeight;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx?.drawImage(img, 0, 0, width, height);
+        const base64 = canvas.toDataURL("image/jpeg", quality);
+        resolve(base64);
+      };
+      img.onerror = reject;
+    };
+    reader.onerror = reject;
+  });
+};
+
 export function ChapterSheet({
   open,
   onOpenChange,
@@ -79,7 +127,7 @@ export function ChapterSheet({
   const [imagePreview, setImagePreview] = React.useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const { data: categories = [] } = useQuery({
+  const { data: categories = [], isLoading: isLoadingCategories } = useQuery({
     queryKey: ["chapter-categories"],
     queryFn: getChapterCategories,
     enabled: open
@@ -167,7 +215,8 @@ export function ChapterSheet({
       qc.invalidateQueries({ queryKey: ["chapters-full"] });
       onOpenChange(false);
     },
-    onError: () => toast.error("Could not add chapter")
+    onError: (err: any) =>
+      toast.error(err?.response?.data?.message || "Could not add chapter")
   });
 
   const updateMut = useMutation({
@@ -179,7 +228,8 @@ export function ChapterSheet({
       qc.invalidateQueries({ queryKey: ["chapter"] });
       onOpenChange(false);
     },
-    onError: () => toast.error("Could not update chapter")
+    onError: (err: any) =>
+      toast.error(err?.response?.data?.message || "Could not update chapter")
   });
 
   const deleteMut = useMutation({
@@ -218,32 +268,68 @@ export function ChapterSheet({
       return;
     }
 
-    const formData = new FormData();
-    formData.append("name", form.name);
-    formData.append("city", form.city);
-    formData.append("country", form.country);
-    formData.append("category", form.category);
-    formData.append("link", form.link);
-    formData.append("description", form.description);
-    formData.append("socialMediaLinks", JSON.stringify(socialLinks));
-
-    if (imageFile) formData.append("image", imageFile);
-
-    if (mode === "create") {
-      createMut.mutate(formData as any);
-      return;
+    let imageValue: string | undefined = undefined;
+    if (imageFile) {
+      try {
+        imageValue = await compressImage(imageFile, 800, 800, 0.7);
+      } catch {
+        toast.error("Failed to process image");
+        return;
+      }
     }
 
+    const payload: any = {
+      name: form.name,
+      city: form.city,
+      country: form.country,
+      category: form.category,
+      link: form.link,
+      description: form.description,
+      socialMediaLinks: socialLinks
+    };
+    if (imageValue) payload.image = imageValue;
+
+    if (mode === "create") {
+      createMut.mutate(payload);
+      return;
+    }
     if (!chapterId) return;
     updateMut.mutate({
       id: chapterId,
       categoryId,
-      data: formData as any
+      data: payload
     });
   };
 
   const saving = createMut.isPending || updateMut.isPending;
   const canEdit = mode === "create" || editing;
+
+  // Skeleton loader while fetching chapter data
+  if (mode === "view" && chapterQuery.isLoading && !chapterQuery.data) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent
+          side="right"
+          className="w-full sm:max-w-xl p-0 flex flex-col"
+        >
+          <VisuallyHidden>
+            <SheetTitle>Loading chapter details</SheetTitle>
+          </VisuallyHidden>
+          <SheetHeader className="px-6 py-4 border-b">
+            <Skeleton className="h-6 w-40" />
+            <Skeleton className="h-4 w-64 mt-1" />
+          </SheetHeader>
+          <div className="flex-1 px-6 py-6 space-y-6">
+            <Skeleton className="h-32 w-full rounded-lg" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-32 w-full" />
+          </div>
+        </SheetContent>
+      </Sheet>
+    );
+  }
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -258,7 +344,9 @@ export function ChapterSheet({
           <SheetDescription>
             {mode === "create"
               ? "Add a new chapter."
-              : "View, edit, or delete this chapter."}
+              : editing
+                ? "Edit the chapter details."
+                : "View chapter details. Click Edit to modify."}
           </SheetDescription>
         </SheetHeader>
 
@@ -347,16 +435,14 @@ export function ChapterSheet({
                       onClick={handleRemoveImage}
                       className="absolute -top-2 -right-2 p-1 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors"
                     >
-                      <X className="w-4 h-4" />
+                      <X className="h-4 w-4" />
                     </button>
                   )}
                 </div>
                 <div className="flex-1 space-y-3">
-                  <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground">
-                      Recommended: Square image, at least 400x400px. Max 5MB.
-                    </p>
-                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Recommended: Square image, at least 400x400px. Max 5MB.
+                  </p>
                   {canEdit && (
                     <Button
                       type="button"
@@ -420,7 +506,11 @@ export function ChapterSheet({
                   onValueChange={(v) => setForm({ ...form, category: v })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
+                    <SelectValue
+                      placeholder={
+                        isLoadingCategories ? "Loading…" : "Select category"
+                      }
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map((c: any) => (
@@ -511,38 +601,35 @@ export function ChapterSheet({
         </ScrollArea>
 
         {/* Bottom action bar */}
-        {(mode === "create" && (
-          <PermissionGate permission={PERMISSIONS.CREATE_CHAPTER}>
+        {(mode === "create" || (mode === "view" && editing)) && (
+          <PermissionGate
+            permission={
+              mode === "create"
+                ? PERMISSIONS.CREATE_CHAPTER
+                : PERMISSIONS.UPDATE_CHAPTER
+            }
+          >
             <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
               <Button
                 variant="outline"
-                onClick={() => onOpenChange(false)}
+                onClick={() => {
+                  if (editing && mode === "view") setEditing(false);
+                  else onOpenChange(false);
+                }}
                 disabled={saving}
               >
                 Cancel
               </Button>
               <Button variant="default" onClick={submit} disabled={saving}>
-                {saving ? "Saving…" : "Add Chapter"}
+                {saving
+                  ? "Saving…"
+                  : mode === "create"
+                    ? "Add Chapter"
+                    : "Save Changes"}
               </Button>
             </div>
           </PermissionGate>
-        )) ||
-          (mode === "view" && editing && (
-            <PermissionGate permission={PERMISSIONS.UPDATE_CHAPTER}>
-              <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
-                <Button
-                  variant="outline"
-                  onClick={() => onOpenChange(false)}
-                  disabled={saving}
-                >
-                  Cancel
-                </Button>
-                <Button variant="default" onClick={submit} disabled={saving}>
-                  {saving ? "Saving…" : "Save Changes"}
-                </Button>
-              </div>
-            </PermissionGate>
-          ))}
+        )}
       </SheetContent>
     </Sheet>
   );

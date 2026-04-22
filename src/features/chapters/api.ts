@@ -133,7 +133,7 @@ export async function deleteChapter(payload: {
 }
 
 /* ============================
-   CHAPTER EVENTS
+  CHAPTER EVENTS
 ============================ */
 
 export async function getChapterEvents(
