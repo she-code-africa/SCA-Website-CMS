@@ -1,11 +1,12 @@
-// src/features/stem-a-girl/activities/components/activities-table.tsx
 "use client";
 
 import * as React from "react";
 import { format } from "date-fns";
+import { Eye, Pencil } from "lucide-react";
 import type { SAGActivity } from "../types";
 import { cn } from "@/lib/utils/utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -26,14 +27,20 @@ export function ActivitiesTable({
   rows,
   isLoading,
   isError,
-  onRowClick
+  onView,
+  onEdit
 }: {
   rows: SAGActivity[];
   isLoading: boolean;
   isError: boolean;
-  onRowClick: (a: SAGActivity) => void;
+  onView: (a: SAGActivity) => void;
+  onEdit: (a: SAGActivity) => void;
 }) {
-  const headers = ["Title", "Description", "Updated", "Created"];
+  const headers = ["Title", "Description", "Updated", "Created", "Action"];
+
+  const handleRowClick = (activity: SAGActivity) => {
+    onView(activity);
+  };
 
   return (
     <div className="rounded-md border">
@@ -73,13 +80,12 @@ export function ActivitiesTable({
               rows.map((a) => (
                 <TableRow
                   key={a._id}
-                  onClick={() => onRowClick(a)}
+                  onClick={() => handleRowClick(a)}
                   className={cn("cursor-pointer hover:bg-muted/50")}
                 >
                   <TableCell className="whitespace-nowrap">
                     <div className="flex items-center gap-2">
                       {a.image ? (
-                        // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={a.image}
                           alt={a.title}
@@ -104,6 +110,30 @@ export function ActivitiesTable({
 
                   <TableCell className="whitespace-nowrap text-muted-foreground">
                     {fmtDate(a.createdAt)}
+                  </TableCell>
+
+                  <TableCell
+                    className="whitespace-nowrap"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => onView(a)}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => onEdit(a)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))

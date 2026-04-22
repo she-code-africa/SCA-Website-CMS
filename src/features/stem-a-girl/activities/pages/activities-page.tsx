@@ -1,4 +1,5 @@
 // src/app/(dashboard)/stem-a-girl/activities/page.tsx
+
 "use client";
 
 import * as React from "react";
@@ -58,6 +59,12 @@ export default function ActivitiesPage() {
   const openView = (a: SAGActivity) => {
     setSelected(a);
     setSheetMode("view");
+    setSheetOpen(true);
+  };
+
+  const openEdit = (a: SAGActivity) => {
+    setSelected(a);
+    setSheetMode("view"); // the sheet has an Edit button inside
     setSheetOpen(true);
   };
 
@@ -124,7 +131,8 @@ export default function ActivitiesPage() {
                 rows={paged}
                 isLoading={query.isLoading}
                 isError={query.isError}
-                onRowClick={openView}
+                onView={openView}
+                onEdit={openEdit}
               />
             </TableFrame>
           </div>
