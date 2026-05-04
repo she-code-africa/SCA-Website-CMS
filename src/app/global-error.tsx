@@ -1,6 +1,6 @@
 "use client";
 
-// on comment for texting purpose only.
+// on comment for testing purpose only.
 
 // src/app/global-error.tsx
 // This file handles catastrophic errors that crash the root layout itself.

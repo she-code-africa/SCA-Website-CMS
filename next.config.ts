@@ -24,6 +24,7 @@ const getDestination = (baseUrl: string | undefined, path: string) => {
 };
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   reactCompiler: false,
   async rewrites() {
     return [
