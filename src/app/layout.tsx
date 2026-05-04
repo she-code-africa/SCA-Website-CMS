@@ -1,11 +1,19 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { AppProviders } from "@/components/providers/app-providers";
+import * as React from "react";
+
+// import { AppProviders } from "@/components/providers/app-providers";
 
 export const metadata: Metadata = {
   title: "SCA Admin",
   description: "SheCode Africa Admin Dashboard"
 };
+
+
+// Dynamic import with SSR disabled
+const ClientProviders = React.lazy(
+  () => import("@/components/providers/ClientProviders")
+);
 
 export default function RootLayout({
   children
@@ -15,7 +23,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body suppressHydrationWarning>
-        <AppProviders>{children}</AppProviders>
+        <ClientProviders>{children}</ClientProviders>
       </body>
     </html>
   );
