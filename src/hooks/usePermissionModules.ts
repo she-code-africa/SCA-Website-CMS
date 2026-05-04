@@ -1,5 +1,6 @@
 // src/hooks/usePermissionModules.ts
 
+"use client"
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getPermissions } from "@/features/roles/api";
