@@ -1,24 +1,17 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import "./globals.css";
-import * as React from "react";
-
-// import { AppProviders } from "@/components/providers/app-providers";
+import ClientProviders from "@/components/providers/ClientProviders";
 
 export const metadata: Metadata = {
   title: "SCA Admin",
   description: "SheCode Africa Admin Dashboard"
 };
 
-
-// Dynamic import with SSR disabled
-const ClientProviders = React.lazy(
-  () => import("@/components/providers/ClientProviders")
-);
-
 export default function RootLayout({
   children
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
