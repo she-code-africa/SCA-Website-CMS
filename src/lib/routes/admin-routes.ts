@@ -154,7 +154,7 @@ export const adminRoutes: NavItem[] = [
       },
       {
         name: "outreach",
-        label: "Out Reach",
+        label: "Outreach",
         path: "/admin/stem-a-girl/outreach"
         // permission: PERMISSIONS.VIEW_IMPACT_STORIES
       },

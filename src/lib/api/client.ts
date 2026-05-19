@@ -18,12 +18,13 @@ interface UnwrappedInstance extends AxiosInstance {
 // ─── Main API instance (RBAC backend) ─────────────────────────────────────
 // Uses proxy path – actual backend URL is defined in next.config.ts rewrites
 export const api = axios.create({
+  // baseURL: process.env.NEXT_PUBLIC_BASE_URL,
   baseURL: "/api/external",
   withCredentials: false,
   headers: {
     "Content-Type": "application/json",
-    Accept: "application/json",
-  },
+    Accept: "application/json"
+  }
 }) as UnwrappedInstance;
 
 // ─── Stem‑a‑Girl API instance ────────────────────────────────────────────
@@ -39,13 +40,34 @@ export const stemApi = axios.create({
 const publicRoutes = ["/auth/login", "/users/accept", "/users/decline"];
 
 // ─── Main API request interceptor (add Bearer token) ─────────────────────
+
+//UNCOMMENT AFTER TESTING AND COMMENT OUT THE TESTING INTERCEPTOR BELOW
+// api.interceptors.request.use((config) => {
+//   if (typeof window !== "undefined") {
+//     const token = getToken();
+//     const isPublic = publicRoutes.some((route) => config.url?.includes(route));
+//     if (token && !isPublic) {
+//       config.headers = config.headers ?? {};
+//       config.headers.Authorization = `Bearer ${token}`;
+//     }
+//   }
+//   return config;
+// });
+
+//TESTING HERE INCLUDES LOGGING TO VERIFY TOKEN IS BEING ADDED CORRECTLY AND NOT ADDED TO PUBLIC ROUTES
 api.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
     const token = getToken();
     const isPublic = publicRoutes.some((route) => config.url?.includes(route));
+    console.log(
+      `[API] Request to ${config.url} – token exists: ${!!token}, isPublic: ${isPublic}`
+    );
     if (token && !isPublic) {
       config.headers = config.headers ?? {};
       config.headers.Authorization = `Bearer ${token}`;
+      console.log(`[API] Added Authorization header for ${config.url}`);
+    } else {
+      console.log(`[API] No token added for ${config.url}`);
     }
   }
   return config;

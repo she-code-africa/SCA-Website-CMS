@@ -60,13 +60,13 @@ export const routePermissions: Record<string, string> = {
 
   // STEM-A-GIRL
   // "/admin/stem-a-girl/courses": PERMISSIONS.VIEW_COURSE,
-  "/admin/stem-a-girl/schools": PERMISSIONS.VIEW_SCHOOL,
+  // "/admin/stem-a-girl/schools": PERMISSIONS.VIEW_SCHOOL,
   "/admin/stem-a-girl/activities": PERMISSIONS.VIEW_ACTIVITY,
-  "/admin/stem-a-girl/events": PERMISSIONS.VIEW_EVENT,
-  "/admin/stem-a-girl/courses": PERMISSIONS.VIEW_SAG_COURSE,
-  "/admin/stem-a-girl/impact-stories": PERMISSIONS.VIEW_SAG_IMPACT_STORY,
-  "/admin/stem-a-girl/outreach": PERMISSIONS.VIEW_SAG_OUTREACH,
-  "/admin/stem-a-girl/enquiries": PERMISSIONS.VIEW_SAG_ENQUIRY
+  // "/admin/stem-a-girl/events": PERMISSIONS.VIEW_EVENT,
+  // "/admin/stem-a-girl/courses": PERMISSIONS.VIEW_SAG_COURSE,
+  // "/admin/stem-a-girl/impact-stories": PERMISSIONS.VIEW_SAG_IMPACT_STORY,
+  // "/admin/stem-a-girl/outreach": PERMISSIONS.VIEW_SAG_OUTREACH,
+  // "/admin/stem-a-girl/enquiries": PERMISSIONS.VIEW_SAG_ENQUIRY
 };
 
 /**
