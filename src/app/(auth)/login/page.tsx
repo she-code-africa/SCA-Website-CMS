@@ -307,6 +307,7 @@ export default function LoginPage() {
       });
 
       localStorage.setItem("token", token);
+      console.log("TOKEN:", token); //COMMENT OUT AFTER TESTING
 
       if (values.rememberMe) {
         localStorage.setItem("rememberedEmail", values.email);

@@ -3,14 +3,17 @@
 import { stemApi as api } from "@/lib/api/client";
 import type { StemEnquiry, StemEnquiryUpsertInput } from "./types";
 
+
 export async function getStemEnquiries(): Promise<StemEnquiry[]> {
   const res = await api.get("/enquiry");
   return Array.isArray(res) ? res : [];
 }
 
+
 export async function getStemEnquiry(id: string): Promise<StemEnquiry> {
   return await api.get(`/enquiry/${id}`);
 }
+
 
 export async function createStemEnquiry(
   input: StemEnquiryUpsertInput
