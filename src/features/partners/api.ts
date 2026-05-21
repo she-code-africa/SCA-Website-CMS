@@ -26,16 +26,28 @@ export async function getPartner(id: string): Promise<Partner> {
   return api.get(`/partners/${id}`);
 }
 
-export async function addPartner(input: PartnerUpsertInput) {
-  // Send JSON, not FormData
-  return api.post(`/partners`, input);
+// export async function addPartner(input: PartnerUpsertInput) {
+//   // Send JSON, not FormData
+//   return api.post(`/partners`, input);
+// }
+
+// export async function editPartner(payload: {
+//   id: string;
+//   data: Partial<PartnerUpsertInput>;
+// }) {
+//   return api.put(`/partners/${payload.id}`, payload.data);
+// }
+
+export async function addPartner(input: FormData) {
+  return api.post(`/partners`, input, {
+    headers: { "Content-Type": "multipart/form-data" }
+  });
 }
 
-export async function editPartner(payload: {
-  id: string;
-  data: Partial<PartnerUpsertInput>;
-}) {
-  return api.put(`/partners/${payload.id}`, payload.data);
+export async function editPartner(payload: { id: string; data: FormData }) {
+  return api.put(`/partners/${payload.id}`, payload.data, {
+    headers: { "Content-Type": "multipart/form-data" }
+  });
 }
 
 export async function deletePartner(id: string) {

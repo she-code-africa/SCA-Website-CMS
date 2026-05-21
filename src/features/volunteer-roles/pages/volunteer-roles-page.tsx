@@ -54,9 +54,8 @@ export default function VolunteerRolesPage() {
 
   // Unified sheet state
   const [sheetOpen, setSheetOpen] = React.useState(false);
-  const [sheetMode, setSheetMode] = React.useState<"create" | "view" | "edit">(
-    "view"
-  );
+const [sheetMode, setSheetMode] = React.useState<"create" | "view">("create");
+
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
 
   React.useEffect(() => setPage(1), [filters.search]);

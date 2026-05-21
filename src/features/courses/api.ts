@@ -1,13 +1,12 @@
-// src/features/courses/api.ts
 import { api } from "@/lib/api/client";
 import type {
   Course,
   CoursesFilters,
-  CourseUpsertInput
+  // CourseUpsertInput
 } from "@/features/courses/types";
 
 /* ============================
-   Helpers
+  Helpers
 ============================ */
 
 type ApiListResponse<T> = T[] | { data?: T[] } | { data?: { data?: T[] } };
@@ -52,33 +51,28 @@ export async function getCourse(id: string): Promise<Course> {
   return api.get(`/courses/${id}`);
 }
 
-export async function createCourse(input: CourseUpsertInput) {
-  const fd = new FormData();
-  fd.append("name", input.name);
-  fd.append("shortDescription", input.shortDescription);
-  fd.append("school", input.school);
-  fd.append("applicationLink", input.applicationLink);
-  if (input.image) fd.append("image", input.image);
-
-  return api.post(`/courses`, fd);
+// Now accepts a JSON object – image is an optional base64 string
+export async function createCourse(payload: {
+  name: string;
+  shortDescription: string;
+  school: string;
+  applicationLink: string;
+  image?: string; // base64
+}) {
+  return api.post(`/courses`, payload);
 }
 
 export async function editCourse(payload: {
   id: string;
-  data: Partial<CourseUpsertInput>;
+  data: {
+    name?: string;
+    shortDescription?: string;
+    school?: string;
+    applicationLink?: string;
+    image?: string;         
+  };
 }) {
-  const fd = new FormData();
-  const d = payload.data;
-
-  if (d.name !== undefined) fd.append("name", d.name);
-  if (d.shortDescription !== undefined)
-    fd.append("shortDescription", d.shortDescription);
-  if (d.school !== undefined) fd.append("school", d.school);
-  if (d.applicationLink !== undefined)
-    fd.append("applicationLink", d.applicationLink);
-  if (d.image !== undefined && d.image !== null) fd.append("image", d.image);
-
-  return api.put(`/courses/${payload.id}`, fd);
+  return api.put(`/courses/${payload.id}`, payload.data);
 }
 
 export async function deleteCourse(id: string) {

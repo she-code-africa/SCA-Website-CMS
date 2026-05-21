@@ -43,15 +43,55 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils/utils";
 
+// ---------- Image compression helper ----------
+const compressImage = (
+  file: File,
+  maxWidth = 800,
+  maxHeight = 800,
+  quality = 0.7
+): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (e) => {
+      const img = new Image();
+      img.src = e.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxWidth) {
+            height *= maxWidth / width;
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width *= maxHeight / height;
+            height = maxHeight;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx?.drawImage(img, 0, 0, width, height);
+        const base64 = canvas.toDataURL("image/jpeg", quality);
+        resolve(base64);
+      };
+      img.onerror = reject;
+    };
+    reader.onerror = reject;
+  });
+};
+
 type Props = {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   mode: "create" | "view";
   initiativeId?: string;
 };
-
-// Image compression helper (if needed, but backend accepts File via FormData)
-// Keeping as is, but we'll add skeleton loader and remove publish/archive.
 
 export function InitiativeSheet({
   open,
@@ -112,13 +152,17 @@ export function InitiativeSheet({
     }
   }, [open, mode, initiativeQuery.data, initialForm]);
 
+  // ---------- Fixed image handler ----------
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => setImagePreview(reader.result as string);
-      reader.readAsDataURL(file);
+    if (!file) return;
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => setImagePreview(reader.result as string);
+    reader.readAsDataURL(file);
+    // Reset input so the same file can be re-selected
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
 
@@ -161,6 +205,7 @@ export function InitiativeSheet({
     onError: () => toast.error("Could not delete")
   });
 
+  // ---------- Submit with base64 image ----------
   const submit = async () => {
     if (
       !form.title.trim() ||
@@ -181,23 +226,41 @@ export function InitiativeSheet({
       return;
     }
 
-    if (mode === "create") {
-      if (!imageFile) {
-        toast.error("Please upload an image");
+    if (mode === "create" && !imageFile) {
+      toast.error("Please upload an image");
+      return;
+    }
+
+    let imageBase64: string | undefined = undefined;
+    if (imageFile) {
+      try {
+        imageBase64 = await compressImage(imageFile, 800, 800, 0.7);
+      } catch {
+        toast.error("Failed to process image");
         return;
       }
-      createMut.mutate({ ...form, image: imageFile });
+    }
+
+    const payload = {
+      title: form.title.trim(),
+      description: form.description.trim(),
+      initiative_url: form.initiative_url.trim(),
+      donation_url: form.donation_url.trim(),
+      isAvailable: form.isAvailable,
+      ...(imageBase64 ? { image: imageBase64 } : {})
+    };
+
+    if (mode === "create") {
+      createMut.mutate(payload as any);
       return;
     }
 
     if (!initiativeId) return;
-    updateMut.mutate({
-      id: initiativeId,
-      data: { ...form, image: imageFile ?? undefined }
-    });
+    updateMut.mutate({ id: initiativeId, data: payload });
   };
 
   const saving = createMut.isPending || updateMut.isPending;
+  const canEdit = mode === "create" || editing;
 
   // Skeleton loader while fetching
   if (mode === "view" && initiativeQuery.isLoading && !initiativeQuery.data) {
@@ -305,7 +368,7 @@ export function InitiativeSheet({
                   <div
                     className={cn(
                       "w-32 h-32 rounded-lg border-2 border-dashed overflow-hidden transition-colors",
-                      editing
+                      canEdit
                         ? "border-muted-foreground/25 hover:border-muted-foreground/50"
                         : "border-muted-foreground/25"
                     )}
@@ -323,13 +386,13 @@ export function InitiativeSheet({
                     )}
                   </div>
 
-                  {editing && imagePreview && (
+                  {canEdit && imagePreview && (
                     <button
                       type="button"
                       onClick={handleRemoveImage}
                       className="absolute -top-2 -right-2 p-1 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors"
                     >
-                      <X className="w-4 h-4" />
+                      <X className="h-4 w-4" />
                     </button>
                   )}
                 </div>
@@ -339,7 +402,7 @@ export function InitiativeSheet({
                     Recommended: Square image, at least 400x400px. Max 5MB.
                   </p>
 
-                  {editing && (
+                  {canEdit && (
                     <Button
                       type="button"
                       variant="outline"
@@ -356,7 +419,7 @@ export function InitiativeSheet({
                     ref={fileInputRef}
                     type="file"
                     accept="image/*"
-                    disabled={!editing}
+                    disabled={!canEdit}
                     onChange={handleImageChange}
                     className="hidden"
                   />
@@ -370,7 +433,7 @@ export function InitiativeSheet({
                 <label className="text-sm font-medium">Name *</label>
                 <Input
                   value={form.title}
-                  disabled={!editing}
+                  disabled={!canEdit}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
                   placeholder="Initiative Name"
                 />
@@ -381,7 +444,7 @@ export function InitiativeSheet({
                 <Input
                   type="url"
                   value={form.initiative_url}
-                  disabled={!editing}
+                  disabled={!canEdit}
                   onChange={(e) =>
                     setForm({ ...form, initiative_url: e.target.value })
                   }
@@ -394,7 +457,7 @@ export function InitiativeSheet({
                 <Input
                   type="url"
                   value={form.donation_url}
-                  disabled={!editing}
+                  disabled={!canEdit}
                   onChange={(e) =>
                     setForm({ ...form, donation_url: e.target.value })
                   }
@@ -406,7 +469,7 @@ export function InitiativeSheet({
                 <label className="text-sm font-medium">Description *</label>
                 <Textarea
                   value={form.description}
-                  disabled={!editing}
+                  disabled={!canEdit}
                   onChange={(e) =>
                     setForm({ ...form, description: e.target.value })
                   }
@@ -427,7 +490,7 @@ export function InitiativeSheet({
                 </div>
                 <Switch
                   checked={form.isAvailable}
-                  disabled={!editing}
+                  disabled={!canEdit}
                   onCheckedChange={(v) => setForm({ ...form, isAvailable: v })}
                 />
               </div>
