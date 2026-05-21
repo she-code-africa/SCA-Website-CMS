@@ -189,40 +189,67 @@ export function PartnerSheet({ open, onOpenChange, mode, partnerId }: Props) {
     onError: () => toast.error("Could not delete")
   });
 
-  const submit = async () => {
+  // const submit = async () => {
+  //   if (!form.name.trim()) {
+  //     toast.error("Please fill all required fields");
+  //     return;
+  //   }
+
+  //   let imageValue: string | undefined = undefined;
+  //   if (imageFile) {
+  //     try {
+  //       imageValue = await compressImage(imageFile, 800, 800, 0.7);
+  //     } catch {
+  //       toast.error("Failed to process image");
+  //       return;
+  //     }
+  //   }
+
+  //   const payload = {
+  //     name: form.name.trim(),
+  //     featured: form.featured
+  //   };
+  //   if (imageValue) (payload as any).image = imageValue;
+
+  //   if (mode === "create") {
+  //     createMut.mutate(payload);
+  //     return;
+  //   }
+
+  //   if (!partnerId) return;
+  //   updateMut.mutate({
+  //     id: partnerId,
+  //     data: payload
+  //   });
+  // };
+
+
+    const submit = async () => {
     if (!form.name.trim()) {
       toast.error("Please fill all required fields");
       return;
     }
 
-    let imageValue: string | undefined = undefined;
+    const fd = new FormData();
+    fd.append("name", form.name.trim());
+    fd.append("featured", String(form.featured));
+
     if (imageFile) {
-      try {
-        imageValue = await compressImage(imageFile, 800, 800, 0.7);
-      } catch {
-        toast.error("Failed to process image");
-        return;
-      }
+      fd.append("image", imageFile);          // ← raw File, not base64
     }
 
-    const payload = {
-      name: form.name.trim(),
-      featured: form.featured
-    };
-    if (imageValue) (payload as any).image = imageValue;
-
     if (mode === "create") {
-      createMut.mutate(payload);
+      createMut.mutate(fd as any);
       return;
     }
 
     if (!partnerId) return;
     updateMut.mutate({
       id: partnerId,
-      data: payload
+      data: fd as any
     });
   };
-
+  
   const saving = createMut.isPending || updateMut.isPending;
 
   // Skeleton loader while fetching

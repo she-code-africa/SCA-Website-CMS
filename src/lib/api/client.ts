@@ -18,8 +18,8 @@ interface UnwrappedInstance extends AxiosInstance {
 // ─── Main API instance (RBAC backend) ─────────────────────────────────────
 // Uses proxy path – actual backend URL is defined in next.config.ts rewrites
 export const api = axios.create({
-  // baseURL: process.env.NEXT_PUBLIC_BASE_URL,
-  baseURL: "/api/external",
+  baseURL: process.env.NEXT_PUBLIC_BASE_URL,
+  // baseURL: "/api/external",
   withCredentials: false,
   headers: {
     "Content-Type": "application/json",
@@ -30,10 +30,11 @@ export const api = axios.create({
 // ─── Stem‑a‑Girl API instance ────────────────────────────────────────────
 // Uses proxy path – actual URL defined in next.config.ts
 export const stemApi = axios.create({
-  baseURL: "/api/stem",
+  // baseURL: "/api/stem",
+  baseURL: process.env.NEXT_PUBLIC_STEM_A_GIRL_BASE_URL,
   headers: {
-    "Content-Type": "application/json",
-  },
+    "Content-Type": "application/json"
+  }
 }) as UnwrappedInstance;
 
 // ─── Routes that do not require authentication ───────────────────────────

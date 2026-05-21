@@ -39,14 +39,15 @@ import {
   AlertDialogTitle
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 
-type Mode = "create" | "view" | "edit";
+type Mode = "create" | "view"; // simplified – no external "edit"
 
 type Props = {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   roleId: string | null;
-  mode?: Mode;
+  mode: Mode;
 };
 
 function normalizeSkill(s: string) {
@@ -59,7 +60,6 @@ const compressImage = (
   maxHeight = 800,
   quality = 0.7
 ): Promise<string> => {
-  // ... same implementation as before
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -100,36 +100,43 @@ export function VolunteerRoleSheet({
   open,
   onOpenChange,
   roleId,
-  mode: initialMode = "view"
+  mode
 }: Props) {
   const qc = useQueryClient();
 
-  const [mode, setMode] = React.useState<Mode>(initialMode);
+  // ---------- internal editing toggle ----------
+  const [editing, setEditing] = React.useState(mode === "create");
+
+  // ---------- delete confirmation ----------
   const [confirmDelete, setConfirmDelete] = React.useState(false);
 
-  // form state
+  // ---------- form fields ----------
   const [name, setName] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [skills, setSkills] = React.useState<string[]>([]);
   const [skillInput, setSkillInput] = React.useState("");
 
-  // image handling
+  // ---------- image ----------
   const [imageFile, setImageFile] = React.useState<File | null>(null);
   const [imagePreview, setImagePreview] = React.useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const q = useQuery({
+  // ---------- data fetching ----------
+  const roleQuery = useQuery({
     queryKey: ["volunteer-role", roleId],
     queryFn: () => getVolunteerRole(String(roleId)),
-    enabled: open && !!roleId && mode !== "create",
+    enabled: open && !!roleId && mode === "view",
     staleTime: 30_000
   });
 
-  const role = q.data as VolunteerRole | undefined;
+  const role = roleQuery.data as VolunteerRole | undefined;
 
+  // ---------- reset when sheet opens or mode changes ----------
   React.useEffect(() => {
     if (!open) return;
+
     if (mode === "create") {
+      setEditing(true);
       setName("");
       setDescription("");
       setSkills([]);
@@ -137,19 +144,25 @@ export function VolunteerRoleSheet({
       setImageFile(null);
       setImagePreview(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
     }
+
+    // view mode: form will be populated when role data arrives
+    setEditing(false);
+    setSkillInput("");
+    setImageFile(null);
   }, [open, mode]);
 
+  // ---------- populate form when role data loads ----------
   React.useEffect(() => {
     if (!role || mode === "create") return;
     setName(role.name ?? "");
     setDescription(role.description ?? "");
     setSkills(role.skills ?? []);
-    setSkillInput("");
-    setImageFile(null);
     setImagePreview(role.image ?? null);
   }, [role, mode]);
 
+  // ---------- mutations ----------
   const createMut = useMutation({
     mutationFn: createVolunteerRole,
     onSuccess: () => {
@@ -158,8 +171,7 @@ export function VolunteerRoleSheet({
       onOpenChange(false);
     },
     onError: (err: any) => {
-      const message = err?.response?.data?.message ?? "Failed to create role";
-      toast.error(message);
+      toast.error(err?.response?.data?.message ?? "Failed to create role");
     }
   });
 
@@ -169,12 +181,11 @@ export function VolunteerRoleSheet({
       toast.success("Volunteer role updated");
       qc.invalidateQueries({ queryKey: ["volunteer-roles"] });
       qc.invalidateQueries({ queryKey: ["volunteer-role", roleId] });
-      setMode("view");
+      setEditing(false); // switch back to view
       setImageFile(null);
     },
     onError: (err: any) => {
-      const message = err?.response?.data?.message ?? "Failed to update role";
-      toast.error(message);
+      toast.error(err?.response?.data?.message ?? "Failed to update role");
     }
   });
 
@@ -190,6 +201,7 @@ export function VolunteerRoleSheet({
     }
   });
 
+  // ---------- helpers ----------
   const canSave =
     name.trim().length > 0 &&
     description.trim().length > 0 &&
@@ -216,6 +228,7 @@ export function VolunteerRoleSheet({
       onOpenChange(false);
       return;
     }
+    // revert to saved role data
     if (!role) return;
     setName(role.name ?? "");
     setDescription(role.description ?? "");
@@ -223,7 +236,7 @@ export function VolunteerRoleSheet({
     setSkillInput("");
     setImageFile(null);
     setImagePreview(role.image ?? null);
-    setMode("view");
+    setEditing(false);
   }
 
   async function onSave() {
@@ -263,6 +276,7 @@ export function VolunteerRoleSheet({
     }
   }
 
+  // ---------- image handlers ----------
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -278,10 +292,40 @@ export function VolunteerRoleSheet({
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const isLoading = mode !== "create" && q.isLoading;
-  const isError = mode !== "create" && q.isError;
+  // ---------- derived booleans ----------
+  const isFormEditable = mode === "create" || editing;
+  const isLoading = mode === "view" && roleQuery.isLoading;
+  const isError = mode === "view" && roleQuery.isError;
   const saving = createMut.isPending || updateMut.isPending;
-  const isEditMode = mode === "edit" || mode === "create";
+
+  // ---------- Skeleton loader ----------
+  if (mode === "view" && roleQuery.isLoading && !roleQuery.data) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent
+          side="right"
+          className="w-full sm:max-w-xl p-0 flex flex-col"
+        >
+          <SheetHeader className="px-6 py-4 border-b">
+            <Skeleton className="h-6 w-40" />
+            <Skeleton className="h-4 w-64 mt-1" />
+          </SheetHeader>
+          <div className="flex-1 px-6 py-6 space-y-6">
+            <Skeleton className="h-32 w-full rounded-lg" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-24 w-full" />
+            <div className="flex flex-wrap gap-2">
+              <Skeleton className="h-6 w-20 rounded-full" />
+              <Skeleton className="h-6 w-24 rounded-full" />
+              <Skeleton className="h-6 w-16 rounded-full" />
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
+    );
+  }
 
   return (
     <Sheet
@@ -306,7 +350,7 @@ export function VolunteerRoleSheet({
           <SheetDescription>
             {mode === "create"
               ? "Add a new volunteer role. Image upload is optional."
-              : mode === "edit"
+              : editing
                 ? "Edit role details. Image upload is optional."
                 : "View role details and manage updates."}
           </SheetDescription>
@@ -314,12 +358,12 @@ export function VolunteerRoleSheet({
 
         <ScrollArea className="flex-1 px-6">
           <div className="py-6 space-y-6">
-            {/* Action buttons for view mode */}
-            {mode === "view" && (
-              <div className="flex justify-end gap-2">
+            {/* ---------- View mode action buttons ---------- */}
+            {mode === "view" && !editing && (
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <Button
                   variant="outline"
-                  onClick={() => setMode("edit")}
+                  onClick={() => setEditing(true)}
                   disabled={isLoading || isError || !roleId}
                 >
                   Edit
@@ -334,6 +378,7 @@ export function VolunteerRoleSheet({
               </div>
             )}
 
+            {/* ---------- Loading / Error state ---------- */}
             {isLoading ? (
               <div className="flex items-center justify-center py-10">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -344,20 +389,20 @@ export function VolunteerRoleSheet({
               </p>
             ) : (
               <>
+                {/* ---------- Skills badge ---------- */}
                 <div className="flex items-center justify-between gap-2">
                   <Badge variant="secondary">{skills.length} skill(s)</Badge>
                 </div>
 
-                {/* Image upload */}
+                {/* ---------- Image upload ---------- */}
                 <div className="grid gap-3">
                   <label className="text-sm font-medium">Role Image</label>
-
                   <div className="flex flex-col sm:flex-row gap-4 items-center">
                     <div className="relative group">
                       <div
                         className={cn(
                           "w-32 h-32 rounded-lg border-2 border-dashed overflow-hidden transition-colors",
-                          isEditMode
+                          isFormEditable
                             ? "border-muted-foreground/25 hover:border-muted-foreground/50"
                             : "border-muted-foreground/25"
                         )}
@@ -374,8 +419,7 @@ export function VolunteerRoleSheet({
                           </div>
                         )}
                       </div>
-
-                      {isEditMode && imagePreview && (
+                      {isFormEditable && imagePreview && (
                         <button
                           type="button"
                           onClick={handleRemoveImage}
@@ -390,8 +434,7 @@ export function VolunteerRoleSheet({
                       <p className="text-xs text-muted-foreground">
                         Recommended: Square image, at least 400×400px. Max 5MB.
                       </p>
-
-                      {isEditMode && (
+                      {isFormEditable && (
                         <Button
                           type="button"
                           variant="outline"
@@ -403,17 +446,15 @@ export function VolunteerRoleSheet({
                           Choose Image
                         </Button>
                       )}
-
                       <input
                         ref={fileInputRef}
                         type="file"
                         accept="image/*"
-                        disabled={!isEditMode}
+                        disabled={!isFormEditable}
                         onChange={handleImageChange}
                         className="hidden"
                       />
-
-                      {isEditMode && (
+                      {isFormEditable && (
                         <p className="text-xs text-muted-foreground">
                           {imageFile
                             ? `Selected: ${imageFile.name} (will replace current)`
@@ -428,38 +469,41 @@ export function VolunteerRoleSheet({
 
                 <Separator />
 
+                {/* ---------- Role Name ---------- */}
                 <div className="grid gap-2">
                   <label className="text-sm font-medium">Role Name *</label>
                   <Input
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    disabled={!isEditMode}
+                    disabled={!isFormEditable}
                     placeholder="e.g., Mentor, Event Organizer"
                   />
                 </div>
 
+                {/* ---------- Description ---------- */}
                 <div className="grid gap-2">
                   <label className="text-sm font-medium">Description *</label>
                   <Textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    disabled={!isEditMode}
+                    disabled={!isFormEditable}
                     className="min-h-35"
                     placeholder="Describe the role responsibilities..."
                   />
                 </div>
 
+                {/* ---------- Skills ---------- */}
                 <div className="grid gap-3">
                   <div className="flex items-center justify-between gap-2">
                     <label className="text-sm font-medium">Skills *</label>
-                    {isEditMode && (
+                    {isFormEditable && (
                       <span className="text-xs text-muted-foreground">
                         Press Enter to add
                       </span>
                     )}
                   </div>
 
-                  {isEditMode && (
+                  {isFormEditable && (
                     <div className="flex flex-col gap-2 sm:flex-row">
                       <Input
                         value={skillInput}
@@ -490,18 +534,18 @@ export function VolunteerRoleSheet({
                           key={s}
                           type="button"
                           onClick={() =>
-                            isEditMode ? removeSkill(s) : undefined
+                            isFormEditable ? removeSkill(s) : undefined
                           }
                           className={[
                             "rounded-full border bg-background px-3 py-1 text-xs",
-                            isEditMode
+                            isFormEditable
                               ? "hover:bg-muted cursor-pointer"
                               : "cursor-default"
                           ].join(" ")}
-                          title={isEditMode ? "Remove" : undefined}
+                          title={isFormEditable ? "Remove" : undefined}
                         >
                           {s}
-                          {isEditMode && (
+                          {isFormEditable && (
                             <span className="text-muted-foreground"> ×</span>
                           )}
                         </button>
@@ -518,7 +562,8 @@ export function VolunteerRoleSheet({
           </div>
         </ScrollArea>
 
-        {isEditMode && (
+        {/* ---------- Bottom action bar (create / edit mode) ---------- */}
+        {isFormEditable && (
           <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
             <Button variant="outline" onClick={cancelEdit} disabled={saving}>
               Cancel
@@ -542,6 +587,7 @@ export function VolunteerRoleSheet({
           </div>
         )}
 
+        {/* ---------- Delete confirmation ---------- */}
         <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
           <AlertDialogContent>
             <AlertDialogHeader>

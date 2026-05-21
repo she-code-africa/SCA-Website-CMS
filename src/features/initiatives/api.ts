@@ -1,8 +1,7 @@
-// src/features/initiatives/api.ts
 import { api } from "@/lib/api/client";
 import type {
   Initiative,
-  InitiativeUpsertInput
+  // InitiativeUpsertInput
 } from "@/features/initiatives/types";
 
 type ApiListResponse<T> = T[] | { data?: T[] } | { data?: { data?: T[] } };
@@ -22,7 +21,7 @@ function normalizeList<T>(res: unknown): T[] {
 }
 
 /* ============================
-   INITIATIVES
+  INITIATIVES
 ============================ */
 
 export async function getInitiatives(): Promise<Initiative[]> {
@@ -34,35 +33,30 @@ export async function getInitiative(id: string): Promise<Initiative> {
   return api.get(`/initiatives/${id}`);
 }
 
-export async function addInitiative(input: InitiativeUpsertInput) {
-  const fd = new FormData();
-  fd.append("title", input.title);
-  fd.append("description", input.description);
-  fd.append("initiative_url", input.initiative_url);
-  fd.append("donation_url", input.donation_url);
-  fd.append("isAvailable", String(input.isAvailable));
-  if (input.image) fd.append("image", input.image);
-
-  return api.post(`/initiatives`, fd);
+// Now accepts a JSON object – image is an optional base64 string
+export async function addInitiative(payload: {
+  title: string;
+  description: string;
+  initiative_url: string;
+  donation_url: string;
+  isAvailable: boolean;
+  image?: string; // base64
+}) {
+  return api.post(`/initiatives`, payload);
 }
 
 export async function editInitiative(payload: {
   id: string;
-  data: Partial<InitiativeUpsertInput>;
+  data: {
+    title?: string;
+    description?: string;
+    initiative_url?: string;
+    donation_url?: string;
+    isAvailable?: boolean;
+    image?: string; // base64, optional
+  };
 }) {
-  const fd = new FormData();
-  const d = payload.data;
-
-  if (d.title !== undefined) fd.append("title", d.title);
-  if (d.description !== undefined) fd.append("description", d.description);
-  if (d.initiative_url !== undefined)
-    fd.append("initiative_url", d.initiative_url);
-  if (d.donation_url !== undefined) fd.append("donation_url", d.donation_url);
-  if (d.isAvailable !== undefined)
-    fd.append("isAvailable", String(d.isAvailable));
-  if (d.image !== undefined && d.image !== null) fd.append("image", d.image);
-
-  return api.put(`/initiatives/${payload.id}`, fd);
+  return api.put(`/initiatives/${payload.id}`, payload.data);
 }
 
 export async function deleteInitiative(id: string) {

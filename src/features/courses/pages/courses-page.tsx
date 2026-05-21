@@ -2,8 +2,6 @@
 
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { PermissionGate } from "@/components/PermissionGate";
 import { PERMISSIONS } from "@/lib/rbac/permissions";
 import { getCourses } from "@/features/courses/api";
@@ -63,10 +61,6 @@ export default function CoursesPage() {
     setModalOpen(true);
   };
 
-  const handleAddClick = () => {
-    window.dispatchEvent(new CustomEvent("course:add"));
-  };
-
   return (
     <PermissionGate permission={PERMISSIONS.VIEW_COURSE}>
       <TableShell
@@ -77,12 +71,6 @@ export default function CoursesPage() {
             <div className="text-sm text-muted-foreground">
               {query.isLoading ? "Loading…" : `${rows.length} course(s)`}
             </div>
-            <PermissionGate permission={PERMISSIONS.CREATE_COURSE}>
-              <Button size="sm" onClick={handleAddClick}>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Course
-              </Button>
-            </PermissionGate>
           </div>
         }
       >

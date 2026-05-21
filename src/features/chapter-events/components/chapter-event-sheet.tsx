@@ -21,7 +21,6 @@ import {
   SheetTitle,
   SheetDescription
 } from "@/components/ui/sheet";
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,7 +32,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -65,8 +63,10 @@ export function ChapterEventSheet({
 }: Props) {
   const qc = useQueryClient();
   const [editing, setEditing] = React.useState(mode === "create");
-  const [imageFile, setImageFile] = React.useState<File | null>(null);
-  const [imagePreview, setImagePreview] = React.useState<string | null>(null);
+
+  // ---------- Multi‑image state ----------
+  const [imageFiles, setImageFiles] = React.useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = React.useState<string[]>([]);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const eventQuery = useQuery({
@@ -93,8 +93,8 @@ export function ChapterEventSheet({
     if (mode === "create") {
       setEditing(true);
       setForm(initialForm);
-      setImageFile(null);
-      setImagePreview(null);
+      setImageFiles([]);
+      setImagePreviews([]);
       return;
     }
 
@@ -111,8 +111,10 @@ export function ChapterEventSheet({
           : ""
       });
 
-      setImageFile(null);
-      setImagePreview(ev.images?.[0] ? String(ev.images[0]) : null);
+      // Existing images are URLs – show them as previews, no File objects
+      const existingImages = (ev.images ?? []).filter(Boolean) as string[];
+      setImagePreviews(existingImages);
+      setImageFiles([]); // no new files yet
     }
   }, [open, mode, eventQuery.data, initialForm]);
 
@@ -123,7 +125,8 @@ export function ChapterEventSheet({
       qc.invalidateQueries({ queryKey: ["chapter-events"] });
       onOpenChange(false);
     },
-    onError: (err: any) => toast.error(err?.response?.data?.message || "Could not add event")
+    onError: (err: any) =>
+      toast.error(err?.response?.data?.message || "Could not add event")
   });
 
   const updateMut = useMutation({
@@ -134,7 +137,8 @@ export function ChapterEventSheet({
       qc.invalidateQueries({ queryKey: ["chapter-event"] });
       onOpenChange(false);
     },
-    onError: (err: any) => toast.error(err?.response?.data?.message || "Could not update event")
+    onError: (err: any) =>
+      toast.error(err?.response?.data?.message || "Could not update event")
   });
 
   const deleteMut = useMutation({
@@ -147,22 +151,40 @@ export function ChapterEventSheet({
     onError: () => toast.error("Could not delete event")
   });
 
+  // ---------- Image handlers ----------
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setImageFile(file);
-    const reader = new FileReader();
-    reader.onloadend = () => setImagePreview(reader.result as string);
-    reader.readAsDataURL(file);
-  };
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
-  const handleRemoveImage = () => {
-    setImageFile(null);
-    setImagePreview(null);
+    const newFiles = Array.from(files);
+    const newPreviews: string[] = [];
+
+    newFiles.forEach((file) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        newPreviews.push(reader.result as string);
+        // Once all previews are generated, update state
+        if (newPreviews.length === newFiles.length) {
+          setImagePreviews((prev) => [...prev, ...newPreviews]);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+
+    setImageFiles((prev) => [...prev, ...newFiles]);
+
+    // Reset input so the same files can be re-selected
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const submit = async () => {
+  const handleRemoveImage = (index: number) => {
+    // Remove preview and file at the given index
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+    setImageFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // ---------- Submit using FormData ----------
+  const submit = () => {
     if (
       !form.title.trim() ||
       !form.description.trim() ||
@@ -173,24 +195,25 @@ export function ChapterEventSheet({
       return;
     }
 
-    const formData = new FormData();
-    formData.append("title", form.title);
-    formData.append("description", form.description);
-    formData.append("link", form.link);
-    formData.append("eventDate", form.eventDate);
-    formData.append("chapterId", chapterId);
+    const fd = new FormData();
+    fd.append("title", form.title.trim());
+    fd.append("description", form.description.trim());
+    fd.append("link", form.link.trim());
+    fd.append("eventDate", form.eventDate);
+    fd.append("chapterId", chapterId);
 
-    if (imageFile) {
-      formData.append("images", imageFile);
-    }
+    // Append each new file. Existing images (URLs) are not re‑uploaded unless replaced.
+    imageFiles.forEach((file) => {
+      fd.append("images", file);
+    });
 
     if (mode === "create") {
-      createMut.mutate(formData as any);
+      createMut.mutate(fd as any);
       return;
     }
 
     if (!eventId) return;
-    updateMut.mutate({ id: eventId, data: formData as any });
+    updateMut.mutate({ id: eventId, data: fd as any });
   };
 
   const saving = createMut.isPending || updateMut.isPending;
@@ -199,7 +222,10 @@ export function ChapterEventSheet({
   if (mode === "view" && eventQuery.isLoading && !eventQuery.data) {
     return (
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="right" className="w-full sm:max-w-xl p-0 flex flex-col">
+        <SheetContent
+          side="right"
+          className="w-full sm:max-w-xl p-0 flex flex-col"
+        >
           <SheetHeader className="px-6 py-4 border-b">
             <Skeleton className="h-6 w-40" />
             <Skeleton className="h-4 w-64 mt-1" />
@@ -232,14 +258,13 @@ export function ChapterEventSheet({
             {mode === "create"
               ? "Add a new chapter event."
               : editing
-              ? "Edit the event details."
-              : "View event details. Click Edit to modify."}
+                ? "Edit the event details."
+                : "View event details. Click Edit to modify."}
           </SheetDescription>
         </SheetHeader>
 
         <ScrollArea className="flex-1 px-6">
           <div className="py-6 space-y-6">
-            {/* Top actions row (view mode only) */}
             {mode === "view" && (
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <PermissionGate permission={PERMISSIONS.UPDATE_EVENT}>
@@ -252,12 +277,14 @@ export function ChapterEventSheet({
                   </Button>
                 </PermissionGate>
 
-                {/* Delete – only when NOT editing */}
                 {!editing && (
                   <PermissionGate permission={PERMISSIONS.DELETE_EVENT}>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="destructive" className="w-full sm:w-auto">
+                        <Button
+                          variant="destructive"
+                          className="w-full sm:w-auto"
+                        >
                           Delete
                         </Button>
                       </AlertDialogTrigger>
@@ -289,71 +316,67 @@ export function ChapterEventSheet({
               </div>
             )}
 
-            {/* Image Upload Section */}
+            {/* ---------- Image Upload Section (Multi) ---------- */}
             <div className="grid gap-3">
-              <label className="text-sm font-medium">Event Image</label>
-
-              <div className="flex flex-col sm:flex-row gap-4 items-center">
-                <div className="relative group">
-                  <div
-                    className={cn(
-                      "w-32 h-32 rounded-lg border-2 border-dashed overflow-hidden transition-colors",
-                      canEdit
-                        ? "border-muted-foreground/25 hover:border-muted-foreground/50"
-                        : "border-muted-foreground/25"
-                    )}
-                  >
-                    {imagePreview ? (
-                      <img
-                        src={imagePreview}
-                        alt="Preview"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-muted">
-                        <Calendar className="w-12 h-12 text-muted-foreground" />
+              <label className="text-sm font-medium">
+                Event Image(s){" "}
+                <span className="text-muted-foreground">(optional)</span>
+              </label>{" "}
+              <div className="space-y-3">
+                {/* Previews grid */}
+                <div className="flex flex-wrap gap-3">
+                  {imagePreviews.map((preview, idx) => (
+                    <div key={idx} className="relative group">
+                      <div
+                        className={cn(
+                          "w-24 h-24 rounded-lg border-2 border-dashed overflow-hidden",
+                          canEdit
+                            ? "border-muted-foreground/25 hover:border-muted-foreground/50"
+                            : "border-muted-foreground/25"
+                        )}
+                      >
+                        <img
+                          src={preview}
+                          alt={`Preview ${idx + 1}`}
+                          className="w-full h-full object-cover"
+                        />
                       </div>
-                    )}
-                  </div>
-
-                  {canEdit && imagePreview && (
+                      {canEdit && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(idx)}
+                          className="absolute -top-2 -right-2 p-1 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  {/* Add more button / placeholder */}
+                  {canEdit && (
                     <button
                       type="button"
-                      onClick={handleRemoveImage}
-                      className="absolute -top-2 -right-2 p-1 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-24 h-24 rounded-lg border-2 border-dashed border-muted-foreground/25 hover:border-muted-foreground/50 flex flex-col items-center justify-center gap-1 text-muted-foreground transition-colors"
                     >
-                      <X className="w-4 h-4" />
+                      <Upload className="h-5 w-5" />
+                      <span className="text-xs">Add</span>
                     </button>
                   )}
                 </div>
 
-                <div className="flex-1 space-y-3">
-                  <p className="text-xs text-muted-foreground">
-                    Recommended: Square image, at least 400x400px. Max 5MB.
-                  </p>
-
-                  {canEdit && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="w-full sm:w-auto"
-                    >
-                      <Upload className="w-4 h-4 mr-2" />
-                      Choose Image
-                    </Button>
-                  )}
-
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    disabled={!canEdit}
-                    onChange={handleImageChange}
-                    className="hidden"
-                  />
-                </div>
+                <p className="text-xs text-muted-foreground">
+                  Recommended: Square images, at least 400x400px. Max 5MB each.
+                </p>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  disabled={!canEdit}
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
               </div>
             </div>
 
@@ -368,7 +391,6 @@ export function ChapterEventSheet({
                   placeholder="Event Title"
                 />
               </div>
-
               <div className="grid gap-2 md:col-span-2">
                 <label className="text-sm font-medium">Description *</label>
                 <Textarea
@@ -381,7 +403,6 @@ export function ChapterEventSheet({
                   placeholder="Event description..."
                 />
               </div>
-
               <div className="grid gap-2 md:col-span-2">
                 <label className="text-sm font-medium">Event Link *</label>
                 <Input
@@ -392,7 +413,6 @@ export function ChapterEventSheet({
                   placeholder="https://event-link.com"
                 />
               </div>
-
               <div className="grid gap-2 md:col-span-2">
                 <label className="text-sm font-medium">Event Date *</label>
                 <Input
@@ -408,9 +428,14 @@ export function ChapterEventSheet({
           </div>
         </ScrollArea>
 
-        {/* Bottom action bar */}
         {(mode === "create" || (mode === "view" && editing)) && (
-          <PermissionGate permission={mode === "create" ? PERMISSIONS.CREATE_EVENT : PERMISSIONS.UPDATE_EVENT}>
+          <PermissionGate
+            permission={
+              mode === "create"
+                ? PERMISSIONS.CREATE_EVENT
+                : PERMISSIONS.UPDATE_EVENT
+            }
+          >
             <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
               <Button
                 variant="outline"
@@ -423,7 +448,11 @@ export function ChapterEventSheet({
                 Cancel
               </Button>
               <Button variant="default" onClick={submit} disabled={saving}>
-                {saving ? "Saving…" : mode === "create" ? "Add Event" : "Save Changes"}
+                {saving
+                  ? "Saving…"
+                  : mode === "create"
+                    ? "Add Event"
+                    : "Save Changes"}
               </Button>
             </div>
           </PermissionGate>

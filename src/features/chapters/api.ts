@@ -150,14 +150,18 @@ export async function getChapterEvent(id: string): Promise<ChapterEvent> {
 }
 
 export async function addChapterEvent(input: FormData) {
-  return api.post(`/chapters/events`, input);
+  return api.post(`/chapters/events`, input, {
+    headers: { "Content-Type": "multipart/form-data" }
+  });
 }
 
 export async function editChapterEvent(payload: {
   id: string;
   data: FormData;
 }) {
-  return api.put(`/chapters/event/${payload.id}`, payload.data);
+  return api.put(`/chapters/event/${payload.id}`, payload.data, {
+    headers: { "Content-Type": "multipart/form-data" }
+  });
 }
 
 export async function publishChapterEvent(id: string) {
