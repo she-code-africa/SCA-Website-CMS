@@ -130,7 +130,7 @@ export default function EnquiriesPage() {
 
 const markClosedMutation = useMutation({
   mutationFn: ({ id }: { id: string }) => {
-    console.log("Marking closed with id:", id);
+    // console.log("Marking closed with id:", id);
     return updateEnquiryStatus({ id, status: "closed" });
   },
   onSuccess: () => {

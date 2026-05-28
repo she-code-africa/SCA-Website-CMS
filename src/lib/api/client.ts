@@ -60,15 +60,15 @@ api.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
     const token = getToken();
     const isPublic = publicRoutes.some((route) => config.url?.includes(route));
-    console.log(
-      `[API] Request to ${config.url} – token exists: ${!!token}, isPublic: ${isPublic}`
-    );
+    // console.log(
+    //   `[API] Request to ${config.url} – token exists: ${!!token}, isPublic: ${isPublic}`
+    // );
     if (token && !isPublic) {
       config.headers = config.headers ?? {};
       config.headers.Authorization = `Bearer ${token}`;
-      console.log(`[API] Added Authorization header for ${config.url}`);
+      // console.log(`[API] Added Authorization header for ${config.url}`);
     } else {
-      console.log(`[API] No token added for ${config.url}`);
+      // console.log(`[API] No token added for ${config.url}`);
     }
   }
   return config;
