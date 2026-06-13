@@ -96,7 +96,7 @@ export async function deleteChapterCategory(id: string) {
 }
 
 /* ============================
-   CHAPTERS (✅ use api client)
+  CHAPTERS (✅ use api client)
 ============================ */
 
 export async function getChapters(
@@ -177,7 +177,7 @@ export async function deleteChapterEvent(id: string) {
 }
 
 /* ============================
-   CHAPTER LEADS
+  CHAPTER LEADS
 ============================ */
 
 export async function getChapterLeads(
