@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import Link from "next/link";
 
 type Props = {
   value: ReportFilters;
@@ -131,6 +132,9 @@ export function ReportFilters({
           onClick={() => window.dispatchEvent(new CustomEvent("report:add"))}
         >
           Add Report
+        </Button>
+        <Button variant="outline" className="w-full sm:w-auto" asChild>
+          <Link href="/admin/annual-report/logs">View annual report log</Link>
         </Button>
       </div>
     </div>

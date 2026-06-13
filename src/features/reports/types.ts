@@ -20,3 +20,17 @@ export type ReportUpsertInput = {
   year: string;
   link: string;
 };
+
+export type ReportDownloadUser = {
+  _id: string;
+  firstname?: string;
+  lastname?: string;
+  email: string;
+  __v?: number;
+  [key: string]: any;
+};
+
+export type ReportDownloadStats = {
+  total: number;
+  uniqueUsers?: number;
+};

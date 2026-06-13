@@ -1,6 +1,10 @@
 // src/features/reports/api.ts
 import { api } from "@/lib/api/client";
-import type { Report, ReportUpsertInput } from "@/features/reports/types";
+import type {
+  Report,
+  ReportDownloadUser,
+  ReportUpsertInput
+} from "@/features/reports/types";
 
 type ApiListResponse<T> = T[] | { data?: T[] } | { data?: { data?: T[] } };
 
@@ -44,4 +48,14 @@ export async function editReport(payload: {
 
 export async function deleteReport(id: string) {
   return api.delete(`/reports/${id}`);
+}
+
+/* ============================
+    ANNUAL REPORT DOWNLOAD LOG
+============================ */
+
+export async function getReportDownloads(): Promise<ReportDownloadUser[]> {
+  const res: ApiListResponse<ReportDownloadUser> =
+    await api.get(`/annual-report`);
+  return normalizeList<ReportDownloadUser>(res);
 }
