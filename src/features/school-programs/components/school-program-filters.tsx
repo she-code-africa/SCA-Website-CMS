@@ -36,7 +36,7 @@ export function SchoolProgramFilters({ value, onChange, onReset }: Props) {
   // Fetch schools list when the popover opens (or on mount)
   const { data: schools = [] } = useQuery({
     queryKey: ["schools"],
-    queryFn: getSchools,
+    queryFn: () => getSchools(), // ✅ wrapped – no argument passed
     staleTime: 60_000
   });
 
@@ -84,7 +84,7 @@ export function SchoolProgramFilters({ value, onChange, onReset }: Props) {
                 </Select>
               </div>
 
-              {/* School filter – NEW */}
+              {/* School filter */}
               <div className="grid gap-1">
                 <p className="text-sm font-medium">School</p>
                 <Select
