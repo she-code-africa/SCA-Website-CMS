@@ -1,3 +1,5 @@
+// src/features/roles/components/roles-table.tsx
+
 "use client";
 
 import { MoreHorizontal, Lock, UserCog } from "lucide-react";
@@ -40,6 +42,7 @@ const headers = ["Role", "Type", "Permissions", "Users", ""];
 type Props = {
   rows: RoleDetail[];
   isLoading: boolean;
+  isUpdating?: boolean; // <-- NEW
   isError: boolean;
   onRowClick: (r: RoleDetail) => void;
   onDelete: (r: RoleDetail) => void;
@@ -48,10 +51,13 @@ type Props = {
 export function RolesTable({
   rows,
   isLoading,
+  isUpdating = false,
   isError,
   onRowClick,
   onDelete
 }: Props) {
+  const showSkeleton = isLoading || isUpdating;
+
   return (
     <div className="rounded-md border">
       <div className="overflow-x-auto">
@@ -67,7 +73,7 @@ export function RolesTable({
           </TableHeader>
 
           <TableBody>
-            {isLoading ? (
+            {showSkeleton ? (
               Array.from({ length: 5 }).map((_, idx) => (
                 <TableRow key={idx}>
                   {headers.map((_, cIdx) => (
@@ -102,6 +108,7 @@ export function RolesTable({
                   onClick={() => onRowClick(r)}
                   className={cn("cursor-pointer hover:bg-muted/50")}
                 >
+                  {/* ... rest of row rendering exactly as before ... */}
                   <TableCell className="min-w-50">
                     <div className="flex items-center gap-2">
                       {r.is_system_role ? (

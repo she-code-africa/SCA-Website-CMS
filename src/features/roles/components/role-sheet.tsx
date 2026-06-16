@@ -17,7 +17,7 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetDescription,
+  SheetDescription
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,21 +32,33 @@ type Props = {
   onOpenChange: (v: boolean) => void;
   mode: "create" | "view";
   role?: RoleDetail | null;
+  onUpdate?: () => Promise<void>; // simplified – no argument needed
 };
 
-// Helper to flatten permissions from role (both object and string arrays)
+// Helper to flatten permissions from role (unchanged)
 function normalizeRolePermissions(role: RoleDetail): Set<string> {
   const perms = role.permissions as Array<string | { name: string }>;
   const set = new Set<string>();
   perms.forEach((p) => {
     const str = typeof p === "string" ? p : p?.name;
-    if (str && str === str.toUpperCase() && !str.startsWith("read_") && !str.startsWith("manage_")) {
+    if (
+      str &&
+      str === str.toUpperCase() &&
+      !str.startsWith("read_") &&
+      !str.startsWith("manage_")
+    ) {
       set.add(str);
     } else if (str?.startsWith("read_")) {
-      const entity = str.replace("read_", "").replace(/([A-Z])/g, "_$1").toUpperCase();
+      const entity = str
+        .replace("read_", "")
+        .replace(/([A-Z])/g, "_$1")
+        .toUpperCase();
       set.add(`VIEW_${entity}`);
     } else if (str?.startsWith("manage_")) {
-      const entity = str.replace("manage_", "").replace(/([A-Z])/g, "_$1").toUpperCase();
+      const entity = str
+        .replace("manage_", "")
+        .replace(/([A-Z])/g, "_$1")
+        .toUpperCase();
       set.add(`VIEW_${entity}`);
       set.add(`CREATE_${entity}`);
       set.add(`UPDATE_${entity}`);
@@ -56,10 +68,15 @@ function normalizeRolePermissions(role: RoleDetail): Set<string> {
   return set;
 }
 
-export function RoleSheet({ open, onOpenChange, mode, role }: Props) {
+export function RoleSheet({ open, onOpenChange, mode, role, onUpdate }: Props) {
   const qc = useQueryClient();
-  const { modules, actions, isLoading: isLoadingPerms } = usePermissionModules();
-  const { data: roleUserCounts, isLoading: isLoadingCounts } = useRoleUserCounts();
+  const {
+    modules,
+    actions,
+    isLoading: isLoadingPerms
+  } = usePermissionModules();
+  const { data: roleUserCounts, isLoading: isLoadingCounts } =
+    useRoleUserCounts();
 
   const effectiveRole = role;
   const userCount = roleUserCounts?.get(effectiveRole?._id ?? "") ?? 0;
@@ -68,11 +85,15 @@ export function RoleSheet({ open, onOpenChange, mode, role }: Props) {
   const [editing, setEditing] = React.useState(false);
   const [name, setName] = React.useState("");
   const [description, setDescription] = React.useState("");
-  const [selectedPerms, setSelectedPerms] = React.useState<Set<string>>(new Set());
-  const [originalPerms, setOriginalPerms] = React.useState<Set<string>>(new Set());
+  const [selectedPerms, setSelectedPerms] = React.useState<Set<string>>(
+    new Set()
+  );
+  const [originalPerms, setOriginalPerms] = React.useState<Set<string>>(
+    new Set()
+  );
   const [nameError, setNameError] = React.useState("");
 
-  // Reset and populate when sheet opens
+  // Reset and populate when sheet opens / role changes
   React.useEffect(() => {
     if (!open) {
       setNameError("");
@@ -98,26 +119,41 @@ export function RoleSheet({ open, onOpenChange, mode, role }: Props) {
 
   const createMut = useMutation({
     mutationFn: createRole,
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Role created successfully.");
       qc.invalidateQueries({ queryKey: ["roles"] });
+      await onUpdate?.();
       onOpenChange(false);
     },
-    onError: (err: Error) => toast.error(err.message ?? "Could not create role."),
+    onError: (err: Error) =>
+      toast.error(err.message ?? "Could not create role.")
   });
 
   const updateMut = useMutation({
-    mutationFn: ({ id, original, updated }: { id: string; original: Set<string>; updated: Set<string> }) => {
-      // For now we still do a full replace, but will use incremental later if needed.
+    mutationFn: ({
+      id,
+      original,
+      updated
+    }: {
+      id: string;
+      original: Set<string>;
+      updated: Set<string>;
+    }) => {
       const permissions = Array.from(updated);
       return updateRole(id, { name, description, permissions });
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Role updated.");
-      qc.invalidateQueries({ queryKey: ["roles"] });
+      // Immediately update local state to reflect the saved values
+      setName(name); // already the new value
+      setDescription(description);
       setEditing(false);
+      // Then trigger the refetch / skeleton in the parent
+      await onUpdate?.();
+      qc.invalidateQueries({ queryKey: ["roles"] });
     },
-    onError: (err: Error) => toast.error(err.message ?? "Could not update role."),
+    onError: (err: Error) =>
+      toast.error(err.message ?? "Could not update role.")
   });
 
   const handleSubmit = () => {
@@ -140,7 +176,11 @@ export function RoleSheet({ open, onOpenChange, mode, role }: Props) {
         toast.error("Failed to update: Role ID is missing.");
         return;
       }
-      updateMut.mutate({ id: roleId, original: originalPerms, updated: selectedPerms });
+      updateMut.mutate({
+        id: roleId,
+        original: originalPerms,
+        updated: selectedPerms
+      });
     }
   };
 
@@ -148,11 +188,18 @@ export function RoleSheet({ open, onOpenChange, mode, role }: Props) {
   const isReadOnly = mode === "view" && (isSystemRole || !editing);
   const canEditCustom = mode === "view" && !isSystemRole;
 
-  // Loading skeleton
-  if (mode === "view" && (isLoadingCounts || isLoadingPerms) && !effectiveRole) {
+  // Loading skeleton (unchanged)
+  if (
+    mode === "view" &&
+    (isLoadingCounts || isLoadingPerms) &&
+    !effectiveRole
+  ) {
     return (
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="right" className="w-full sm:max-w-3xl p-0 flex flex-col">
+        <SheetContent
+          side="right"
+          className="w-full sm:max-w-3xl p-0 flex flex-col"
+        >
           <SheetHeader className="px-6 py-4 border-b">
             <Skeleton className="h-6 w-40" />
             <Skeleton className="h-4 w-64 mt-1" />
@@ -169,11 +216,18 @@ export function RoleSheet({ open, onOpenChange, mode, role }: Props) {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-3xl p-0 flex flex-col">
+      <SheetContent
+        side="right"
+        className="w-full sm:max-w-3xl p-0 flex flex-col"
+      >
         <SheetHeader className="px-6 py-4 border-b space-y-1 shrink-0">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <SheetTitle>{mode === "create" ? "Create Role" : effectiveRole?.name ?? "Role"}</SheetTitle>
+              <SheetTitle>
+                {mode === "create"
+                  ? "Create Role"
+                  : ((name || effectiveRole?.name) ?? "Role")}
+              </SheetTitle>
               <SheetDescription>
                 {mode === "create"
                   ? "Define a custom role with specific permissions."
@@ -183,8 +237,17 @@ export function RoleSheet({ open, onOpenChange, mode, role }: Props) {
               </SheetDescription>
             </div>
             {mode === "view" && effectiveRole && (
-              <Badge variant={isSystemRole ? "secondary" : "outline"} className="shrink-0 mt-1">
-                {isSystemRole ? <><Lock className="h-3 w-3 mr-1" /> System</> : "Custom"}
+              <Badge
+                variant={isSystemRole ? "secondary" : "outline"}
+                className="shrink-0 mt-1"
+              >
+                {isSystemRole ? (
+                  <>
+                    <Lock className="h-3 w-3 mr-1" /> System
+                  </>
+                ) : (
+                  "Custom"
+                )}
               </Badge>
             )}
           </div>
@@ -196,7 +259,11 @@ export function RoleSheet({ open, onOpenChange, mode, role }: Props) {
             {mode === "view" && canEditCustom && (
               <div className="flex justify-end">
                 <PermissionGate permission={PERMISSIONS.UPDATE_ROLE}>
-                  <Button variant="outline" size="sm" onClick={() => setEditing((v) => !v)}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setEditing((v) => !v)}
+                  >
                     {editing ? "Cancel editing" : "Edit role"}
                   </Button>
                 </PermissionGate>
@@ -206,27 +273,47 @@ export function RoleSheet({ open, onOpenChange, mode, role }: Props) {
             {mode === "view" && isSystemRole && (
               <div className="flex items-start gap-2 rounded-lg border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
                 <Info className="h-4 w-4 shrink-0 mt-0.5" />
-                <span>System roles have fixed core permissions. You can <strong>add new permissions</strong> below (checkboxes are enabled for permissions not already assigned). Once added, they cannot be removed.</span>
+                <span>
+                  System roles have fixed core permissions. You can{" "}
+                  <strong>add new permissions</strong> below (checkboxes are
+                  enabled for permissions not already assigned). Once added,
+                  they cannot be removed.
+                </span>
               </div>
             )}
 
             <section>
-              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">General Information</label>
+              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                General Information
+              </label>
               <div className="grid gap-4 sm:grid-cols-2 mt-2">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Role Name <span className="text-destructive">*</span></label>
+                  <label className="text-sm font-medium">
+                    Role Name <span className="text-destructive">*</span>
+                  </label>
                   <Input
                     disabled={isReadOnly}
                     value={name}
-                    onChange={(e) => { setName(e.target.value); setNameError(""); }}
+                    onChange={(e) => {
+                      setName(e.target.value);
+                      setNameError("");
+                    }}
                     className={nameError ? "border-destructive" : ""}
                   />
-                  {nameError && <p className="text-[10px] text-destructive">{nameError}</p>}
+                  {nameError && (
+                    <p className="text-[10px] text-destructive">{nameError}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-muted-foreground">Active Members</label>
+                  <label className="text-sm font-medium text-muted-foreground">
+                    Active Members
+                  </label>
                   <div className="h-10 flex items-center px-3 rounded-md bg-muted/30 border border-dashed text-sm font-medium">
-                    {isLoadingCounts ? <Skeleton className="h-4 w-16" /> : `${userCount} user(s) assigned`}
+                    {isLoadingCounts ? (
+                      <Skeleton className="h-4 w-16" />
+                    ) : (
+                      `${userCount} user(s) assigned`
+                    )}
                   </div>
                 </div>
               </div>
@@ -248,13 +335,22 @@ export function RoleSheet({ open, onOpenChange, mode, role }: Props) {
                 <div>
                   <p className="text-sm font-medium">Permissions</p>
                   <p className="text-xs text-muted-foreground">
-                    {isReadOnly ? `${selectedPerms.size} permissions granted.` : "Select actions for each module."}
+                    {isReadOnly
+                      ? `${selectedPerms.size} permissions granted.`
+                      : "Select actions for each module."}
                   </p>
                 </div>
                 {!isReadOnly && (
                   <div className="flex items-center gap-2">
-                    <Badge variant="secondary">{selectedPerms.size} selected</Badge>
-                    <Button variant="ghost" size="sm" onClick={() => setSelectedPerms(new Set())} disabled={selectedPerms.size === 0}>
+                    <Badge variant="secondary">
+                      {selectedPerms.size} selected
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSelectedPerms(new Set())}
+                      disabled={selectedPerms.size === 0}
+                    >
                       Clear all
                     </Button>
                   </div>
@@ -262,7 +358,10 @@ export function RoleSheet({ open, onOpenChange, mode, role }: Props) {
               </div>
 
               {isLoadingPerms ? (
-                <div className="space-y-3"><Skeleton className="h-10 w-full" /><Skeleton className="h-64 w-full" /></div>
+                <div className="space-y-3">
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-64 w-full" />
+                </div>
               ) : (
                 <PermissionMatrix
                   selected={selectedPerms}
@@ -297,7 +396,9 @@ export function RoleSheet({ open, onOpenChange, mode, role }: Props) {
               Cancel
             </Button>
             <Button onClick={handleSubmit} disabled={saving}>
-              {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              {saving ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : null}
               {mode === "create" ? "Create Role" : "Save Changes"}
             </Button>
           </div>

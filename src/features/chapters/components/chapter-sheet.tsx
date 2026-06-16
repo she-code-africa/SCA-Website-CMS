@@ -1,10 +1,9 @@
 // src/features/chapters/components/chapter-sheet.tsx
-
 "use client";
 
 import * as React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Upload, UsersRound, X } from "lucide-react";
+import { Upload, UsersRound, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
@@ -14,7 +13,9 @@ import {
   editChapter,
   getChapter,
   deleteChapter,
-  getChapterCategories
+  getChapterCategories,
+  publishChapter,    // new
+  archiveChapter,    // new
 } from "@/features/chapters/api";
 import type { Chapter } from "@/features/chapters/types";
 import { PermissionGate } from "@/components/PermissionGate";
@@ -25,7 +26,7 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetDescription
+  SheetDescription,
 } from "@/components/ui/sheet";
 
 import {
@@ -37,7 +38,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
 import {
@@ -45,7 +46,7 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from "@/components/ui/select";
 
 import { Button } from "@/components/ui/button";
@@ -60,6 +61,7 @@ type Props = {
   mode: "create" | "view";
   chapterId?: string;
   categoryId?: string;
+  onUpdate?: () => Promise<void> | void;
 };
 
 type ChapterFormState = {
@@ -71,7 +73,7 @@ type ChapterFormState = {
   description: string;
 };
 
-// Image compression helper
+// Image compression helper (unchanged)
 const compressImage = (
   file: File,
   maxWidth = 800,
@@ -119,7 +121,8 @@ export function ChapterSheet({
   onOpenChange,
   mode,
   chapterId,
-  categoryId
+  categoryId,
+  onUpdate,
 }: Props) {
   const qc = useQueryClient();
   const [editing, setEditing] = React.useState(mode === "create");
@@ -130,13 +133,13 @@ export function ChapterSheet({
   const { data: categories = [], isLoading: isLoadingCategories } = useQuery({
     queryKey: ["chapter-categories"],
     queryFn: getChapterCategories,
-    enabled: open
+    enabled: open,
   });
 
   const chapterQuery = useQuery({
     queryKey: ["chapter", chapterId],
     queryFn: () => getChapter(String(chapterId)),
-    enabled: open && mode === "view" && !!chapterId
+    enabled: open && mode === "view" && !!chapterId,
   });
 
   const initialForm: ChapterFormState = React.useMemo(
@@ -146,7 +149,7 @@ export function ChapterSheet({
       country: "",
       category: "",
       link: "",
-      description: ""
+      description: "",
     }),
     []
   );
@@ -183,7 +186,7 @@ export function ChapterSheet({
         country: ch.country ?? "",
         category: catId,
         link: ch.link ?? "",
-        description: ch.description ?? ""
+        description: ch.description ?? "",
       });
 
       setSocialLinks(ch.socialMediaLinks || {});
@@ -207,40 +210,59 @@ export function ChapterSheet({
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  // Mutations with onUpdate integrated
   const createMut = useMutation({
     mutationFn: addChapter,
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Chapter added");
-      qc.invalidateQueries({ queryKey: ["chapters"] });
-      qc.invalidateQueries({ queryKey: ["chapters-full"] });
+      await onUpdate?.();
       onOpenChange(false);
     },
     onError: (err: any) =>
-      toast.error(err?.response?.data?.message || "Could not add chapter")
+      toast.error(err?.response?.data?.message || "Could not add chapter"),
   });
 
   const updateMut = useMutation({
     mutationFn: editChapter,
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Chapter updated");
-      qc.invalidateQueries({ queryKey: ["chapters"] });
-      qc.invalidateQueries({ queryKey: ["chapters-full"] });
-      qc.invalidateQueries({ queryKey: ["chapter"] });
+      await onUpdate?.();
       onOpenChange(false);
     },
     onError: (err: any) =>
-      toast.error(err?.response?.data?.message || "Could not update chapter")
+      toast.error(err?.response?.data?.message || "Could not update chapter"),
   });
 
   const deleteMut = useMutation({
     mutationFn: deleteChapter,
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Chapter deleted");
-      qc.invalidateQueries({ queryKey: ["chapters"] });
-      qc.invalidateQueries({ queryKey: ["chapters-full"] });
+      await onUpdate?.();
       onOpenChange(false);
     },
-    onError: () => toast.error("Could not delete chapter")
+    onError: () => toast.error("Could not delete chapter"),
+  });
+
+  const publishMut = useMutation({
+    mutationFn: publishChapter,
+    onSuccess: async () => {
+      toast.success("Chapter published");
+      await onUpdate?.();
+      qc.invalidateQueries({ queryKey: ["chapter", chapterId] });
+    },
+    onError: (err: any) =>
+      toast.error(err?.response?.data?.message || "Could not publish chapter"),
+  });
+
+  const archiveMut = useMutation({
+    mutationFn: archiveChapter,
+    onSuccess: async () => {
+      toast.success("Chapter archived");
+      await onUpdate?.();
+      qc.invalidateQueries({ queryKey: ["chapter", chapterId] });
+    },
+    onError: (err: any) =>
+      toast.error(err?.response?.data?.message || "Could not archive chapter"),
   });
 
   const addSocialLink = () => {
@@ -285,7 +307,7 @@ export function ChapterSheet({
       category: form.category,
       link: form.link,
       description: form.description,
-      socialMediaLinks: socialLinks
+      socialMediaLinks: socialLinks,
     };
     if (imageValue) payload.image = imageValue;
 
@@ -297,12 +319,14 @@ export function ChapterSheet({
     updateMut.mutate({
       id: chapterId,
       categoryId,
-      data: payload
+      data: payload,
     });
   };
 
   const saving = createMut.isPending || updateMut.isPending;
   const canEdit = mode === "create" || editing;
+  const chapter = chapterQuery.data as Chapter | undefined;
+  const currentState = chapter?.state;
 
   // Skeleton loader while fetching chapter data
   if (mode === "view" && chapterQuery.isLoading && !chapterQuery.data) {
@@ -365,45 +389,82 @@ export function ChapterSheet({
                   </Button>
                 </PermissionGate>
 
-                {!editing && (
-                  <PermissionGate permission={PERMISSIONS.DELETE_CHAPTER}>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="destructive"
-                          className="w-full sm:w-auto"
-                        >
-                          Delete
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete chapter?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => {
-                              if (!chapterId) return;
-                              deleteMut.mutate({ id: chapterId, categoryId });
-                            }}
-                            className={cn(
-                              "bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            )}
+                <div className="flex gap-2">
+                  {/* Publish / Archive button */}
+                  {!editing && (
+                    <PermissionGate permission={PERMISSIONS.UPDATE_CHAPTER}>
+                      <Button
+                        variant="outline"
+                        className="flex-1 sm:flex-none"
+                        onClick={() => {
+                          if (!chapterId) return;
+                          if (currentState === "published") {
+                            archiveMut.mutate({
+                              id: chapterId,
+                              categoryId,
+                            });
+                          } else {
+                            publishMut.mutate({
+                              id: chapterId,
+                              categoryId,
+                            });
+                          }
+                        }}
+                        disabled={publishMut.isPending || archiveMut.isPending}
+                      >
+                        {publishMut.isPending || archiveMut.isPending ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : null}
+                        {currentState === "published" ? "Archive" : "Publish"}
+                      </Button>
+                    </PermissionGate>
+                  )}
+
+                  {/* Delete button */}
+                  {!editing && (
+                    <PermissionGate permission={PERMISSIONS.DELETE_CHAPTER}>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="destructive"
+                            className="w-full sm:w-auto"
                           >
-                            {deleteMut.isPending ? "Deleting…" : "Delete"}
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </PermissionGate>
-                )}
+                            Delete
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete chapter?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => {
+                                if (!chapterId) return;
+                                deleteMut.mutate({
+                                  id: chapterId,
+                                  categoryId,
+                                });
+                              }}
+                              className={cn(
+                                "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              )}
+                            >
+                              {deleteMut.isPending ? "Deleting…" : "Delete"}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </PermissionGate>
+                  )}
+                </div>
               </div>
             )}
 
+            {/* Rest of the form is exactly the same as before */}
             {/* Image Upload Section */}
             <div className="grid gap-3">
               <label className="text-sm font-medium">Chapter Image</label>
@@ -621,11 +682,7 @@ export function ChapterSheet({
                 Cancel
               </Button>
               <Button variant="default" onClick={submit} disabled={saving}>
-                {saving
-                  ? "Saving…"
-                  : mode === "create"
-                    ? "Add Chapter"
-                    : "Save Changes"}
+                {saving ? "Saving…" : mode === "create" ? "Add Chapter" : "Save Changes"}
               </Button>
             </div>
           </PermissionGate>

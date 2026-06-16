@@ -1,9 +1,17 @@
+// src/features/events/components/event-sheet.tsx
 "use client";
 
 import * as React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Calendar, Upload, X, Loader2 } from "lucide-react";
-import { addEvent, editEvent, deleteEvent, getEvent } from "@/features/events/api";
+import {
+  addEvent,
+  editEvent,
+  deleteEvent,
+  getEvent,
+  publishEvent, // <-- new
+  archiveEvent // <-- new
+} from "@/features/events/api";
 import type { Event, EventUpsertInput } from "@/features/events/types";
 import { PermissionGate } from "@/components/PermissionGate";
 import { PERMISSIONS } from "@/lib/rbac/permissions";
@@ -42,9 +50,10 @@ type Props = {
   onOpenChange: (v: boolean) => void;
   mode: "create" | "view";
   eventId?: string;
+  onUpdate?: () => Promise<void>; // <-- new
 };
 
-// Image compression helper
+// Image compression helper (unchanged)
 const compressImage = (
   file: File,
   maxWidth = 800,
@@ -87,7 +96,13 @@ const compressImage = (
   });
 };
 
-export function EventSheet({ open, onOpenChange, mode, eventId }: Props) {
+export function EventSheet({
+  open,
+  onOpenChange,
+  mode,
+  eventId,
+  onUpdate
+}: Props) {
   const qc = useQueryClient();
   const [editing, setEditing] = React.useState(mode === "create");
   const [imageFile, setImageFile] = React.useState<File | null>(null);
@@ -166,8 +181,9 @@ export function EventSheet({ open, onOpenChange, mode, eventId }: Props) {
       eventDate: string;
       image?: string | null;
     }) => addEvent(data),
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Event added");
+      await onUpdate?.();
       qc.invalidateQueries({ queryKey: ["events"] });
       onOpenChange(false);
     },
@@ -187,8 +203,9 @@ export function EventSheet({ open, onOpenChange, mode, eventId }: Props) {
         image?: string | null;
       };
     }) => editEvent(payload),
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Event updated");
+      await onUpdate?.();
       qc.invalidateQueries({ queryKey: ["events"] });
       qc.invalidateQueries({ queryKey: ["event"] });
       onOpenChange(false);
@@ -200,12 +217,37 @@ export function EventSheet({ open, onOpenChange, mode, eventId }: Props) {
 
   const deleteMut = useMutation({
     mutationFn: deleteEvent,
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Deleted");
+      await onUpdate?.();
       qc.invalidateQueries({ queryKey: ["events"] });
       onOpenChange(false);
     },
     onError: () => toast.error("Could not delete")
+  });
+
+  // Publish mutation
+  const publishMut = useMutation({
+    mutationFn: (id: string) => publishEvent(id),
+    onSuccess: async () => {
+      toast.success("Event published");
+      await onUpdate?.();
+      qc.invalidateQueries({ queryKey: ["events"] });
+      qc.invalidateQueries({ queryKey: ["event"] });
+    },
+    onError: () => toast.error("Could not publish event")
+  });
+
+  // Archive mutation
+  const archiveMut = useMutation({
+    mutationFn: (id: string) => archiveEvent(id),
+    onSuccess: async () => {
+      toast.success("Event archived");
+      await onUpdate?.();
+      qc.invalidateQueries({ queryKey: ["events"] });
+      qc.invalidateQueries({ queryKey: ["event"] });
+    },
+    onError: () => toast.error("Could not archive event")
   });
 
   const submit = async () => {
@@ -262,8 +304,9 @@ export function EventSheet({ open, onOpenChange, mode, eventId }: Props) {
   };
 
   const saving = createMut.isPending || updateMut.isPending;
+  const currentState = event?.state;
 
-  // Skeleton loader while fetching
+  // Skeleton loader while fetching event detail
   if (mode === "view" && eventQuery.isLoading && !event) {
     return (
       <Sheet open={open} onOpenChange={onOpenChange}>
@@ -300,7 +343,7 @@ export function EventSheet({ open, onOpenChange, mode, eventId }: Props) {
           <SheetDescription>
             {mode === "create"
               ? "Add a new event."
-              : "View, edit, or delete this event."}
+              : "View, edit, publish, or delete this event."}
           </SheetDescription>
         </SheetHeader>
 
@@ -319,43 +362,66 @@ export function EventSheet({ open, onOpenChange, mode, eventId }: Props) {
                   </Button>
                 </PermissionGate>
 
-                {/* Delete – only when NOT editing */}
-                {!editing && (
-                  <PermissionGate permission={PERMISSIONS.DELETE_EVENT}>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="destructive"
-                          className="flex-1 sm:flex-none"
-                        >
-                          Delete
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete event?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => {
-                              if (!eventId) return;
-                              deleteMut.mutate(eventId);
-                            }}
-                            className={cn(
-                              "bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            )}
+                <div className="flex gap-2">
+                  {/* Publish / Archive button */}
+                  {!editing && (
+                    <PermissionGate permission={PERMISSIONS.UPDATE_EVENT}>
+                      <Button
+                        variant="outline"
+                        className="flex-1 sm:flex-none"
+                        onClick={() => {
+                          if (!eventId) return;
+                          if (currentState === "published") {
+                            archiveMut.mutate(eventId);
+                          } else {
+                            publishMut.mutate(eventId);
+                          }
+                        }}
+                        disabled={publishMut.isPending || archiveMut.isPending}
+                      >
+                        {currentState === "published" ? "Archive" : "Publish"}
+                      </Button>
+                    </PermissionGate>
+                  )}
+
+                  {/* Delete button – only when NOT editing */}
+                  {!editing && (
+                    <PermissionGate permission={PERMISSIONS.DELETE_EVENT}>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="destructive"
+                            className="flex-1 sm:flex-none"
                           >
                             Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </PermissionGate>
-                )}
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete event?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => {
+                                if (!eventId) return;
+                                deleteMut.mutate(eventId);
+                              }}
+                              className={cn(
+                                "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              )}
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </PermissionGate>
+                  )}
+                </div>
               </div>
             )}
 

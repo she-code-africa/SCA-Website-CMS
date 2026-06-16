@@ -54,3 +54,13 @@ export async function editEvent(payload: {
 export async function deleteEvent(id: string) {
   return api.delete(`/events/${id}`);
 }
+
+// Publish an event (draft → published)
+export async function publishEvent(id: string) {
+  return api.patch(`/events/${id}/publish`);
+}
+
+// Archive an event (published → archived)
+export async function archiveEvent(id: string) {
+  return api.patch(`/events/${id}/archive`);
+}

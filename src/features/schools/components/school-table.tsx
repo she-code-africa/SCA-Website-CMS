@@ -27,20 +27,27 @@ function fmtDate(v?: string) {
   return format(d, "dd MMM, yyyy");
 }
 
-export function SchoolTable({
-  rows,
-  isLoading,
-  isError,
-  onView,
-  onEdit
-}: {
+type Props = {
   rows: School[];
   isLoading: boolean;
+  isUpdating?: boolean; // <-- new optional prop
   isError: boolean;
   onView: (school: School) => void;
   onEdit: (school: School) => void;
-}) {
+};
+
+export function SchoolTable({
+  rows,
+  isLoading,
+  isUpdating = false, // default to false
+  isError,
+  onView,
+  onEdit
+}: Props) {
   const headers = ["Name", "Description", "Updated", "Created", "Action"];
+
+  // Show skeleton during initial load AND during any mutation update
+  const showSkeleton = isLoading || isUpdating;
 
   const handleRowClick = (school: School) => {
     onView(school);
@@ -48,9 +55,9 @@ export function SchoolTable({
 
   return (
     <div className="space-y-3">
-      {/* Mobile list – no action column */}
+      {/* Mobile list */}
       <div className="grid gap-3 md:hidden">
-        {isLoading ? (
+        {showSkeleton ? (
           Array.from({ length: 6 }).map((_, i) => (
             <MobileSchoolSkeletonCard key={i} />
           ))
@@ -92,7 +99,7 @@ export function SchoolTable({
               </TableHeader>
 
               <TableBody>
-                {isLoading ? (
+                {showSkeleton ? (
                   Array.from({ length: 8 }).map((_, idx) => (
                     <TableRow key={idx}>
                       {headers.map((_, cIdx) => (

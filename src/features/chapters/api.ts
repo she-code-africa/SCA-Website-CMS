@@ -96,7 +96,7 @@ export async function deleteChapterCategory(id: string) {
 }
 
 /* ============================
-  CHAPTERS (✅ use api client)
+  CHAPTERS 
 ============================ */
 
 export async function getChapters(
@@ -130,6 +130,26 @@ export async function deleteChapter(payload: {
   categoryId?: string;
 }) {
   return api.delete(`/chapters/member-chapters/${payload.id}`);
+}
+
+// Publish a chapter (draft → published)
+export async function publishChapter(payload: {
+  id: string;
+  categoryId?: string;
+}) {
+  return api.patch(
+    `/chapters/categories/${payload.categoryId}/member-chapters/${payload.id}/publish`
+  );
+}
+
+// Archive a chapter (published → archived)
+export async function archiveChapter(payload: {
+  id: string;
+  categoryId?: string;
+}) {
+  return api.patch(
+    `/chapters/categories/${payload.categoryId}/member-chapters/${payload.id}/archive`
+  );
 }
 
 /* ============================

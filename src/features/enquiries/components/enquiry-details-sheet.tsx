@@ -38,7 +38,7 @@ export function EnquiryDetailsSheet({
   const qc = useQueryClient();
   const [editing, setEditing] = React.useState(false);
   const [status, setStatus] = React.useState<EnquiryStatus>("open");
-  const [comment, setComment] = React.useState("");
+  const [comment, setComment] = React.useState(""); // admin comment
 
   const q = useQuery({
     queryKey: ["enquiry", id],
@@ -64,7 +64,7 @@ export function EnquiryDetailsSheet({
     }: {
       id: string;
       status: EnquiryStatus;
-      comment?: string;
+      comment: string; // always a string, empty is allowed
     }) => updateEnquiryStatus({ id, status, comment }),
     onSuccess: () => {
       toast.success("Enquiry updated");
@@ -126,8 +126,11 @@ export function EnquiryDetailsSheet({
 
               <Field label="Full Name" value={enquiry.fullName} />
               <Field label="Email" value={enquiry.email} />
+
+              {/* User's original message (read-only) */}
               <Field label="Message" value={enquiry.description} multiline />
 
+              {/* Admin comment – editable when editing */}
               {editing ? (
                 <>
                   <div className="grid gap-2">
@@ -160,6 +163,7 @@ export function EnquiryDetailsSheet({
               ) : (
                 <>
                   <Field label="Status" value={status} />
+                  {/* Show admin comment only if it exists */}
                   {comment && (
                     <Field label="Comment" value={comment} multiline />
                   )}
@@ -175,9 +179,12 @@ export function EnquiryDetailsSheet({
               Cancel
             </Button>
             <Button
-              onClick={() =>
-                id && mut.mutate({ id, status, comment: comment || undefined })
-              }
+              onClick={() => {
+                if (id) {
+                  // ✅ Send the comment as-is, even if empty – clears the old comment
+                  mut.mutate({ id, status, comment });
+                }
+              }}
               disabled={mut.isPending}
             >
               {mut.isPending ? "Saving…" : "Save"}

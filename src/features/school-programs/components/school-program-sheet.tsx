@@ -1,3 +1,4 @@
+// src/features/school-programs/components/school-program-sheet.tsx
 "use client";
 
 import * as React from "react";
@@ -18,6 +19,7 @@ import type {
 } from "@/features/school-programs/types";
 import { PermissionGate } from "@/components/PermissionGate";
 import { PERMISSIONS } from "@/lib/rbac/permissions";
+import { compressImage } from "@/features/school-programs/utils"; // NEW
 
 import {
   Sheet,
@@ -68,7 +70,6 @@ export function SchoolProgramSheet({
 }: Props) {
   const qc = useQueryClient();
   const [editing, setEditing] = React.useState(mode === "create");
-  const [imageFile, setImageFile] = React.useState<File | null>(null);
   const [imagePreview, setImagePreview] = React.useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -92,7 +93,7 @@ export function SchoolProgramSheet({
       extendedContent: "",
       school: "",
       link: "",
-      image: null
+      image: null 
     }),
     []
   );
@@ -105,7 +106,6 @@ export function SchoolProgramSheet({
     if (mode === "create") {
       setEditing(true);
       setForm(initialForm);
-      setImageFile(null);
       setImagePreview(null);
       return;
     }
@@ -113,14 +113,8 @@ export function SchoolProgramSheet({
     if (programQuery.data) {
       const p = programQuery.data as SchoolProgram;
       setEditing(false);
-      setImageFile(null);
-
-      if (p.image) {
-        setImagePreview(p.image);
-      } else {
-        setImagePreview(null);
-      }
-
+      const img = p.image ?? null;
+      setImagePreview(img);
       setForm({
         title: p.title ?? "",
         cohort: p.cohort ?? "",
@@ -128,29 +122,28 @@ export function SchoolProgramSheet({
         extendedContent: p.extendedContent ?? "",
         school: typeof p.school === "string" ? p.school : (p.school?._id ?? ""),
         link: p.link ?? "",
-        image: null
+        image: img 
       });
     }
   }, [open, mode, programQuery.data, initialForm]);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    try {
+      const base64 = await compressImage(file, 800, 800, 0.7);
+      setForm((prev) => ({ ...prev, image: base64 }));
+      setImagePreview(base64);
+    } catch {
+      toast.error("Failed to process image");
     }
   };
 
   const handleRemoveImage = () => {
-    setImageFile(null);
+    setForm((prev) => ({ ...prev, image: null }));
     setImagePreview(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const createMut = useMutation({
@@ -160,18 +153,26 @@ export function SchoolProgramSheet({
       qc.invalidateQueries({ queryKey: ["school-programs"] });
       onOpenChange(false);
     },
-    onError: () => toast.error("Could not add program")
+    onError: (err: any) =>
+      toast.error(err?.response?.data?.message || "Could not add program")
   });
 
   const updateMut = useMutation({
-    mutationFn: editSchoolProgram,
+    mutationFn: ({
+      id,
+      data
+    }: {
+      id: string;
+      data: Partial<SchoolProgramUpsertInput>;
+    }) => editSchoolProgram({ id, data }),
     onSuccess: () => {
       toast.success("Program updated");
       qc.invalidateQueries({ queryKey: ["school-programs"] });
       qc.invalidateQueries({ queryKey: ["school-program"] });
       onOpenChange(false);
     },
-    onError: () => toast.error("Could not update program")
+    onError: (err: any) =>
+      toast.error(err?.response?.data?.message || "Could not update program")
   });
 
   const publishMut = useMutation({
@@ -217,20 +218,18 @@ export function SchoolProgramSheet({
       return;
     }
 
+    if (mode === "create" && !form.image) {
+      toast.error("Please upload an image");
+      return;
+    }
+
     if (mode === "create") {
-      if (!imageFile) {
-        toast.error("Please upload an image");
-        return;
-      }
-      createMut.mutate({ ...form, image: imageFile });
+      createMut.mutate(form);
       return;
     }
 
     if (!programId) return;
-    updateMut.mutate({
-      id: programId,
-      data: { ...form, image: imageFile ?? undefined }
-    });
+    updateMut.mutate({ id: programId, data: form });
   };
 
   const currentState = (programQuery.data as SchoolProgram | undefined)?.state;
@@ -368,11 +367,9 @@ export function SchoolProgramSheet({
                 </div>
 
                 <div className="flex-1 space-y-3">
-                  <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground">
-                      Recommended: Square image, at least 400x400px. Max 5MB.
-                    </p>
-                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Recommended: Square image, at least 400x400px. Max 5MB.
+                  </p>
 
                   {editing && (
                     <Button
@@ -482,7 +479,7 @@ export function SchoolProgramSheet({
           </div>
         </ScrollArea>
 
-        {/* Bottom action bar – only show if user can perform the action */}
+        {/* Bottom action bar */}
         {(mode === "create" && (
           <PermissionGate permission={PERMISSIONS.CREATE_SCHOOLPROGRAM}>
             <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">

@@ -1,3 +1,5 @@
+// app/admin/roles/page.tsx (or wherever RolesPage is defined)
+
 "use client";
 
 import * as React from "react";
@@ -20,6 +22,7 @@ import { TableFrame } from "@/components/templates/table-frame";
 
 export default function RolesPage() {
   const qc = useQueryClient();
+  const [isUpdating, setIsUpdating] = React.useState(false); // <-- NEW
 
   const [filters, setFilters] = React.useState<RolesFilters>({
     search: "",
@@ -44,13 +47,8 @@ export default function RolesPage() {
   });
 
   const deleteMut = useMutation({
-    mutationFn: (r: RoleDetail) => deleteRole(r.id),
-    onSuccess: () => {
-      toast.success("Role deleted.");
-      qc.invalidateQueries({ queryKey: ["roles"] });
-    },
-    onError: (err: Error) =>
-      toast.error(err.message ?? "Could not delete role.")
+    mutationFn: (r: RoleDetail) => deleteRole(r.id)
+    // onSuccess/onError moved to manual handler to control isUpdating
   });
 
   const rows = rolesQuery.data ?? [];
@@ -68,6 +66,38 @@ export default function RolesPage() {
     setSelected(null);
     setSheetMode("create");
     setSheetOpen(true);
+  };
+
+  // Wrap sheet updates (create/edit)
+const handleSheetUpdate = async (updatedRoleId?: string) => {
+  setIsUpdating(true);
+  try {
+    const result = await rolesQuery.refetch();
+    if (updatedRoleId && result.data) {
+      const freshRole = (result.data as RoleDetail[]).find(
+        (r) => r._id === updatedRoleId || r.id === updatedRoleId
+      );
+      if (freshRole) {
+        setSelected(freshRole);
+      }
+    }
+  } finally {
+    setIsUpdating(false);
+  }
+};
+
+  // Delete handler with skeleton feedback
+  const handleDelete = async (r: RoleDetail) => {
+    setIsUpdating(true);
+    try {
+      await deleteMut.mutateAsync(r);
+      toast.success("Role deleted.");
+      await rolesQuery.refetch();
+    } catch (err: any) {
+      toast.error(err.message ?? "Could not delete role.");
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   return (
@@ -100,7 +130,7 @@ export default function RolesPage() {
 
           {/* Mobile cards */}
           <div className="grid gap-3 md:hidden">
-            {rolesQuery.isLoading ? (
+            {rolesQuery.isLoading || isUpdating ? (
               Array.from({ length: 4 }).map((_, i) => (
                 <MobileRoleSkeletonCard key={i} />
               ))
@@ -132,9 +162,10 @@ export default function RolesPage() {
               <RolesTable
                 rows={paged}
                 isLoading={rolesQuery.isLoading}
+                isUpdating={isUpdating} 
                 isError={rolesQuery.isError}
                 onRowClick={openView}
-                onDelete={(r) => deleteMut.mutate(r)}
+                onDelete={handleDelete} 
               />
             </TableFrame>
           </div>
@@ -145,6 +176,7 @@ export default function RolesPage() {
           onOpenChange={setSheetOpen}
           mode={sheetMode}
           role={selected}
+          onUpdate={handleSheetUpdate} 
         />
       </TableShell>
     </PermissionGate>
