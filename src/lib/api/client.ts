@@ -3,23 +3,38 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 import { toast } from "sonner";
 import { getToken } from "@/lib/auth/token";
-import { logout as authLogout } from "@/lib/auth/logout";
+// import { logout as authLogout } from "@/lib/auth/logout";
 
 // ─── Type augmentation for unwrapped responses ─────────────────────────────
 interface UnwrappedInstance extends AxiosInstance {
-  get<T = unknown, R = T, D = unknown>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
-  post<T = unknown, R = T, D = unknown>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
-  put<T = unknown, R = T, D = unknown>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
-  patch<T = unknown, R = T, D = unknown>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
-  delete<T = unknown, R = T, D = unknown>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
+  get<T = unknown, R = T, D = unknown>(
+    url: string,
+    config?: AxiosRequestConfig<D>
+  ): Promise<R>;
+  post<T = unknown, R = T, D = unknown>(
+    url: string,
+    data?: D,
+    config?: AxiosRequestConfig<D>
+  ): Promise<R>;
+  put<T = unknown, R = T, D = unknown>(
+    url: string,
+    data?: D,
+    config?: AxiosRequestConfig<D>
+  ): Promise<R>;
+  patch<T = unknown, R = T, D = unknown>(
+    url: string,
+    data?: D,
+    config?: AxiosRequestConfig<D>
+  ): Promise<R>;
+  delete<T = unknown, R = T, D = unknown>(
+    url: string,
+    config?: AxiosRequestConfig<D>
+  ): Promise<R>;
 }
 
-
 // ─── Main API instance (RBAC backend) ─────────────────────────────────────
-// Uses proxy path – actual backend URL is defined in next.config.ts rewrites
 export const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_BASE_URL,
-  // baseURL: "/api/external",
   withCredentials: false,
   headers: {
     "Content-Type": "application/json",
@@ -28,9 +43,7 @@ export const api = axios.create({
 }) as UnwrappedInstance;
 
 // ─── Stem‑a‑Girl API instance ────────────────────────────────────────────
-// Uses proxy path – actual URL defined in next.config.ts
 export const stemApi = axios.create({
-  // baseURL: "/api/stem",
   baseURL: process.env.NEXT_PUBLIC_STEM_A_GIRL_BASE_URL,
   headers: {
     "Content-Type": "application/json"
@@ -41,40 +54,19 @@ export const stemApi = axios.create({
 const publicRoutes = ["/auth/login", "/users/accept", "/users/decline"];
 
 // ─── Main API request interceptor (add Bearer token) ─────────────────────
-
-//UNCOMMENT AFTER TESTING AND COMMENT OUT THE TESTING INTERCEPTOR BELOW
-// api.interceptors.request.use((config) => {
-//   if (typeof window !== "undefined") {
-//     const token = getToken();
-//     const isPublic = publicRoutes.some((route) => config.url?.includes(route));
-//     if (token && !isPublic) {
-//       config.headers = config.headers ?? {};
-//       config.headers.Authorization = `Bearer ${token}`;
-//     }
-//   }
-//   return config;
-// });
-
-//TESTING HERE INCLUDES LOGGING TO VERIFY TOKEN IS BEING ADDED CORRECTLY AND NOT ADDED TO PUBLIC ROUTES
 api.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
     const token = getToken();
     const isPublic = publicRoutes.some((route) => config.url?.includes(route));
-    // console.log(
-    //   `[API] Request to ${config.url} – token exists: ${!!token}, isPublic: ${isPublic}`
-    // );
     if (token && !isPublic) {
       config.headers = config.headers ?? {};
       config.headers.Authorization = `Bearer ${token}`;
-      // console.log(`[API] Added Authorization header for ${config.url}`);
-    } else {
-      // console.log(`[API] No token added for ${config.url}`);
     }
   }
   return config;
 });
 
-// ─── Main API response interceptor (unwrap `data`, handle errors, preserve pagination) ───
+// ─── Main API response interceptor ──────────────────────────────────────
 let handlingAuthError = false;
 
 api.interceptors.response.use(
@@ -93,15 +85,18 @@ api.interceptors.response.use(
       "data" in responseBody &&
       "pagination" in responseBody
     ) {
-      // Return a wrapped object containing both data and pagination
       return {
         data: responseBody.data,
-        pagination: responseBody.pagination,
+        pagination: responseBody.pagination
       };
     }
 
     // Standard unwrapping of { data: ... } response (without pagination)
-    if (responseBody && typeof responseBody === "object" && "data" in responseBody) {
+    if (
+      responseBody &&
+      typeof responseBody === "object" &&
+      "data" in responseBody
+    ) {
       return responseBody.data;
     }
     return responseBody;
@@ -110,23 +105,31 @@ api.interceptors.response.use(
     const status = error?.response?.status;
     const requestUrl = error.config?.url ?? "";
     const backendMessage = error?.response?.data?.message;
-    const message = backendMessage || "You do not have permission to perform this action.";
+    const message =
+      backendMessage || "You do not have permission to perform this action.";
 
-    const isPublicUrl = publicRoutes.some((route) => requestUrl.includes(route));
+    const isPublicUrl = publicRoutes.some((route) =>
+      requestUrl.includes(route)
+    );
 
     if (typeof window !== "undefined" && !isPublicUrl) {
       if (status === 401) {
         if (!handlingAuthError) {
           handlingAuthError = true;
           toast.error("Session expired", {
-            description: "Please log in again to continue.",
+            description: "Please log in again to continue."
           });
-          authLogout();
-          setTimeout(() => (handlingAuthError = false), 2000);
+          // Redirect to login page immediately
+          setTimeout(() => {
+            window.location.href = "/login";
+          }, 1000);
         }
       } else if (status === 403) {
         toast.error("Permission Denied", { description: message });
-        console.error(`[403 Forbidden] Path: ${requestUrl}`, error.response?.data);
+        console.error(
+          `[403 Forbidden] Path: ${requestUrl}`,
+          error.response?.data
+        );
       }
     }
 
@@ -134,19 +137,23 @@ api.interceptors.response.use(
   }
 );
 
-// ─── Stem‑a‑Girl API response interceptor (unwrap `data`, handle errors) ──
+// ─── Stem‑a‑Girl API response interceptor (unchanged) ─────────────────────
 stemApi.interceptors.response.use(
   (response) => {
-    // Unwrap standard { data: ... } response
     const responseBody = response.data;
-    if (responseBody && typeof responseBody === "object" && "data" in responseBody) {
+    if (
+      responseBody &&
+      typeof responseBody === "object" &&
+      "data" in responseBody
+    ) {
       return responseBody.data;
     }
     return responseBody;
   },
   (error) => {
     console.error("Stem‑a‑Girl API error:", error);
-    const message = error.response?.data?.message || "Stem‑a‑Girl request failed";
+    const message =
+      error.response?.data?.message || "Stem‑a‑Girl request failed";
     toast.error(message);
     return Promise.reject(error);
   }

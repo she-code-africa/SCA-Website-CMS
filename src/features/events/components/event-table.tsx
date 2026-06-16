@@ -1,3 +1,4 @@
+// src/features/events/components/event-table.tsx
 "use client";
 
 import * as React from "react";
@@ -30,20 +31,26 @@ function stateBadgeVariant(state?: EventState) {
   return "secondary"; // draft
 }
 
-export function EventTable({
-  rows,
-  isLoading,
-  isError,
-  onView,
-  onEdit
-}: {
+type Props = {
   rows: Event[];
   isLoading: boolean;
+  isUpdating?: boolean; // <-- NEW
   isError: boolean;
   onView: (e: Event) => void;
   onEdit: (e: Event) => void;
-}) {
+};
+
+export function EventTable({
+  rows,
+  isLoading,
+  isUpdating = false,
+  isError,
+  onView,
+  onEdit
+}: Props) {
   const headers = ["Title", "Link", "State", "Event Date", "Created", "Action"];
+
+  const showSkeleton = isLoading || isUpdating;
 
   const handleRowClick = (e: Event) => {
     onView(e);
@@ -62,7 +69,7 @@ export function EventTable({
       </TableHeader>
 
       <TableBody>
-        {isLoading ? (
+        {showSkeleton ? (
           Array.from({ length: 8 }).map((_, idx) => (
             <TableRow key={idx}>
               {headers.map((_, cIdx) => (
@@ -92,7 +99,6 @@ export function EventTable({
               <TableCell className="whitespace-nowrap">
                 <div className="flex items-center gap-2">
                   {e.image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={e.image}
                       alt={e.title}

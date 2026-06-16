@@ -35,5 +35,5 @@ export type SchoolProgramUpsertInput = {
   extendedContent: string;
   school: string; // school id
   link: string;
-  image?: File | null;
+  image: string | null;
 };

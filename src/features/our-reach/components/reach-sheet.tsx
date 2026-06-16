@@ -36,6 +36,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea"; // <-- added for description
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils/utils";
@@ -60,7 +61,8 @@ export function ReachSheet({ open, onOpenChange, mode, reachId }: Props) {
   const initialForm: ReachUpsertInput = React.useMemo(
     () => ({
       name: "",
-      value: 0
+      value: 0,
+      description: "" // <-- new field
     }),
     []
   );
@@ -82,7 +84,8 @@ export function ReachSheet({ open, onOpenChange, mode, reachId }: Props) {
 
       setForm({
         name: r.name ?? "",
-        value: r.value ?? 0
+        value: r.value ?? 0,
+        description: r.description ?? "" // <-- load from data
       });
     }
   }, [open, mode, reachQuery.data, initialForm]);
@@ -94,7 +97,12 @@ export function ReachSheet({ open, onOpenChange, mode, reachId }: Props) {
       qc.invalidateQueries({ queryKey: ["our-reach"] });
       onOpenChange(false);
     },
-    onError: () => toast.error("Could not add reach stat")
+    onError: (err: any) => {
+      // Log the error details for debugging
+      console.log("Create Reach Error:", err);
+      console.log("Response data:", err?.response?.data);
+      toast.error(err?.response?.data?.message || "Could not add reach stat");
+    }
   });
 
   const updateMut = useMutation({
@@ -105,7 +113,13 @@ export function ReachSheet({ open, onOpenChange, mode, reachId }: Props) {
       qc.invalidateQueries({ queryKey: ["reach"] });
       onOpenChange(false);
     },
-    onError: () => toast.error("Could not update reach stat")
+    onError: (err: any) => {
+      console.log("Update Reach Error:", err);
+      console.log("Response data:", err?.response?.data);
+      toast.error(
+        err?.response?.data?.message || "Could not update reach stat"
+      );
+    }
   });
 
   const deleteMut = useMutation({
@@ -115,7 +129,11 @@ export function ReachSheet({ open, onOpenChange, mode, reachId }: Props) {
       qc.invalidateQueries({ queryKey: ["our-reach"] });
       onOpenChange(false);
     },
-    onError: () => toast.error("Could not delete")
+    onError: (err: any) => {
+      console.log("Delete Reach Error:", err);
+      console.log("Response data:", err?.response?.data);
+      toast.error("Could not delete");
+    }
   });
 
   const submit = async () => {
@@ -123,7 +141,10 @@ export function ReachSheet({ open, onOpenChange, mode, reachId }: Props) {
       toast.error("Please enter a name");
       return;
     }
-
+    if (!form.description.trim()) {
+      toast.error("Please enter a description");
+      return;
+    }
     if (form.value < 0) {
       toast.error("Value must be a positive number");
       return;
@@ -142,6 +163,7 @@ export function ReachSheet({ open, onOpenChange, mode, reachId }: Props) {
   };
 
   const saving = createMut.isPending || updateMut.isPending;
+  const canEdit = mode === "create" || editing;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -175,7 +197,6 @@ export function ReachSheet({ open, onOpenChange, mode, reachId }: Props) {
                   </Button>
                 </PermissionGate>
 
-                {/* Delete with confirmation */}
                 {!editing && (
                   <PermissionGate permission={PERMISSIONS.DELETE_OUR_REACH}>
                     <AlertDialog>
@@ -231,6 +252,11 @@ export function ReachSheet({ open, onOpenChange, mode, reachId }: Props) {
                     </p>
                   </div>
                 </div>
+                {form.description && (
+                  <p className="text-sm text-muted-foreground">
+                    {form.description}
+                  </p>
+                )}
               </div>
             )}
 
@@ -240,7 +266,7 @@ export function ReachSheet({ open, onOpenChange, mode, reachId }: Props) {
                 <label className="text-sm font-medium">Name *</label>
                 <Input
                   value={form.name}
-                  disabled={!editing}
+                  disabled={!canEdit}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   placeholder="e.g., Women Reached, Communities Impacted"
                 />
@@ -254,7 +280,7 @@ export function ReachSheet({ open, onOpenChange, mode, reachId }: Props) {
                 <Input
                   type="number"
                   value={form.value}
-                  disabled={!editing}
+                  disabled={!canEdit}
                   onChange={(e) =>
                     setForm({ ...form, value: parseInt(e.target.value) || 0 })
                   }
@@ -263,6 +289,23 @@ export function ReachSheet({ open, onOpenChange, mode, reachId }: Props) {
                 />
                 <p className="text-xs text-muted-foreground">
                   Numeric value for this statistic
+                </p>
+              </div>
+
+              {/* ---------- New Description field ---------- */}
+              <div className="grid gap-2">
+                <label className="text-sm font-medium">Description *</label>
+                <Textarea
+                  value={form.description}
+                  disabled={!canEdit}
+                  onChange={(e) =>
+                    setForm({ ...form, description: e.target.value })
+                  }
+                  placeholder="Brief description of the stat..."
+                  rows={3}
+                />
+                <p className="text-xs text-muted-foreground">
+                  A short description (e.g. context of the number)
                 </p>
               </div>
             </div>
@@ -280,11 +323,7 @@ export function ReachSheet({ open, onOpenChange, mode, reachId }: Props) {
               >
                 Cancel
               </Button>
-              <Button
-                variant="default"
-                onClick={submit}
-                disabled={saving}
-              >
+              <Button variant="default" onClick={submit} disabled={saving}>
                 {saving ? "Saving…" : "Add Stat"}
               </Button>
             </div>
@@ -300,11 +339,7 @@ export function ReachSheet({ open, onOpenChange, mode, reachId }: Props) {
                 >
                   Cancel
                 </Button>
-                <Button
-                  variant="default"
-                  onClick={submit}
-                  disabled={saving}
-                >
+                <Button variant="default" onClick={submit} disabled={saving}>
                   {saving ? "Saving…" : "Save Changes"}
                 </Button>
               </div>

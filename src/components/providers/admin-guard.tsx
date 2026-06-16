@@ -45,10 +45,6 @@
 //   return <>{children}</>;
 // }
 
-
-
-
-
 "use client";
 
 // src/components/providers/admin-guard.tsx
@@ -72,9 +68,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { Loader2 } from "lucide-react";
+import { GlobeLoader } from "@/components/ui/globe-loader";
 
 interface Props {
   children: React.ReactNode;
@@ -82,27 +77,17 @@ interface Props {
 
 export function AdminGuard({ children }: Props) {
   const { isAuthenticated, isLoading } = useAuth();
-  const router = useRouter();
 
   React.useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.replace("/login");
+      window.location.href = "/login";
     }
-  }, [isLoading, isAuthenticated, router]);
+  }, [isLoading, isAuthenticated]);
 
-  // ── Loading state ─────────────────────────────────────────────────────────
-  // Show a neutral spinner while auth hydrates.
-  // Prevents page content from flashing before redirect.
   if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <GlobeLoader />;
   }
 
-  // ── Not authenticated ─────────────────────────────────────────────────────
-  // Return null while the redirect fires (avoids content flash)
   if (!isAuthenticated) {
     return null;
   }

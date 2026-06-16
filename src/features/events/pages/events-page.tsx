@@ -1,3 +1,4 @@
+// app/admin/events/page.tsx (or wherever your EventsPage lives)
 "use client";
 
 import * as React from "react";
@@ -68,6 +69,8 @@ export default function EventsPage() {
   const [modalMode, setModalMode] = React.useState<"create" | "view">("create");
   const [selected, setSelected] = React.useState<Event | null>(null);
 
+  const [isUpdating, setIsUpdating] = React.useState(false); // <-- NEW
+
   React.useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -106,8 +109,18 @@ export default function EventsPage() {
 
   const openEdit = (e: Event) => {
     setSelected(e);
-    setModalMode("view"); // The sheet handles edit internally via Edit button
+    setModalMode("view");
     setModalOpen(true);
+  };
+
+  // Handle updates – shows skeleton in table while refetching
+  const handleSheetUpdate = async () => {
+    setIsUpdating(true);
+    try {
+      await query.refetch();
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   return (
@@ -144,8 +157,9 @@ export default function EventsPage() {
 
           <div className="grid grid-cols-12 gap-4">
             <div className="col-span-12 lg:col-span-12 space-y-3">
+              {/* Mobile cards */}
               <div className="grid gap-3 md:hidden">
-                {query.isLoading ? (
+                {query.isLoading || isUpdating ? ( // <-- also show skeleton on update
                   Array.from({ length: 6 }).map((_, i) => (
                     <MobileEventSkeletonCard key={`event-skeleton-${i}`} />
                   ))
@@ -171,11 +185,13 @@ export default function EventsPage() {
                 )}
               </div>
 
+              {/* Desktop table */}
               <div className="hidden md:block">
                 <TableFrame>
                   <EventTable
                     rows={paged}
                     isLoading={query.isLoading}
+                    isUpdating={isUpdating} 
                     isError={query.isError}
                     onView={openView}
                     onEdit={openEdit}
@@ -190,6 +206,7 @@ export default function EventsPage() {
             onOpenChange={setModalOpen}
             mode={modalMode}
             eventId={selected?._id}
+            onUpdate={handleSheetUpdate} 
           />
         </div>
       </TableShell>

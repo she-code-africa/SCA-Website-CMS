@@ -18,4 +18,5 @@ export type ReachFilters = {
 export type ReachUpsertInput = {
   name: string;
   value: number;
+  description: string;
 };

@@ -1,5 +1,3 @@
-// src/features/talent-requests/components/talent-table.tsx
-
 "use client";
 
 import * as React from "react";
@@ -24,6 +22,7 @@ import {
 type Props = {
   rows: TalentRequest[];
   isLoading: boolean;
+  isUpdating?: boolean; 
   isError: boolean;
   onRowClick: (v: TalentRequest) => void;
   onApprove: (v: TalentRequest) => void;
@@ -33,18 +32,14 @@ type Props = {
 export function TalentTable({
   rows,
   isLoading,
+  isUpdating = false,
   isError,
   onRowClick,
   onApprove,
   onReject
 }: Props) {
   const columns = React.useMemo(
-    () =>
-      getColumns({
-        onView: onRowClick,
-        onApprove,
-        onReject
-      }),
+    () => getColumns({ onView: onRowClick, onApprove, onReject }),
     [onRowClick, onApprove, onReject]
   );
 
@@ -53,6 +48,8 @@ export function TalentTable({
     columns,
     getCoreRowModel: getCoreRowModel()
   });
+
+  const showSkeleton = isLoading || isUpdating;
 
   return (
     <Table>
@@ -74,7 +71,7 @@ export function TalentTable({
       </TableHeader>
 
       <TableBody>
-        {isLoading ? (
+        {showSkeleton ? (
           Array.from({ length: 8 }).map((_, idx) => (
             <TableRow key={idx}>
               {columns.map((_, cIdx) => (

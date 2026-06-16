@@ -9,7 +9,7 @@ export interface Outreach {
   outreachDate: string; // ISO string
   galleryLink?: string;
   coverImage?: string;
-  previewImages?: string[]; // array of image URLs
+  images?: string[]; // array of image URLs
   totalImages?: number;
   createdAt?: string;
   updatedAt?: string;
@@ -21,7 +21,7 @@ export type OutreachUpsertInput = {
   outreachDate: string; // YYYY-MM-DD or ISO
   galleryLink?: string;
   coverImage?: string | null; // base64 string
-  previewImages?: string[]; // array of image URLs (for update we may send full list)
+  images?: string[]; // array of image URLs (for update we may send full list)
 };
 
 export interface OutreachFilters {

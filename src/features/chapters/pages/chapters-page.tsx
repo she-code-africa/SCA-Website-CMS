@@ -74,6 +74,7 @@ export default function ChaptersPage() {
   const [modalOpen, setModalOpen] = React.useState(false);
   const [modalMode, setModalMode] = React.useState<"create" | "view">("create");
   const [selected, setSelected] = React.useState<Chapter | null>(null);
+  const [isUpdating, setIsUpdating] = React.useState(false);   // NEW
 
   // Listen for custom add event (kept for compatibility)
   React.useEffect(() => {
@@ -112,10 +113,19 @@ export default function ChaptersPage() {
   };
 
   const openEdit = (ch: Chapter) => {
-    // Same as openView – the sheet has an Edit button internally
     setSelected(ch);
     setModalMode("view");
     setModalOpen(true);
+  };
+
+  // Wrapper to refetch with skeleton feedback
+  const handleSheetUpdate = async () => {
+    setIsUpdating(true);
+    try {
+      await query.refetch();
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   return (
@@ -188,6 +198,7 @@ export default function ChaptersPage() {
                   <ChapterTable
                     rows={paged}
                     isLoading={query.isLoading}
+                    isUpdating={isUpdating}         
                     isError={query.isError}
                     onView={openView}
                     onEdit={openEdit}
@@ -211,6 +222,7 @@ export default function ChaptersPage() {
                 ? selected.category?._id
                 : undefined
             }
+            onUpdate={handleSheetUpdate}   
           />
         </div>
       </TableShell>

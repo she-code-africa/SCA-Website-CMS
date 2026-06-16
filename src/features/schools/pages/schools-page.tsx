@@ -23,6 +23,16 @@ export default function SchoolsPage() {
   const [modalOpen, setModalOpen] = React.useState(false);
   const [modalMode, setModalMode] = React.useState<"create" | "view">("create");
   const [selected, setSelected] = React.useState<School | null>(null);
+  const [isUpdating, setIsUpdating] = React.useState(false);
+
+  const handleSheetUpdate = async () => {
+    setIsUpdating(true);
+    try {
+      await query.refetch();
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   React.useEffect(() => {
     const handler = () => {
@@ -104,6 +114,7 @@ export default function SchoolsPage() {
                 <SchoolTable
                   rows={paged}
                   isLoading={query.isLoading}
+                  isUpdating={isUpdating}
                   isError={query.isError}
                   onView={openView}
                   onEdit={openEdit}
@@ -117,6 +128,7 @@ export default function SchoolsPage() {
             onOpenChange={setModalOpen}
             mode={modalMode}
             schoolId={selected?._id}
+            onUpdate={handleSheetUpdate}
           />
         </div>
       </TableShell>

@@ -185,8 +185,6 @@ const updateMut = useMutation({
     qc.invalidateQueries({ queryKey: ["volunteer-role", roleId] });
     setEditing(false);
     setImageFile(null);
-    setImageRemoved(false);
-    onOpenChange(false);
   },
   onError: (err: any) => {
     toast.error(err?.response?.data?.message ?? "Failed to update role");

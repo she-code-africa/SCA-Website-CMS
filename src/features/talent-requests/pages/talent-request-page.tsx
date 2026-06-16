@@ -1,5 +1,3 @@
-// app/admin/talent-request/page.tsx
-
 "use client";
 
 import * as React from "react";
@@ -95,6 +93,7 @@ export default function TalentRequestPage() {
   const [sheetOpen, setSheetOpen] = React.useState(false);
   const [selected, setSelected] = React.useState<TalentRequest | null>(null);
   const [exporting, setExporting] = React.useState(false);
+  const [isUpdating, setIsUpdating] = React.useState(false);   // NEW
 
   React.useEffect(() => setPage(1), [filters]);
 
@@ -142,17 +141,24 @@ export default function TalentRequestPage() {
   };
 
   // For now, approve/reject open the same details sheet.
-  // Later you can implement direct API calls or pass a mode to the sheet.
   const handleApprove = (t: TalentRequest) => {
     setSelected(t);
     setSheetOpen(true);
-    // Optional: set a mode so the sheet opens with approve focus
   };
 
   const handleReject = (t: TalentRequest) => {
     setSelected(t);
     setSheetOpen(true);
-    // Optional: set a mode for reject
+  };
+
+  // Wrapper that shows the skeleton while the refetch is in progress
+  const handleSheetUpdate = async () => {
+    setIsUpdating(true);
+    try {
+      await query.refetch();
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   return (
@@ -205,6 +211,7 @@ export default function TalentRequestPage() {
                 <TalentTable
                   rows={paged}
                   isLoading={query.isLoading}
+                  isUpdating={isUpdating}            
                   isError={query.isError}
                   onRowClick={handleRowClick}
                   onApprove={handleApprove}
@@ -218,8 +225,8 @@ export default function TalentRequestPage() {
             open={sheetOpen}
             onOpenChange={setSheetOpen}
             row={selected}
-            onUpdate={() => query.refetch()}
-            onDelete={() => query.refetch()}
+            onUpdate={handleSheetUpdate}    
+            onDelete={handleSheetUpdate}
           />
         </div>
       </TableShell>
