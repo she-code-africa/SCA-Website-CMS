@@ -1,3 +1,5 @@
+// app/admin/school-programs/page.tsx
+
 "use client";
 
 import * as React from "react";
@@ -15,6 +17,50 @@ import { SchoolProgramSheet } from "@/features/school-programs/components/school
 import { SchoolProgramPagination } from "@/features/school-programs/components/school-program-pagination";
 import { TableShell } from "@/components/templates/table-shell";
 import { TableFrame } from "@/components/templates/table-frame";
+
+/* ============================
+  Helper: extract school name
+============================ */
+function getSchoolName(program: SchoolProgram): string {
+  if (typeof program.school === "string") return program.school;
+  return program.school?.name ?? "";
+}
+
+/* ============================
+  Client‑side filtering
+============================ */
+function applyFilters(
+  data: SchoolProgram[],
+  filters: SchoolProgramsFilters
+): SchoolProgram[] {
+  let filtered = [...data];
+
+  const search = filters.search?.trim().toLowerCase();
+  if (search) {
+    filtered = filtered.filter(
+      (p) =>
+        p.title?.toLowerCase().includes(search) ||
+        String(p.cohort ?? "")
+          .toLowerCase()
+          .includes(search) ||
+        getSchoolName(p).toLowerCase().includes(search)
+    );
+  }
+
+  if (filters.state) {
+    filtered = filtered.filter((p) => p.state === filters.state);
+  }
+
+  if (filters.school) {
+    filtered = filtered.filter((p) => {
+      const id =
+        typeof p.school === "string" ? p.school : (p.school?._id ?? "");
+      return id === filters.school;
+    });
+  }
+
+  return filtered;
+}
 
 export default function SchoolProgramsPage() {
   const [filters, setFilters] = React.useState<SchoolProgramsFilters>({
@@ -39,19 +85,25 @@ export default function SchoolProgramsPage() {
     return () => window.removeEventListener("school-program:add", handler);
   }, []);
 
+  // Reset page when any filter changes
   React.useEffect(() => {
     setPage(1);
   }, [filters.search, filters.state, filters.school]);
 
   const query = useQuery({
-    queryKey: ["school-programs", filters],
-    queryFn: () => getSchoolPrograms(filters),
+    queryKey: ["school-programs"], // no filters in key – fetch all
+    queryFn: () => getSchoolPrograms(), // no filter arguments (or pass empty)
     staleTime: 30_000
   });
 
-  const rows = React.useMemo(() => query.data ?? [], [query.data]);
-  const totalPages = Math.max(1, Math.ceil(rows.length / limit));
-  const paged = rows.slice((page - 1) * limit, page * limit);
+  // Apply client‑side filters after fetching
+  const filtered = React.useMemo(
+    () => applyFilters(query.data ?? [], filters),
+    [query.data, filters]
+  );
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / limit));
+  const paged = filtered.slice((page - 1) * limit, page * limit);
 
   const openView = (program: SchoolProgram) => {
     setSelected(program);
@@ -73,7 +125,7 @@ export default function SchoolProgramsPage() {
         right={
           <div className="flex items-center gap-2">
             <div className="text-sm text-muted-foreground">
-              {query.isLoading ? "Loading…" : `${rows.length} program(s)`}
+              {query.isLoading ? "Loading…" : `${filtered.length} program(s)`}
             </div>
           </div>
         }

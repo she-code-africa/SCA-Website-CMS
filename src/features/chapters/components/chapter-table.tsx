@@ -1,8 +1,10 @@
+// src/features/chapters/components/chapter-table.tsx
+
 "use client";
 
 import * as React from "react";
 import { format } from "date-fns";
-import { Users, Eye, Pencil } from "lucide-react";
+import { Eye, Pencil } from "lucide-react";
 import type { Chapter } from "@/features/chapters/types";
 import { cn } from "@/lib/utils/utils";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -28,7 +30,7 @@ function fmtDate(v?: string) {
 function stateBadgeVariant(state?: string) {
   if (state === "published") return "default";
   if (state === "archived") return "destructive";
-  return "secondary"; // draft
+  return "secondary";
 }
 
 function getCategoryName(category: any): string {
@@ -49,21 +51,28 @@ function getInitials(name: string): string {
 export function ChapterTable({
   rows,
   isLoading,
+  isUpdating = false, // NEW – optional, defaults to false
   isError,
   onView,
   onEdit
 }: {
   rows: Chapter[];
   isLoading: boolean;
+  isUpdating?: boolean; // NEW
   isError: boolean;
   onView: (c: Chapter) => void;
   onEdit: (c: Chapter) => void;
 }) {
-  const headers = ["Name", "Location", "Category", "State", "Updated", "Action"];
+  const headers = [
+    "Name",
+    "Location",
+    "Category",
+    "State",
+    "Updated",
+    "Action"
+  ];
 
-  const handleRowClick = (chapter: Chapter) => {
-    onView(chapter);
-  };
+  const showSkeleton = isLoading || isUpdating;
 
   return (
     <Table>
@@ -78,7 +87,7 @@ export function ChapterTable({
       </TableHeader>
 
       <TableBody>
-        {isLoading ? (
+        {showSkeleton ? (
           Array.from({ length: 8 }).map((_, idx) => (
             <TableRow key={idx}>
               {headers.map((_, cIdx) => (
@@ -101,10 +110,10 @@ export function ChapterTable({
           rows.map((c) => (
             <TableRow
               key={c._id}
-              onClick={() => handleRowClick(c)}
+              onClick={() => onView(c)}
               className={cn("cursor-pointer hover:bg-muted/50")}
             >
-              {/* Name column */}
+              {/* Name */}
               <TableCell className="whitespace-nowrap">
                 <div className="flex items-center gap-2">
                   <Avatar className="h-8 w-8">
@@ -117,30 +126,33 @@ export function ChapterTable({
                 </div>
               </TableCell>
 
-              {/* Location column */}
+              {/* Location */}
               <TableCell className="whitespace-nowrap">
                 {c.city}, {c.country}
               </TableCell>
 
-              {/* Category column */}
+              {/* Category */}
               <TableCell className="whitespace-nowrap">
                 {getCategoryName(c.category)}
               </TableCell>
 
-              {/* State column */}
+              {/* State */}
               <TableCell className="whitespace-nowrap">
                 <Badge variant={stateBadgeVariant(c.state)}>
                   {c.state ?? "draft"}
                 </Badge>
               </TableCell>
 
-              {/* Updated column */}
+              {/* Updated */}
               <TableCell className="whitespace-nowrap text-muted-foreground">
                 {fmtDate(c.updatedAt)}
               </TableCell>
 
-              {/* Action column */}
-              <TableCell className="whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+              {/* Actions */}
+              <TableCell
+                className="whitespace-nowrap"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <div className="flex items-center gap-1">
                   <Button
                     variant="ghost"

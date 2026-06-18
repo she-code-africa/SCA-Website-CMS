@@ -98,14 +98,13 @@ export async function updateVolunteerRole(args: {
   const body: any = {
     name: args.data.name,
     description: args.data.description,
-    skills: JSON.stringify(args.data.skills),
+    skills: JSON.stringify(args.data.skills)
   };
-  if (args.data.image) {
+  if (args.data.image !== undefined) {
     body.image = args.data.image;
   }
   return (await api.put(`/volunteer-role/${args.id}`, body)) as VolunteerRole;
 }
-
 export async function deleteVolunteerRole(id: string) {
   return api.delete(`/volunteer-role/${id}`);
 }

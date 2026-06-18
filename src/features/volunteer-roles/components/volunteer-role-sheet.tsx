@@ -119,6 +119,7 @@ export function VolunteerRoleSheet({
   // ---------- image ----------
   const [imageFile, setImageFile] = React.useState<File | null>(null);
   const [imagePreview, setImagePreview] = React.useState<string | null>(null);
+  const [imageRemoved, setImageRemoved] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   // ---------- data fetching ----------
@@ -132,26 +133,27 @@ export function VolunteerRoleSheet({
   const role = roleQuery.data as VolunteerRole | undefined;
 
   // ---------- reset when sheet opens or mode changes ----------
-  React.useEffect(() => {
-    if (!open) return;
+React.useEffect(() => {
+  if (!open) return;
 
-    if (mode === "create") {
-      setEditing(true);
-      setName("");
-      setDescription("");
-      setSkills([]);
-      setSkillInput("");
-      setImageFile(null);
-      setImagePreview(null);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-      return;
-    }
-
-    // view mode: form will be populated when role data arrives
-    setEditing(false);
+  if (mode === "create") {
+    setEditing(true);
+    setName("");
+    setDescription("");
+    setSkills([]);
     setSkillInput("");
     setImageFile(null);
-  }, [open, mode]);
+    setImagePreview(null);
+    setImageRemoved(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    return;
+  }
+
+  setEditing(false);
+  setSkillInput("");
+  setImageFile(null);
+  setImageRemoved(false);
+}, [open, mode]);
 
   // ---------- populate form when role data loads ----------
   React.useEffect(() => {
@@ -175,19 +177,19 @@ export function VolunteerRoleSheet({
     }
   });
 
-  const updateMut = useMutation({
-    mutationFn: updateVolunteerRole,
-    onSuccess: () => {
-      toast.success("Volunteer role updated");
-      qc.invalidateQueries({ queryKey: ["volunteer-roles"] });
-      qc.invalidateQueries({ queryKey: ["volunteer-role", roleId] });
-      setEditing(false); // switch back to view
-      setImageFile(null);
-    },
-    onError: (err: any) => {
-      toast.error(err?.response?.data?.message ?? "Failed to update role");
-    }
-  });
+const updateMut = useMutation({
+  mutationFn: updateVolunteerRole,
+  onSuccess: () => {
+    toast.success("Volunteer role updated");
+    qc.invalidateQueries({ queryKey: ["volunteer-roles"] });
+    qc.invalidateQueries({ queryKey: ["volunteer-role", roleId] });
+    setEditing(false);
+    setImageFile(null);
+  },
+  onError: (err: any) => {
+    toast.error(err?.response?.data?.message ?? "Failed to update role");
+  }
+});
 
   const deleteMut = useMutation({
     mutationFn: deleteVolunteerRole,
@@ -223,74 +225,78 @@ export function VolunteerRoleSheet({
     setSkills((prev) => prev.filter((x) => x !== s));
   }
 
-  function cancelEdit() {
-    if (mode === "create") {
-      onOpenChange(false);
-      return;
-    }
-    // revert to saved role data
-    if (!role) return;
-    setName(role.name ?? "");
-    setDescription(role.description ?? "");
-    setSkills(role.skills ?? []);
-    setSkillInput("");
-    setImageFile(null);
-    setImagePreview(role.image ?? null);
-    setEditing(false);
+function cancelEdit() {
+  if (mode === "create") {
+    onOpenChange(false);
+    return;
+  }
+  if (!role) return;
+  setName(role.name ?? "");
+  setDescription(role.description ?? "");
+  setSkills(role.skills ?? []);
+  setSkillInput("");
+  setImageFile(null);
+  setImagePreview(role.image ?? null);
+  setImageRemoved(false);
+  setEditing(false);
+}
+
+async function onSave() {
+  if (!canSave) {
+    toast.error("Please fill name, description, and at least 1 skill.");
+    return;
   }
 
-  async function onSave() {
-    if (!canSave) {
-      toast.error("Please fill name, description, and at least 1 skill.");
+  let imageValue: string | undefined = undefined;
+
+  if (imageFile) {
+    try {
+      imageValue = await compressImage(imageFile, 800, 800, 0.7);
+    } catch {
+      toast.error("Failed to process image");
       return;
     }
+  } else if (imageRemoved) {
+    imageValue = "";
+  }
 
-    let imageValue: string | undefined = undefined;
-
-    if (imageFile) {
-      try {
-        imageValue = await compressImage(imageFile, 800, 800, 0.7);
-      } catch {
-        toast.error("Failed to process image");
-        return;
-      }
-    }
-
-    if (mode === "create") {
-      createMut.mutate({
+  if (mode === "create") {
+    createMut.mutate({
+      name: name.trim(),
+      description: description.trim(),
+      skills,
+      image: imageValue
+    });
+  } else if (roleId) {
+    updateMut.mutate({
+      id: roleId,
+      data: {
         name: name.trim(),
         description: description.trim(),
         skills,
         image: imageValue
-      });
-    } else if (roleId) {
-      updateMut.mutate({
-        id: roleId,
-        data: {
-          name: name.trim(),
-          description: description.trim(),
-          skills,
-          image: imageValue
-        }
-      });
-    }
+      }
+    });
   }
+}
 
   // ---------- image handlers ----------
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setImageFile(file);
-    const reader = new FileReader();
-    reader.onloadend = () => setImagePreview(reader.result as string);
-    reader.readAsDataURL(file);
-  };
+const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  setImageFile(file);
+  setImageRemoved(false);
+  const reader = new FileReader();
+  reader.onloadend = () => setImagePreview(reader.result as string);
+  reader.readAsDataURL(file);
+};
 
-  const handleRemoveImage = () => {
-    setImageFile(null);
-    setImagePreview(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  };
+const handleRemoveImage = () => {
+  setImageFile(null);
+  setImagePreview(null);
+  setImageRemoved(true);
+  if (fileInputRef.current) fileInputRef.current.value = "";
+};
 
   // ---------- derived booleans ----------
   const isFormEditable = mode === "create" || editing;

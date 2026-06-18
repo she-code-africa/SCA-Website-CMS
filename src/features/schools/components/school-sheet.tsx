@@ -1,3 +1,4 @@
+// src/features/schools/components/school-sheet.tsx
 "use client";
 
 import * as React from "react";
@@ -36,6 +37,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton"; // <-- added
 import { toast } from "sonner";
 import { cn } from "@/lib/utils/utils";
 
@@ -44,9 +46,16 @@ type Props = {
   onOpenChange: (v: boolean) => void;
   mode: "create" | "view";
   schoolId?: string;
+  onUpdate?: () => Promise<void>; // <-- added for table skeleton
 };
 
-export function SchoolSheet({ open, onOpenChange, mode, schoolId }: Props) {
+export function SchoolSheet({
+  open,
+  onOpenChange,
+  mode,
+  schoolId,
+  onUpdate
+}: Props) {
   const qc = useQueryClient();
   const [editing, setEditing] = React.useState(mode === "create");
 
@@ -66,6 +75,7 @@ export function SchoolSheet({ open, onOpenChange, mode, schoolId }: Props) {
 
   const [form, setForm] = React.useState<SchoolUpsertInput>(initialForm);
 
+  // Reset form when sheet opens / schoolId changes
   React.useEffect(() => {
     if (!open) return;
 
@@ -75,7 +85,17 @@ export function SchoolSheet({ open, onOpenChange, mode, schoolId }: Props) {
       return;
     }
 
-    if (schoolQuery.data) {
+    // For view mode, reset form to initial while loading to avoid flash of old data
+    if (mode === "view") {
+      setForm(initialForm);
+      setEditing(false);
+      // The effect below will update form when data arrives
+    }
+  }, [open, mode, schoolId, initialForm]); 
+
+  // Populate form when school data arrives
+  React.useEffect(() => {
+    if (open && mode === "view" && schoolQuery.data) {
       const s = schoolQuery.data as School;
       setEditing(false);
       setForm({
@@ -83,12 +103,13 @@ export function SchoolSheet({ open, onOpenChange, mode, schoolId }: Props) {
         description: s.description ?? ""
       });
     }
-  }, [open, mode, schoolQuery.data, initialForm]);
+  }, [schoolQuery.data, open, mode]);
 
   const createMut = useMutation({
     mutationFn: createSchool,
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("School added");
+      await onUpdate?.(); // triggers table skeleton
       qc.invalidateQueries({ queryKey: ["schools"] });
       onOpenChange(false);
     },
@@ -97,8 +118,9 @@ export function SchoolSheet({ open, onOpenChange, mode, schoolId }: Props) {
 
   const updateMut = useMutation({
     mutationFn: editSchool,
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("School updated");
+      await onUpdate?.();
       qc.invalidateQueries({ queryKey: ["schools"] });
       qc.invalidateQueries({ queryKey: ["school"] });
       onOpenChange(false);
@@ -108,8 +130,9 @@ export function SchoolSheet({ open, onOpenChange, mode, schoolId }: Props) {
 
   const deleteMut = useMutation({
     mutationFn: deleteSchool,
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Deleted");
+      await onUpdate?.();
       qc.invalidateQueries({ queryKey: ["schools"] });
       onOpenChange(false);
     },
@@ -128,13 +151,14 @@ export function SchoolSheet({ open, onOpenChange, mode, schoolId }: Props) {
     }
 
     if (!schoolId) return;
-    updateMut.mutate({
-      schoolId,
-      data: form
-    });
+    updateMut.mutate({ schoolId, data: form });
   };
 
   const saving = createMut.isPending || updateMut.isPending;
+
+  // Loading skeleton for view mode while fetching the school detail
+  const isLoadingDetail =
+    mode === "view" && !!schoolId && schoolQuery.isLoading;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -156,7 +180,7 @@ export function SchoolSheet({ open, onOpenChange, mode, schoolId }: Props) {
         <ScrollArea className="flex-1 px-6">
           <div className="py-6 space-y-6">
             {/* Top actions row */}
-            {mode === "view" && (
+            {mode === "view" && !isLoadingDetail && (
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <PermissionGate permission={PERMISSIONS.UPDATE_SCHOOL}>
                   <Button
@@ -209,53 +233,50 @@ export function SchoolSheet({ open, onOpenChange, mode, schoolId }: Props) {
               </div>
             )}
 
-            {/* Form Fields */}
-            <div className="grid gap-4">
-              <div className="grid gap-2">
-                <label className="text-sm font-medium">Name *</label>
-                <Input
-                  value={form.name}
-                  disabled={!editing}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  placeholder="School name"
-                />
+            {/* Skeleton while loading detail */}
+            {isLoadingDetail ? (
+              <div className="space-y-6">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-32 w-full" />
               </div>
+            ) : (
+              <>
+                {/* Form Fields */}
+                <div className="grid gap-4">
+                  <div className="grid gap-2">
+                    <label className="text-sm font-medium">Name *</label>
+                    <Input
+                      value={form.name}
+                      disabled={!editing}
+                      onChange={(e) =>
+                        setForm({ ...form, name: e.target.value })
+                      }
+                      placeholder="School name"
+                    />
+                  </div>
 
-              <div className="grid gap-2">
-                <label className="text-sm font-medium">Description *</label>
-                <Textarea
-                  value={form.description}
-                  disabled={!editing}
-                  onChange={(e) =>
-                    setForm({ ...form, description: e.target.value })
-                  }
-                  rows={8}
-                  placeholder="School description..."
-                />
-              </div>
-            </div>
+                  <div className="grid gap-2">
+                    <label className="text-sm font-medium">Description *</label>
+                    <Textarea
+                      value={form.description}
+                      disabled={!editing}
+                      onChange={(e) =>
+                        setForm({ ...form, description: e.target.value })
+                      }
+                      rows={8}
+                      placeholder="School description..."
+                    />
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </ScrollArea>
 
-        {/* Bottom action bar - only visible if user has permission */}
-        {(mode === "create" && (
-          <PermissionGate permission={PERMISSIONS.CREATE_SCHOOL}>
-            <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
-              <Button
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={saving}
-              >
-                Cancel
-              </Button>
-              <Button variant="default" onClick={submit} disabled={saving}>
-                {saving ? "Saving…" : "Add School"}
-              </Button>
-            </div>
-          </PermissionGate>
-        )) ||
-          (mode === "view" && editing && (
-            <PermissionGate permission={PERMISSIONS.UPDATE_SCHOOL}>
+        {/* Bottom action bar */}
+        {!isLoadingDetail &&
+          ((mode === "create" && (
+            <PermissionGate permission={PERMISSIONS.CREATE_SCHOOL}>
               <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
                 <Button
                   variant="outline"
@@ -265,11 +286,27 @@ export function SchoolSheet({ open, onOpenChange, mode, schoolId }: Props) {
                   Cancel
                 </Button>
                 <Button variant="default" onClick={submit} disabled={saving}>
-                  {saving ? "Saving…" : "Save Changes"}
+                  {saving ? "Saving…" : "Add School"}
                 </Button>
               </div>
             </PermissionGate>
-          ))}
+          )) ||
+            (mode === "view" && editing && (
+              <PermissionGate permission={PERMISSIONS.UPDATE_SCHOOL}>
+                <div className="border-t px-6 py-4 flex items-center justify-end gap-2 bg-background">
+                  <Button
+                    variant="outline"
+                    onClick={() => onOpenChange(false)}
+                    disabled={saving}
+                  >
+                    Cancel
+                  </Button>
+                  <Button variant="default" onClick={submit} disabled={saving}>
+                    {saving ? "Saving…" : "Save Changes"}
+                  </Button>
+                </div>
+              </PermissionGate>
+            )))}
       </SheetContent>
     </Sheet>
   );
