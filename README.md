@@ -1,86 +1,36 @@
-# This Template was dcloned from Notus React 
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Files and Folder
+## Getting Started
 
-This is the project structure that you will get upon the download:
-```
-notus-react
-.
-├── CHANGELOG.md
-├── ISSUE_TEMPLATE.md
-├── LICENSE.md
-├── README.md
-├── gulpfile.js
-├── jsconfig.json
-├── package.json
-├── public
-│   ├── favicon.ico
-│   ├── index.html
-│   ├── manifest.json
-│   └── robots.txt
-├── src
-│   ├── assets
-│   │   ├── img
-│   │   │   ├── all images are stored here
-│   │   └── styles
-│   │       ├── index.css
-│   │       └── tailwind.css
-│   ├── components
-│   │   ├── Cards
-│   │   │   ├── CardBarChart.js
-│   │   │   ├── CardLineChart.js
-│   │   │   ├── CardPageVisits.js
-│   │   │   ├── CardProfile.js
-│   │   │   ├── CardSettings.js
-│   │   │   ├── CardSocialTraffic.js
-│   │   │   ├── CardStats.js
-│   │   │   └── CardTable.js
-│   │   ├── Dropdowns
-│   │   │   ├── IndexDropdown.js
-│   │   │   ├── NotificationDropdown.js
-│   │   │   ├── PagesDropdown.js
-│   │   │   ├── TableDropdown.js
-│   │   │   └── UserDropdown.js
-│   │   ├── Footers
-│   │   │   ├── Footer.js
-│   │   │   ├── FooterAdmin.js
-│   │   │   └── FooterSmall.js
-│   │   ├── Headers
-│   │   │   └── HeaderStats.js
-│   │   ├── Maps
-│   │   │   └── MapExample.js
-│   │   ├── Navbars
-│   │   │   ├── AdminNavbar.js
-│   │   │   ├── AuthNavbar.js
-│   │   │   └── IndexNavbar.js
-│   │   └── Sidebar
-│   │       └── Sidebar.js
-│   ├── index.js
-│   ├── layouts
-│   │   ├── Admin.js
-│   │   └── Auth.js
-│   └── views
-│       ├── Index.js
-│       ├── admin
-│       │   ├── all admin pages are found here (dashboard, teams etc)
-│       └── auth
-│           ├── all auth pages are stored here (login, password reset etc)
-└── tailwind.config.js
+First, run the development server:
+
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-## Running the project
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-Yarn package manager is used follow the steps below
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-``` yarn install```
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-``` yarn build:tailwind ``` (Optional)
+## Learn More
 
-``` yarn start ```
+To learn more about Next.js, take a look at the following resources:
 
-## Things to NOTE
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-The tailwind CSS was compiled by Notus React so some classes may seem different. Read [the documentation](https://www.creative-tim.com/learning-lab/tailwind/react/overview/notus) to view the custom classes
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-Whenever you add a new class you'll need to run ``` yarn build:tailwind ``` to load the new classes
+## Deploy on Vercel
 
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
