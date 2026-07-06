@@ -140,10 +140,7 @@
 //   );
 // }
 
-
-
 //the above code is the code with permission gate, once backend adds the necessary permissions to this page, you can uncomment the above and delete the below
-
 
 "use client";
 
@@ -152,21 +149,21 @@ import { useQuery } from "@tanstack/react-query";
 import type { CourseFilters } from "../types";
 import { getSAGActivities } from "@/features/stem-a-girl/activities/api";
 import type { SAGActivity } from "@/features/stem-a-girl/activities/types";
-
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
   PopoverContent,
-  PopoverTrigger
+  PopoverTrigger,
 } from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from "@/components/ui/select";
+import { useRouter } from "next/navigation";
 
 type Props = {
   value: CourseFilters;
@@ -183,10 +180,11 @@ export function CoursesFilters({ value, onChange, onReset }: Props) {
   const activitiesQuery = useQuery({
     queryKey: ["sag-activities"],
     queryFn: () => getSAGActivities({}),
-    staleTime: 60_000
+    staleTime: 60_000,
   });
 
   const activities = (activitiesQuery.data ?? []) as SAGActivity[];
+  const router = useRouter();
 
   return (
     <div className="flex w-full flex-col gap-2 lg:w-auto lg:flex-row lg:items-center">
@@ -271,7 +269,10 @@ export function CoursesFilters({ value, onChange, onReset }: Props) {
         <Button
           variant="default"
           className="w-full sm:w-auto"
-          onClick={() => window.dispatchEvent(new CustomEvent("sag-course:add"))}
+          onClick={() =>
+            // window.dispatchEvent(new CustomEvent("sag-course:add"))
+            router.push("/admin/stem-a-girl/courses/add")
+          }
         >
           Add Course
         </Button>
