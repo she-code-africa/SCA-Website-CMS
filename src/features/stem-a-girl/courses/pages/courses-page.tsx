@@ -195,12 +195,7 @@
 //   );
 // }
 
-
-
-
 //the above code is the code with permission gate, once backend adds the necessary permissions to this page, you can uncomment the above and delete the below
-
-
 
 "use client";
 
@@ -226,7 +221,7 @@ function applyFilters(rows: Course[], filters: CourseFilters) {
     out = out.filter(
       (c) =>
         c.title.toLowerCase().includes(search) ||
-        c.description.toLowerCase().includes(search)
+        c.description.toLowerCase().includes(search),
     );
   }
   if (filters.state) out = out.filter((c) => c.state === filters.state);
@@ -237,7 +232,7 @@ export default function CoursesPage() {
   const [filters, setFilters] = React.useState<CourseFilters>({
     search: "",
     state: "",
-    sortBy: ""
+    sortBy: "",
   });
   const [page, setPage] = React.useState(1);
   const limit = 10;
@@ -248,22 +243,22 @@ export default function CoursesPage() {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["courses"],
     queryFn: getCourses,
-    staleTime: 30_000
+    staleTime: 30_000,
   });
 
   const { data: activitiesData, isLoading: isLoadingActivities } = useQuery({
     queryKey: ["sag-activities"],
     queryFn: () => getSAGActivities({}),
-    staleTime: 60_000
+    staleTime: 60_000,
   });
 
   const courses = React.useMemo(
     () => (Array.isArray(data) ? data : []),
-    [data]
+    [data],
   );
   const activities = React.useMemo(
     () => (activitiesData as SAGActivity[]) ?? [],
-    [activitiesData]
+    [activitiesData],
   );
 
   const activityMap = React.useMemo(() => {
@@ -276,7 +271,7 @@ export default function CoursesPage() {
 
   const filtered = React.useMemo(
     () => applyFilters(courses, filters),
-    [courses, filters]
+    [courses, filters],
   );
   const totalPages = Math.max(1, Math.ceil(filtered.length / limit));
   const paged = filtered.slice((page - 1) * limit, page * limit);
@@ -339,10 +334,13 @@ export default function CoursesPage() {
               <MobileCourseSkeletonCard key={i} />
             ))
           ) : isError ? (
-            <div className="text-center text-red-500">Failed to load courses</div>
+            <div className="text-center text-red-500">
+              Failed to load courses
+            </div>
           ) : paged.length ? (
             paged.map((c) => (
               <button
+                title='Mobile course card'
                 key={c._id}
                 onClick={() => openView(c)}
                 className="text-left w-full"
@@ -351,7 +349,9 @@ export default function CoursesPage() {
               </button>
             ))
           ) : (
-            <div className="text-center text-muted-foreground">No courses found</div>
+            <div className="text-center text-muted-foreground">
+              No courses found
+            </div>
           )}
         </div>
 

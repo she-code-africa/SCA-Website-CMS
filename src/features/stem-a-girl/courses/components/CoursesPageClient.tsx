@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 
 const CoursesPage = dynamic(
   () => import("@/features/stem-a-girl/courses/pages/courses-page"),
-  { ssr: false }
+  { ssr: false },
 );
 
 export default function CoursesPageClient() {

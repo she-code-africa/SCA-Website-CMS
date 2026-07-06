@@ -154,8 +154,6 @@
 //   );
 // }
 
-
-
 // uncomment the above after the permission has been added from backend then delete the below
 
 "use client";
@@ -180,7 +178,7 @@ function applyFilters(rows: Outreach[], filters: OutreachFilters) {
     out = out.filter(
       (o) =>
         o.state.toLowerCase().includes(search) ||
-        o.description.toLowerCase().includes(search)
+        o.description.toLowerCase().includes(search),
     );
   }
   if (filters.state) {
@@ -209,18 +207,18 @@ export default function OutreachPage() {
   const {
     data: outreaches = [],
     isLoading,
-    isError
+    isError,
   } = useQuery({
     queryKey: ["outreaches"],
     queryFn: getOutreaches,
-    staleTime: 30_000
+    staleTime: 30_000,
   });
 
   const filtered = React.useMemo(() => {
     const sorted = [...outreaches].sort(
       (a, b) =>
         new Date(b.outreachDate ?? 0).getTime() -
-        new Date(a.outreachDate ?? 0).getTime()
+        new Date(a.outreachDate ?? 0).getTime(),
     );
     return applyFilters(sorted, filters);
   }, [outreaches, filters]);
@@ -250,60 +248,60 @@ export default function OutreachPage() {
   };
 
   return (
-      <TableShell
-        title="Outreach"
-        description="Manage outreach events and their galleries."
-      >
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <Filters
-              value={filters}
-              onChange={setFilters}
-              onReset={() => setFilters({})}
-            />
-          </div>
-          <div className="flex justify-end">
-            <OutreachPagination
-              currentPage={page}
-              totalPages={totalPages}
-              onPrevious={() => setPage((p) => Math.max(1, p - 1))}
-              onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
-              isLoading={isLoading}
-            />
-          </div>
-          <div className="grid gap-3 md:hidden">
-            {isLoading ? (
-              Array.from({ length: 6 }).map((_, i) => (
-                <MobileOutreachSkeletonCard key={i} />
-              ))
-            ) : isError ? (
-              <div className="text-red-500">Failed to load</div>
-            ) : (
-              paged.map((o) => (
-                <button key={o._id} onClick={() => openView(o)}>
-                  <MobileOutreachCard outreach={o} />
-                </button>
-              ))
-            )}
-          </div>
-          <div className="hidden md:block">
-            <TableFrame>
-              <OutreachTable
-                rows={paged}
-                isLoading={isLoading}
-                isError={isError}
-                onView={openView}
-                onEdit={openEdit}
-              />
-            </TableFrame>
-          </div>
-          <OutreachSheet
-            open={sheetOpen}
-            onOpenChange={setSheetOpen}
-            mode={sheetMode}
-            outreachId={selectedId || undefined}
+    <TableShell
+      title="Outreach"
+      description="Manage outreach events and their galleries."
+    >
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <Filters
+            value={filters}
+            onChange={setFilters}
+            onReset={() => setFilters({})}
           />
         </div>
-      </TableShell>
+        <div className="flex justify-end">
+          <OutreachPagination
+            currentPage={page}
+            totalPages={totalPages}
+            onPrevious={() => setPage((p) => Math.max(1, p - 1))}
+            onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
+            isLoading={isLoading}
+          />
+        </div>
+        <div className="grid gap-3 md:hidden">
+          {isLoading ? (
+            Array.from({ length: 6 }).map((_, i) => (
+              <MobileOutreachSkeletonCard key={i} />
+            ))
+          ) : isError ? (
+            <div className="text-red-500">Failed to load</div>
+          ) : (
+            paged.map((o) => (
+              <button title='Mobile Outreach' key={o._id} onClick={() => openView(o)}>
+                <MobileOutreachCard outreach={o} />
+              </button>
+            ))
+          )}
+        </div>
+        <div className="hidden md:block">
+          <TableFrame>
+            <OutreachTable
+              rows={paged}
+              isLoading={isLoading}
+              isError={isError}
+              onView={openView}
+              onEdit={openEdit}
+            />
+          </TableFrame>
+        </div>
+        <OutreachSheet
+          open={sheetOpen}
+          onOpenChange={setSheetOpen}
+          mode={sheetMode}
+          outreachId={selectedId || undefined}
+        />
+      </div>
+    </TableShell>
   );
 }
