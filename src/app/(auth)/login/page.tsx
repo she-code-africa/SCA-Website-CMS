@@ -260,14 +260,14 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage
+  FormMessage,
 } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-  rememberMe: z.boolean()
+  rememberMe: z.boolean(),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -282,8 +282,8 @@ export default function LoginPage() {
     defaultValues: {
       email: "",
       password: "",
-      rememberMe: false
-    }
+      rememberMe: false,
+    },
   });
 
   React.useEffect(() => {
@@ -303,7 +303,7 @@ export default function LoginPage() {
       Cookies.set("isLoggedIn", "true", {
         expires,
         sameSite: "lax",
-        secure: process.env.NODE_ENV === "production"
+        secure: process.env.NODE_ENV === "production",
       });
 
       localStorage.setItem("token", token);
@@ -347,7 +347,7 @@ export default function LoginPage() {
       } else {
         toast.error("Login failed. Please try again.");
       }
-    }
+    },
   });
 
   const onSubmit = (data: LoginFormValues) => {
@@ -410,7 +410,7 @@ export default function LoginPage() {
                         className="text-[11px] text-slate-500 hover:underline"
                         onClick={() =>
                           toast.info(
-                            "Contact your system administrator to reset."
+                            "Contact your system administrator to reset.",
                           )
                         }
                       >

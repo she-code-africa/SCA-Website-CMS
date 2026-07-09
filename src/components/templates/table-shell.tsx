@@ -16,7 +16,7 @@ export function TableShell({
   description,
   right,
   children,
-  className
+  className,
 }: Props) {
   return (
     <Card className={cn("overflow-hidden", className)}>

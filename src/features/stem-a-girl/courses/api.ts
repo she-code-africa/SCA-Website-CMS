@@ -35,7 +35,10 @@ export async function createCourse(input: CourseUpsertInput): Promise<Course> {
   return await api.post("/course", input);
 }
 
-export async function updateCourse(id: string, input: CourseUpsertInput): Promise<Course> {
+export async function updateCourse(
+  id: string,
+  input: CourseUpsertInput,
+): Promise<Course> {
   return await api.put(`/course/${id}`, input);
 }
 

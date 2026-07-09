@@ -16,7 +16,7 @@ import {
   Cpu,
   UsersRound,
   Sparkles,
-  Settings
+  Settings,
 } from "lucide-react";
 import { PERMISSIONS } from "@/lib/rbac/permissions";
 
@@ -40,14 +40,14 @@ export const adminRoutes: NavItem[] = [
     label: "Dashboard",
     icon: LayoutDashboard,
     path: "/admin/dashboard",
-    permission: PERMISSIONS.VIEW_DASHBOARD
+    permission: PERMISSIONS.VIEW_DASHBOARD,
   },
   {
     name: "team",
     label: "Team",
     icon: Users,
     path: "/admin/team",
-    permission: PERMISSIONS.VIEW_TEAM
+    permission: PERMISSIONS.VIEW_TEAM,
   },
   {
     name: "volunteers",
@@ -60,50 +60,50 @@ export const adminRoutes: NavItem[] = [
         name: "volunteer-requests",
         label: "Volunteer Requests",
         path: "/admin/volunteers/requests",
-        permission: PERMISSIONS.VIEW_VOLUNTEER_REQUEST
+        permission: PERMISSIONS.VIEW_VOLUNTEER_REQUEST,
       },
       {
         name: "volunteer-roles",
         label: "Volunteer Roles",
         path: "/admin/volunteers/roles",
-        permission: PERMISSIONS.VIEW_ROLE
-      }
-    ]
+        permission: PERMISSIONS.VIEW_ROLE,
+      },
+    ],
   },
   {
     name: "talent",
     label: "Talent Request",
     icon: UserSearch,
     path: "/admin/talent-request",
-    permission: PERMISSIONS.VIEW_TALENT_REQUEST
+    permission: PERMISSIONS.VIEW_TALENT_REQUEST,
   },
   {
     name: "enquiries",
     label: "Enquiries",
     icon: HelpCircle,
     path: "/admin/enquiries",
-    permission: PERMISSIONS.VIEW_ENQUIRY
+    permission: PERMISSIONS.VIEW_ENQUIRY,
   },
   {
     name: "testimonials",
     label: "Testimonials",
     icon: MessageSquareText,
     path: "/admin/testimonials",
-    permission: PERMISSIONS.VIEW_TESTIMONIALS
+    permission: PERMISSIONS.VIEW_TESTIMONIALS,
   },
   {
     name: "reports",
     label: "Reports",
     icon: ClipboardList,
     path: "/admin/reports",
-    permission: PERMISSIONS.VIEW_REPORT
+    permission: PERMISSIONS.VIEW_REPORT,
   },
   {
     name: "events",
     label: "Events",
     icon: CalendarDays,
     path: "/admin/events",
-    permission: PERMISSIONS.VIEW_EVENT
+    permission: PERMISSIONS.VIEW_EVENT,
   },
   {
     name: "chapters",
@@ -116,15 +116,15 @@ export const adminRoutes: NavItem[] = [
         name: "chapter-list",
         label: "All Chapters",
         path: "/admin/chapters",
-        permission: PERMISSIONS.VIEW_CHAPTER
+        permission: PERMISSIONS.VIEW_CHAPTER,
       },
       {
         name: "chapter-events",
         label: "Chapter Events",
         path: "/admin/chapters/chapter-events",
-        permission: PERMISSIONS.VIEW_EVENT
-      }
-    ]
+        permission: PERMISSIONS.VIEW_EVENT,
+      },
+    ],
   },
   {
     name: "stem-a-girl",
@@ -133,38 +133,39 @@ export const adminRoutes: NavItem[] = [
     path: "/admin/stem-a-girl/activities",
     permission: PERMISSIONS.VIEW_ACTIVITY,
     items: [
-      {
-        name: "activities",
-        label: "Activities",
-        path: "/admin/stem-a-girl/activities",
-        permission: PERMISSIONS.VIEW_ACTIVITY
-      },
-      {
-        name: "impact-stories",
-        label: "Impact Stories",
-        path: "/admin/stem-a-girl/impact-stories",
-        permission: PERMISSIONS.VIEW_SAG_IMPACT_STORY
-        
-      },
+      //REMOVE FOR NOW
+      // {
+      //   name: "activities",
+      //   label: "Activities",
+      //   path: "/admin/stem-a-girl/activities",
+      //   permission: PERMISSIONS.VIEW_ACTIVITY
+      // },
+      // {
+      //   name: "impact-stories",
+      //   label: "Impact Stories",
+      //   path: "/admin/stem-a-girl/impact-stories",
+      //   permission: PERMISSIONS.VIEW_SAG_IMPACT_STORY
+
+      // },
       {
         name: "courses",
         label: "Courses",
-        path: "/admin/stem-a-girl/courses"
+        path: "/admin/stem-a-girl/courses",
         // permission: PERMISSIONS.VIEW_IMPACT_STORIES
       },
       {
         name: "outreach",
         label: "Outreach",
-        path: "/admin/stem-a-girl/outreach"
+        path: "/admin/stem-a-girl/outreach",
         // permission: PERMISSIONS.VIEW_IMPACT_STORIES
       },
       {
         name: "enquiries",
         label: "Enquiries",
-        path: "/admin/stem-a-girl/enquiries"
+        path: "/admin/stem-a-girl/enquiries",
         // permission: PERMISSIONS.VIEW_IMPACT_STORIES
-      }
-    ]
+      },
+    ],
   },
   {
     name: "academy",
@@ -177,49 +178,49 @@ export const adminRoutes: NavItem[] = [
         name: "schools",
         label: "Schools",
         path: "/admin/academy/schools",
-        permission: PERMISSIONS.VIEW_SCHOOL
+        permission: PERMISSIONS.VIEW_SCHOOL,
       },
       {
         name: "school-programs",
         label: "School Programs",
         path: "/admin/academy/school-programs",
-        permission: PERMISSIONS.VIEW_SCHOOLPROGRAM
+        permission: PERMISSIONS.VIEW_SCHOOLPROGRAM,
       },
       {
         name: "courses",
         label: "Courses",
         path: "/admin/academy/courses",
-        permission: PERMISSIONS.VIEW_COURSE
-      }
-    ]
+        permission: PERMISSIONS.VIEW_COURSE,
+      },
+    ],
   },
   {
     name: "initiatives",
     label: "Initiatives",
     icon: Cpu,
     path: "/admin/initiatives",
-    permission: PERMISSIONS.VIEW_INITIATIVE
+    permission: PERMISSIONS.VIEW_INITIATIVE,
   },
   {
     name: "partners",
     label: "Partners/Sponsors",
     icon: Handshake,
     path: "/admin/partners",
-    permission: PERMISSIONS.VIEW_PARTNER
+    permission: PERMISSIONS.VIEW_PARTNER,
   },
   {
     name: "jobs",
     label: "Jobs",
     icon: BriefcaseBusiness,
     path: "/admin/jobs",
-    permission: PERMISSIONS.VIEW_JOB
+    permission: PERMISSIONS.VIEW_JOB,
   },
   {
     name: "companies",
     label: "Companies",
     icon: Building2,
     path: "/admin/companies",
-    permission: PERMISSIONS.VIEW_COMPANY
+    permission: PERMISSIONS.VIEW_COMPANY,
   },
   {
     name: "settings",
@@ -232,19 +233,19 @@ export const adminRoutes: NavItem[] = [
         name: "reach",
         label: "Our Reach",
         path: "/admin/settings/reach",
-        permission: PERMISSIONS.VIEW_OUR_REACH
+        permission: PERMISSIONS.VIEW_OUR_REACH,
       },
       {
         name: "users",
         label: "Users",
         path: "/admin/settings/users",
-        permission: PERMISSIONS.VIEW_USER
+        permission: PERMISSIONS.VIEW_USER,
       },
       {
         name: "roles",
         label: "Roles & Permissions",
         path: "/admin/settings/roles",
-        permission: PERMISSIONS.VIEW_ROLE
+        permission: PERMISSIONS.VIEW_ROLE,
       },
       //       {
       //   name: "permissions",
@@ -252,6 +253,6 @@ export const adminRoutes: NavItem[] = [
       //   path: "/admin/settings/permissions",
       //   // permission: PERMISSIONS.VIEW_ROLE
       // }
-    ]
-  }
+    ],
+  },
 ];
