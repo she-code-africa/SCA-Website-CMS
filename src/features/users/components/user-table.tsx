@@ -86,123 +86,119 @@ export function UserTable({
   };
 
   return (
-    <div className="rounded-md border">
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              {headers.map((h) => (
-                <TableHead key={h} className="whitespace-nowrap">
-                  {h}
-                </TableHead>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          {headers.map((h) => (
+            <TableHead key={h} className="whitespace-nowrap">
+              {h}
+            </TableHead>
+          ))}
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {isLoading ? (
+          Array.from({ length: 8 }).map((_, idx) => (
+            <TableRow key={idx}>
+              {headers.map((_, cIdx) => (
+                <TableCell key={cIdx} className="whitespace-nowrap">
+                  <Skeleton className="h-4 w-24" />
+                </TableCell>
               ))}
             </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              Array.from({ length: 8 }).map((_, idx) => (
-                <TableRow key={idx}>
-                  {headers.map((_, cIdx) => (
-                    <TableCell key={cIdx} className="whitespace-nowrap">
-                      <Skeleton className="h-4 w-24" />
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : isError ? (
-              <TableRow>
-                <TableCell
-                  colSpan={headers.length}
-                  className="h-24 text-center text-red-500"
-                >
-                  Failed to load users.
-                </TableCell>
-              </TableRow>
-            ) : rows.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={headers.length}
-                  className="h-24 text-center text-muted-foreground"
-                >
-                  No users found.
-                </TableCell>
-              </TableRow>
-            ) : (
-              rows.map((u) => {
-                const userId = u._id || u.id;
-                const fullName =
-                  [u.firstName, u.lastName].filter(Boolean).join(" ") || "—";
+          ))
+        ) : isError ? (
+          <TableRow>
+            <TableCell
+              colSpan={headers.length}
+              className="h-24 text-center text-red-500"
+            >
+              Failed to load users.
+            </TableCell>
+          </TableRow>
+        ) : rows.length === 0 ? (
+          <TableRow>
+            <TableCell
+              colSpan={headers.length}
+              className="h-24 text-center text-muted-foreground"
+            >
+              No users found.
+            </TableCell>
+          </TableRow>
+        ) : (
+          rows.map((u) => {
+            const userId = u._id || u.id;
+            const fullName =
+              [u.firstName, u.lastName].filter(Boolean).join(" ") || "—";
 
-                return (
-                  <TableRow
-                    key={userId}
-                    onClick={() => canEdit && onRowClick(u)}
-                    className={cn(
-                      canEdit
-                        ? "cursor-pointer hover:bg-muted/50"
-                        : "cursor-default"
-                    )}
+            return (
+              <TableRow
+                key={userId}
+                onClick={() => canEdit && onRowClick(u)}
+                className={cn(
+                  canEdit
+                    ? "cursor-pointer hover:bg-muted/50"
+                    : "cursor-default"
+                )}
+              >
+                <TableCell className="whitespace-nowrap">
+                  <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 shrink-0 rounded-full bg-primary/20 flex items-center justify-center text-xs font-semibold text-primary">
+                      {initials(u)}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-medium leading-none">{fullName}</p>
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        {u.email}
+                      </p>
+                    </div>
+                  </div>
+                </TableCell>
+
+                {/* Role Cell – clickable */}
+                <TableCell
+                  className="whitespace-nowrap cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (canEdit) onRowClick(u);
+                  }}
+                >
+                  <Badge
+                    variant={
+                      u.role === "ADMINISTRATOR" ? "default" : "secondary"
+                    }
                   >
-                    <TableCell className="whitespace-nowrap">
-                      <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 shrink-0 rounded-full bg-primary/20 flex items-center justify-center text-xs font-semibold text-primary">
-                          {initials(u)}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="font-medium leading-none">{fullName}</p>
-                          <p className="mt-0.5 text-xs text-muted-foreground">
-                            {u.email}
-                          </p>
-                        </div>
-                      </div>
-                    </TableCell>
+                    {resolveRoleName(u)}
+                  </Badge>
+                </TableCell>
 
-                    {/* Role Cell – clickable */}
-                    <TableCell
-                      className="whitespace-nowrap cursor-pointer"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (canEdit) onRowClick(u);
-                      }}
-                    >
-                      <Badge
-                        variant={
-                          u.role === "ADMINISTRATOR" ? "default" : "secondary"
-                        }
-                      >
-                        {resolveRoleName(u)}
-                      </Badge>
-                    </TableCell>
+                <TableCell className="whitespace-nowrap">
+                  {getStatusBadge(u)}
+                </TableCell>
 
-                    <TableCell className="whitespace-nowrap">
-                      {getStatusBadge(u)}
-                    </TableCell>
+                <TableCell className="whitespace-nowrap text-muted-foreground">
+                  {fmtDate(u.createdAt)}
+                </TableCell>
 
-                    <TableCell className="whitespace-nowrap text-muted-foreground">
-                      {fmtDate(u.createdAt)}
-                    </TableCell>
-
-                    {/* Action Column */}
-                    <TableCell
-                      className="whitespace-nowrap"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => onRowClick(u)}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-            )}
-          </TableBody>
-        </Table>
-      </div>
-    </div>
+                {/* Action Column */}
+                <TableCell
+                  className="whitespace-nowrap"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => onRowClick(u)}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            );
+          })
+        )}
+      </TableBody>
+    </Table>
   );
 }
