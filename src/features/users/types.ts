@@ -20,6 +20,7 @@ export interface AdminUser {
   isActive: boolean;
   lastLogin?: string | null;
   createdAt: string;
+  expiresAt?: string | null;
 }
 
 // 👇 Update to match backend response

@@ -63,7 +63,7 @@ function applyClientFilters(rows: Chapter[], f: ChapterFilters) {
 export default function ChaptersPage() {
   const [filters, setFilters] = React.useState<ChapterFilters>({
     search: "",
-    state: "" as any,
+    state: "", 
     category: "",
     sortBy: ""
   });
@@ -74,9 +74,9 @@ export default function ChaptersPage() {
   const [modalOpen, setModalOpen] = React.useState(false);
   const [modalMode, setModalMode] = React.useState<"create" | "view">("create");
   const [selected, setSelected] = React.useState<Chapter | null>(null);
-  const [isUpdating, setIsUpdating] = React.useState(false);   // NEW
+  const [isUpdating, setIsUpdating] = React.useState(false);
 
-  // Listen for custom add event (kept for compatibility)
+  // Listen for custom add event
   React.useEffect(() => {
     if (typeof window === "undefined") return;
     const handler = () => {
@@ -149,7 +149,7 @@ export default function ChaptersPage() {
               onReset={() =>
                 setFilters({
                   search: "",
-                  state: "" as any,
+                  state: "", // 👈 Reset to ""
                   category: "",
                   sortBy: ""
                 })
@@ -198,7 +198,7 @@ export default function ChaptersPage() {
                   <ChapterTable
                     rows={paged}
                     isLoading={query.isLoading}
-                    isUpdating={isUpdating}         
+                    isUpdating={isUpdating}
                     isError={query.isError}
                     onView={openView}
                     onEdit={openEdit}
@@ -222,7 +222,7 @@ export default function ChaptersPage() {
                 ? selected.category?._id
                 : undefined
             }
-            onUpdate={handleSheetUpdate}   
+            onUpdate={handleSheetUpdate}
           />
         </div>
       </TableShell>
