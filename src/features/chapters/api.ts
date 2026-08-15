@@ -101,10 +101,17 @@ export async function deleteChapterCategory(id: string) {
 export async function getChapters(
   page: number = 1,
   limit: number = 10,
+  filters?: { state?: string } 
 ): Promise<ChapterPagedResponse> {
-  const res = await api.get(
-    `/chapters/member-chapters?page=${page}&limit=${limit}`,
-  );
+  const params = new URLSearchParams();
+  params.set("page", String(page));
+  params.set("limit", String(limit));
+
+  if (filters?.state) {
+    params.set("state", filters.state); 
+  }
+
+  const res = await api.get(`/chapters/member-chapters?${params.toString()}`);
   return normalizePagedChapters(res);
 }
 

@@ -555,11 +555,7 @@
 //   );
 // }
 
-
-
 //the above code is the code with permission gate, once backend adds the necessary permissions to this page, you can uncomment the above and delete the below
-
-
 
 "use client";
 
@@ -581,7 +577,7 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetDescription
+  SheetDescription,
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -593,7 +589,7 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from "@/components/ui/select";
 import {
   AlertDialog,
@@ -604,9 +600,10 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogCancel,
-  AlertDialogAction
+  AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import { Switch } from "@/components/ui/switch";
+import { useRouter } from "next/navigation";
 
 type Props = {
   open: boolean;
@@ -621,19 +618,20 @@ export function CourseSheet({ open, onOpenChange, mode, courseId }: Props) {
   const [imageFile, setImageFile] = React.useState<File | null>(null);
   const [imagePreview, setImagePreview] = React.useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const router = useRouter()
 
   // ─── Queries ───────────────────────────────────────────────────────────────
   const courseQuery = useQuery({
     queryKey: ["course", courseId],
     queryFn: () => getCourse(String(courseId)),
-    enabled: open && mode === "view" && !!courseId
+    enabled: open && mode === "view" && !!courseId,
   });
 
   const activitiesQuery = useQuery({
     queryKey: ["sag-activities"],
     queryFn: () => getSAGActivities({}),
     enabled: open,
-    staleTime: 60_000
+    staleTime: 60_000,
   });
 
   const activities = (activitiesQuery.data ?? []) as SAGActivity[];
@@ -648,10 +646,10 @@ export function CourseSheet({ open, onOpenChange, mode, courseId }: Props) {
       state: "draft",
       difficulty: "",
       estimatedHours: "",
-      featured: false
+      featured: false,
       // image is omitted – we handle it separately
     }),
-    []
+    [],
   );
 
   const [form, setForm] = React.useState<CourseUpsertInput>(initialForm);
@@ -682,7 +680,7 @@ export function CourseSheet({ open, onOpenChange, mode, courseId }: Props) {
         state: (c.state ?? "draft") as CourseState,
         difficulty: c.difficulty ?? "",
         estimatedHours: c.estimatedHours ?? "",
-        featured: c.featured ?? false
+        featured: c.featured ?? false,
       });
     }
   }, [open, mode, courseQuery.data, initialForm]);
@@ -696,7 +694,7 @@ export function CourseSheet({ open, onOpenChange, mode, courseId }: Props) {
       onOpenChange(false);
     },
     onError: (err: any) =>
-      toast.error(err?.response?.data?.message || "Could not create course")
+      toast.error(err?.response?.data?.message || "Could not create course"),
   });
 
   const updateMut = useMutation({
@@ -709,7 +707,7 @@ export function CourseSheet({ open, onOpenChange, mode, courseId }: Props) {
       onOpenChange(false);
     },
     onError: (err: any) =>
-      toast.error(err?.response?.data?.message || "Could not update course")
+      toast.error(err?.response?.data?.message || "Could not update course"),
   });
 
   const deleteMut = useMutation({
@@ -719,7 +717,7 @@ export function CourseSheet({ open, onOpenChange, mode, courseId }: Props) {
       qc.invalidateQueries({ queryKey: ["courses"] });
       onOpenChange(false);
     },
-    onError: () => toast.error("Could not delete course")
+    onError: () => toast.error("Could not delete course"),
   });
 
   const saving = createMut.isPending || updateMut.isPending;
@@ -771,7 +769,7 @@ export function CourseSheet({ open, onOpenChange, mode, courseId }: Props) {
       state: form.state,
       difficulty: form.difficulty,
       estimatedHours: form.estimatedHours,
-      featured: form.featured
+      featured: form.featured,
     };
 
     if (imageValue) {
@@ -844,7 +842,13 @@ export function CourseSheet({ open, onOpenChange, mode, courseId }: Props) {
           <div className="py-6 space-y-6">
             {mode === "view" && (
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <Button variant="outline" onClick={() => setEditing((v) => !v)}>
+                {/* setEditing((v) => !v) */}
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    router.push(`/admin/stem-a-girl/courses/edit/${courseId}`)
+                  }
+                >
                   {editing ? "View" : "Edit"}
                 </Button>
 
@@ -889,7 +893,7 @@ export function CourseSheet({ open, onOpenChange, mode, courseId }: Props) {
                       "w-32 h-32 rounded-lg border-2 border-dashed overflow-hidden transition-colors",
                       editing
                         ? "border-muted-foreground/25 hover:border-muted-foreground/50"
-                        : "border-muted-foreground/25"
+                        : "border-muted-foreground/25",
                     )}
                   >
                     {imagePreview ? (

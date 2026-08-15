@@ -20,7 +20,8 @@ import {
   updateUserRole,
   activateUser,
   deactivateUser,
-  deleteUser
+  deleteUser,
+  deleteExpiredInvite
 } from "@/features/users/api";
 import type {
   AdminUser,
@@ -30,6 +31,8 @@ import type {
 } from "@/features/users/types";
 import { PermissionGate } from "@/components/PermissionGate";
 import { PERMISSIONS } from "@/lib/rbac/permissions";
+import { TableFrame } from "@/components/templates/table-frame";
+import { TableShell } from "@/components/templates/table-shell";
 
 interface ApiErrorResponse {
   message?: string;
@@ -64,7 +67,6 @@ export default function UsersPage() {
     null
   );
   const [sheetMode, setSheetMode] = React.useState<"invite" | "view">("view");
-  
 
   // Reset page when any filter changes
   React.useEffect(() => {
@@ -107,10 +109,11 @@ export default function UsersPage() {
         firstName: "",
         lastName: "",
         email: inv.email,
-        role: roleObj ? roleObj._id : inv.role, // store role ID
+        role: roleObj ? roleObj._id : inv.role,
         status: "pending",
         isActive: false,
-        createdAt: inv.createdAt, // backend uses createdAt for invited date
+        createdAt: inv.createdAt, 
+        expiresAt: inv.expiresAt, 
         lastLogin: null
       };
     });
@@ -197,6 +200,16 @@ export default function UsersPage() {
     onError: () => toast.error("Delete failed")
   });
 
+  const deleteInviteMutation = useMutation({
+    mutationFn: deleteExpiredInvite,
+    onSuccess: () => {
+      toast.success("Expired invitation deleted");
+      qc.invalidateQueries({ queryKey: ["invitations"] });
+      qc.invalidateQueries({ queryKey: ["users"] });
+    },
+    onError: (error: unknown) => toast.error(getErrorMessage(error))
+  });
+
   // Handlers for user actions
   const handleInvite = async (email: string, roleId: string) => {
     const roles = rolesQuery.data ?? [];
@@ -230,6 +243,12 @@ export default function UsersPage() {
     }
   };
 
+    const handleDeleteExpiredInvite = async (user: AdminUser) => {
+      if (!user.email) return;
+      // ✅ Removed window.confirm. The Sheet handles the UI popup now.
+      await deleteInviteMutation.mutateAsync(user.email);
+    };
+
   const openSheet = (user: AdminUser | null, mode: "invite" | "view") => {
     setSelectedUser(user);
     setSheetMode(mode);
@@ -256,7 +275,15 @@ export default function UsersPage() {
 
   return (
     <PermissionGate permission={PERMISSIONS.VIEW_USER}>
-      <div className="container py-8">
+      <TableShell
+        title="Users"
+        description="Manage admin users and pending invitations."
+        right={
+          <div className="text-sm text-muted-foreground">
+            {isLoading ? "Loading…" : `${filteredRows.length} user(s)`}
+          </div>
+        }
+      >
         <div className="space-y-4">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <UserFilters
@@ -301,16 +328,17 @@ export default function UsersPage() {
             )}
           </div>
 
-          {/* Desktop table */}
           <div className="hidden md:block">
-            <UserTable
-              rows={pagedRows}
-              roles={rolesQuery.data ?? []}
-              isLoading={isLoading}
-              isError={isError}
-              canEdit={true}
-              onRowClick={(user) => openSheet(user, "view")}
-            />
+            <TableFrame>
+              <UserTable
+                rows={pagedRows}
+                roles={rolesQuery.data ?? []}
+                isLoading={isLoading}
+                isError={isError}
+                canEdit={true}
+                onRowClick={(user) => openSheet(user, "view")}
+              />
+            </TableFrame>
           </div>
         </div>
 
@@ -324,9 +352,10 @@ export default function UsersPage() {
           onRoleUpdate={handleRoleUpdate}
           onToggleStatus={handleToggleStatus}
           onDelete={handleDelete}
+          onDeleteExpiredInvite={handleDeleteExpiredInvite}
           isSaving={inviteMutation.isPending || roleUpdateMutation.isPending}
         />
-      </div>
+      </TableShell>
     </PermissionGate>
   );
 }
