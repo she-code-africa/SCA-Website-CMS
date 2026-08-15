@@ -4,7 +4,7 @@ import type {
   Chapter,
   ChapterCategory,
   ChapterEvent,
-  ChapterLead
+  ChapterLead,
 } from "./types";
 
 type ApiListResponse<T> = T[] | { data?: T[] } | { data?: { data?: T[] } };
@@ -69,7 +69,6 @@ function normalizePagedChapters(res: unknown): ChapterPagedResponse {
   return { data, totalPages, currentPage };
 }
 
-
 /* ============================
    CHAPTER CATEGORIES
 ============================ */
@@ -101,10 +100,10 @@ export async function deleteChapterCategory(id: string) {
 
 export async function getChapters(
   page: number = 1,
-  limit: number = 10
+  limit: number = 10,
 ): Promise<ChapterPagedResponse> {
   const res = await api.get(
-    `/chapters/member-chapters?page=${page}&limit=${limit}`
+    `/chapters/member-chapters?page=${page}&limit=${limit}`,
   );
   return normalizePagedChapters(res);
 }
@@ -137,8 +136,8 @@ export async function publishChapter(payload: {
   id: string;
   categoryId?: string;
 }) {
-  return api.patch(
-    `/chapters/categories/${payload.categoryId}/member-chapters/${payload.id}/publish`
+  return api.put(
+    `/chapters/categories/${payload.categoryId}/member-chapters/${payload.id}/publish`,
   );
 }
 
@@ -147,8 +146,8 @@ export async function archiveChapter(payload: {
   id: string;
   categoryId?: string;
 }) {
-  return api.patch(
-    `/chapters/categories/${payload.categoryId}/member-chapters/${payload.id}/archive`
+  return api.put(
+    `/chapters/categories/${payload.categoryId}/member-chapters/${payload.id}/archive`,
   );
 }
 
@@ -157,10 +156,10 @@ export async function archiveChapter(payload: {
 ============================ */
 
 export async function getChapterEvents(
-  chapterId: string
+  chapterId: string,
 ): Promise<ChapterEvent[]> {
   const res: ApiListResponse<ChapterEvent> = await api.get(
-    `/chapters/events/${chapterId}`
+    `/chapters/events/${chapterId}`,
   );
   return normalizeList<ChapterEvent>(res);
 }
@@ -171,7 +170,7 @@ export async function getChapterEvent(id: string): Promise<ChapterEvent> {
 
 export async function addChapterEvent(input: FormData) {
   return api.post(`/chapters/events`, input, {
-    headers: { "Content-Type": "multipart/form-data" }
+    headers: { "Content-Type": "multipart/form-data" },
   });
 }
 
@@ -180,7 +179,7 @@ export async function editChapterEvent(payload: {
   data: FormData;
 }) {
   return api.put(`/chapters/event/${payload.id}`, payload.data, {
-    headers: { "Content-Type": "multipart/form-data" }
+    headers: { "Content-Type": "multipart/form-data" },
   });
 }
 
@@ -201,10 +200,10 @@ export async function deleteChapterEvent(id: string) {
 ============================ */
 
 export async function getChapterLeads(
-  chapterId: string
+  chapterId: string,
 ): Promise<ChapterLead[]> {
   const res: ApiListResponse<ChapterLead> = await api.get(
-    `/chapters/chapterLeads/${chapterId}`
+    `/chapters/chapterLeads/${chapterId}`,
   );
   return normalizeList<ChapterLead>(res);
 }

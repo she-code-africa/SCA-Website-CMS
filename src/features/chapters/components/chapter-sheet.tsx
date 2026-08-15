@@ -14,8 +14,8 @@ import {
   getChapter,
   deleteChapter,
   getChapterCategories,
-  publishChapter,    // new
-  archiveChapter,    // new
+  publishChapter, // new
+  archiveChapter, // new
 } from "@/features/chapters/api";
 import type { Chapter } from "@/features/chapters/types";
 import { PermissionGate } from "@/components/PermissionGate";
@@ -78,7 +78,7 @@ const compressImage = (
   file: File,
   maxWidth = 800,
   maxHeight = 800,
-  quality = 0.7
+  quality = 0.7,
 ): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -151,12 +151,12 @@ export function ChapterSheet({
       link: "",
       description: "",
     }),
-    []
+    [],
   );
 
   const [form, setForm] = React.useState<ChapterFormState>(initialForm);
   const [socialLinks, setSocialLinks] = React.useState<Record<string, string>>(
-    {}
+    {},
   );
   const [newLinkKey, setNewLinkKey] = React.useState("");
   const [newLinkUrl, setNewLinkUrl] = React.useState("");
@@ -450,7 +450,7 @@ export function ChapterSheet({
                                 });
                               }}
                               className={cn(
-                                "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                "bg-destructive text-destructive-foreground hover:bg-destructive/90",
                               )}
                             >
                               {deleteMut.isPending ? "Deleting…" : "Delete"}
@@ -475,7 +475,7 @@ export function ChapterSheet({
                       "w-32 h-32 rounded-lg border-2 border-dashed overflow-hidden transition-colors",
                       canEdit
                         ? "border-muted-foreground/25 hover:border-muted-foreground/50"
-                        : "border-muted-foreground/25"
+                        : "border-muted-foreground/25",
                     )}
                   >
                     {imagePreview ? (
@@ -682,7 +682,11 @@ export function ChapterSheet({
                 Cancel
               </Button>
               <Button variant="default" onClick={submit} disabled={saving}>
-                {saving ? "Saving…" : mode === "create" ? "Add Chapter" : "Save Changes"}
+                {saving
+                  ? "Saving…"
+                  : mode === "create"
+                    ? "Add Chapter"
+                    : "Save Changes"}
               </Button>
             </div>
           </PermissionGate>
