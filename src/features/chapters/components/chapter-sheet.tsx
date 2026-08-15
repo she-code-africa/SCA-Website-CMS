@@ -661,7 +661,7 @@ export function ChapterSheet({
           </div>
         </ScrollArea>
 
-        {/* Bottom action bar */}
+        {/* Bottom action barrr */}
         {(mode === "create" || (mode === "view" && editing)) && (
           <PermissionGate
             permission={
