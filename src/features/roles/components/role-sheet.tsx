@@ -17,7 +17,7 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetDescription
+  SheetDescription,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -73,7 +73,7 @@ export function RoleSheet({ open, onOpenChange, mode, role, onUpdate }: Props) {
   const {
     modules,
     actions,
-    isLoading: isLoadingPerms
+    isLoading: isLoadingPerms,
   } = usePermissionModules();
   const { data: roleUserCounts, isLoading: isLoadingCounts } =
     useRoleUserCounts();
@@ -86,10 +86,10 @@ export function RoleSheet({ open, onOpenChange, mode, role, onUpdate }: Props) {
   const [name, setName] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [selectedPerms, setSelectedPerms] = React.useState<Set<string>>(
-    new Set()
+    new Set(),
   );
   const [originalPerms, setOriginalPerms] = React.useState<Set<string>>(
-    new Set()
+    new Set(),
   );
   const [nameError, setNameError] = React.useState("");
 
@@ -126,14 +126,14 @@ export function RoleSheet({ open, onOpenChange, mode, role, onUpdate }: Props) {
       onOpenChange(false);
     },
     onError: (err: Error) =>
-      toast.error(err.message ?? "Could not create role.")
+      toast.error(err.message ?? "Could not create role."),
   });
 
   const updateMut = useMutation({
     mutationFn: ({
       id,
       original,
-      updated
+      updated,
     }: {
       id: string;
       original: Set<string>;
@@ -153,7 +153,7 @@ export function RoleSheet({ open, onOpenChange, mode, role, onUpdate }: Props) {
       qc.invalidateQueries({ queryKey: ["roles"] });
     },
     onError: (err: Error) =>
-      toast.error(err.message ?? "Could not update role.")
+      toast.error(err.message ?? "Could not update role."),
   });
 
   const handleSubmit = () => {
@@ -179,7 +179,7 @@ export function RoleSheet({ open, onOpenChange, mode, role, onUpdate }: Props) {
       updateMut.mutate({
         id: roleId,
         original: originalPerms,
-        updated: selectedPerms
+        updated: selectedPerms,
       });
     }
   };

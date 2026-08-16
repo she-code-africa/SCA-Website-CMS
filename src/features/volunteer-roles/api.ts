@@ -56,8 +56,6 @@
 //   return api.delete(`/volunteer-role/${id}`);
 // }
 
-
-
 import { api } from "@/lib/api/client";
 import type { VolunteerRole } from "./types";
 
@@ -98,7 +96,7 @@ export async function updateVolunteerRole(args: {
   const body: any = {
     name: args.data.name,
     description: args.data.description,
-    skills: JSON.stringify(args.data.skills)
+    skills: JSON.stringify(args.data.skills),
   };
   if (args.data.image !== undefined) {
     body.image = args.data.image;

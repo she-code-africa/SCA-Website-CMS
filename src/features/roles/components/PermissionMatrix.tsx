@@ -1,5 +1,5 @@
 // src/features/roles/components/PermissionMatrix.tsx
-"use client"
+"use client";
 import * as React from "react";
 import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,10 @@ const PermCheckbox = React.memo(({ id, checked, disabled, onChange }: any) => (
       checked={checked}
       disabled={disabled}
       onChange={(e) => onChange(id, e.target.checked)}
-      className={cn("h-4 w-4 rounded border cursor-pointer accent-primary", disabled && "cursor-not-allowed opacity-60")}
+      className={cn(
+        "h-4 w-4 rounded border cursor-pointer accent-primary",
+        disabled && "cursor-not-allowed opacity-60",
+      )}
     />
   </div>
 ));
@@ -35,13 +38,18 @@ export function PermissionMatrix({
   const filteredModules = React.useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
     if (!q) return modules;
-    return modules.filter((m) => m.label.toLowerCase().includes(q) || m.key.toLowerCase().includes(q));
+    return modules.filter(
+      (m) =>
+        m.label.toLowerCase().includes(q) || m.key.toLowerCase().includes(q),
+    );
   }, [searchQuery, modules]);
 
   const columnPermsMap = React.useMemo(() => {
     const map: Record<string, string[]> = {};
     actions.forEach((action) => {
-      map[action] = modules.flatMap(({ permissions }) => permissions.filter((p) => p.startsWith(action)));
+      map[action] = modules.flatMap(({ permissions }) =>
+        permissions.filter((p) => p.startsWith(action)),
+      );
     });
     return map;
   }, [modules, actions]);
@@ -95,20 +103,34 @@ export function PermissionMatrix({
                 </th>
                 {actions.map((action) => {
                   const colPerms = columnPermsMap[action] || [];
-                  const allOn = colPerms.length > 0 && colPerms.every((p) => selected.has(p));
+                  const allOn =
+                    colPerms.length > 0 &&
+                    colPerms.every((p) => selected.has(p));
                   const someOn = colPerms.some((p) => selected.has(p));
                   return (
-                    <th key={action} className="py-2.5 px-2 text-center font-medium text-muted-foreground w-18 border-b">
+                    <th
+                      key={action}
+                      className="py-2.5 px-2 text-center font-medium text-muted-foreground w-18 border-b"
+                    >
                       <div className="flex flex-col items-center gap-1.5">
-                        <span className="text-xs uppercase tracking-wider">{action}</span>
+                        <span className="text-xs uppercase tracking-wider">
+                          {action}
+                        </span>
                         {colPerms.length > 0 && (
                           <input
                             type="checkbox"
                             checked={allOn}
                             disabled={readOnly}
-                            ref={(el) => { if (el) el.indeterminate = someOn && !allOn; }}
-                            onChange={(e) => toggleColumn(action, e.target.checked)}
-                            className={cn("h-3.5 w-3.5 accent-primary cursor-pointer", readOnly && "cursor-not-allowed opacity-60")}
+                            ref={(el) => {
+                              if (el) el.indeterminate = someOn && !allOn;
+                            }}
+                            onChange={(e) =>
+                              toggleColumn(action, e.target.checked)
+                            }
+                            className={cn(
+                              "h-3.5 w-3.5 accent-primary cursor-pointer",
+                              readOnly && "cursor-not-allowed opacity-60",
+                            )}
                           />
                         )}
                       </div>
@@ -120,28 +142,43 @@ export function PermissionMatrix({
             <tbody className="divide-y bg-background">
               {filteredModules.length ? (
                 filteredModules.map(({ key, label, permissions }) => {
-                  const moduleSelected = permissions.filter((p) => selected.has(p));
+                  const moduleSelected = permissions.filter((p) =>
+                    selected.has(p),
+                  );
                   const allOn = moduleSelected.length === permissions.length;
                   const someOn = moduleSelected.length > 0;
                   const moduleAllDisabled = permissions.every((p) => readOnly);
                   return (
-                    <tr key={key} className="hover:bg-muted/30 transition-colors">
+                    <tr
+                      key={key}
+                      className="hover:bg-muted/30 transition-colors"
+                    >
                       <td className="py-2.5 px-3 border-r">
                         <div className="flex items-center gap-2">
                           <input
                             type="checkbox"
                             checked={allOn}
                             disabled={readOnly}
-                            ref={(el) => { if (el) el.indeterminate = someOn && !allOn; }}
-                            onChange={(e) => toggleModule(permissions, e.target.checked)}
-                            className={cn("h-3.5 w-3.5 accent-primary cursor-pointer shrink-0", readOnly && "cursor-not-allowed opacity-60")}
+                            ref={(el) => {
+                              if (el) el.indeterminate = someOn && !allOn;
+                            }}
+                            onChange={(e) =>
+                              toggleModule(permissions, e.target.checked)
+                            }
+                            className={cn(
+                              "h-3.5 w-3.5 accent-primary cursor-pointer shrink-0",
+                              readOnly && "cursor-not-allowed opacity-60",
+                            )}
                           />
-                          <span className="text-xs font-semibold text-foreground">{label}</span>
+                          <span className="text-xs font-semibold text-foreground">
+                            {label}
+                          </span>
                         </div>
-                         
                       </td>
                       {actions.map((action) => {
-                        const perm = permissions.find((p) => p.startsWith(action));
+                        const perm = permissions.find((p) =>
+                          p.startsWith(action),
+                        );
                         return (
                           <td key={action} className="py-2.5 px-2 text-center">
                             {perm ? (
@@ -152,7 +189,9 @@ export function PermissionMatrix({
                                 onChange={toggle}
                               />
                             ) : (
-                              <span className="text-muted-foreground/20 text-[10px]">—</span>
+                              <span className="text-muted-foreground/20 text-[10px]">
+                                —
+                              </span>
                             )}
                           </td>
                         );
@@ -162,7 +201,10 @@ export function PermissionMatrix({
                 })
               ) : (
                 <tr>
-                  <td colSpan={actions.length + 1} className="py-12 text-center text-muted-foreground italic text-xs">
+                  <td
+                    colSpan={actions.length + 1}
+                    className="py-12 text-center text-muted-foreground italic text-xs"
+                  >
                     No modules found matching "{searchQuery}"
                   </td>
                 </tr>
