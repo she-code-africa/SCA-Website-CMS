@@ -10,7 +10,7 @@ import {
   deleteEvent,
   getEvent,
   publishEvent, // <-- new
-  archiveEvent // <-- new
+  archiveEvent, // <-- new
 } from "@/features/events/api";
 import type { Event, EventUpsertInput } from "@/features/events/types";
 import { PermissionGate } from "@/components/PermissionGate";
@@ -21,7 +21,7 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetDescription
+  SheetDescription,
 } from "@/components/ui/sheet";
 
 import {
@@ -33,7 +33,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
 import { Button } from "@/components/ui/button";
@@ -58,7 +58,7 @@ const compressImage = (
   file: File,
   maxWidth = 800,
   maxHeight = 800,
-  quality = 0.7
+  quality = 0.7,
 ): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -101,18 +101,20 @@ export function EventSheet({
   onOpenChange,
   mode,
   eventId,
-  onUpdate
+  onUpdate,
 }: Props) {
   const qc = useQueryClient();
   const [editing, setEditing] = React.useState(mode === "create");
   const [imageFile, setImageFile] = React.useState<File | null>(null);
   const [imagePreview, setImagePreview] = React.useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [isState, setIsState] = React.useState(false);
+  const [eventsState, setEventsState] = React.useState("");
 
   const eventQuery = useQuery({
     queryKey: ["event", eventId],
     queryFn: () => getEvent(String(eventId)),
-    enabled: open && mode === "view" && !!eventId
+    enabled: open && mode === "view" && !!eventId,
   });
 
   const event = eventQuery.data as Event | undefined;
@@ -123,9 +125,9 @@ export function EventSheet({
       description: "",
       link: "",
       eventDate: format(new Date(), "yyyy-MM-dd"),
-      image: null
+      image: null,
     }),
-    []
+    [],
   );
 
   const [form, setForm] = React.useState<EventUpsertInput>(initialForm);
@@ -145,6 +147,7 @@ export function EventSheet({
       setEditing(false);
       setImageFile(null);
       setImagePreview(event.image ?? null);
+      setEventsState(event.state ?? "");
       setForm({
         title: event.title ?? "",
         description: event.description ?? "",
@@ -152,7 +155,7 @@ export function EventSheet({
         eventDate: event.eventDate
           ? format(new Date(event.eventDate), "yyyy-MM-dd")
           : format(new Date(), "yyyy-MM-dd"),
-        image: null
+        image: null,
       });
     }
   }, [open, mode, event, initialForm]);
@@ -189,7 +192,7 @@ export function EventSheet({
     },
     onError: (err: any) => {
       toast.error(err?.response?.data?.message || "Could not add event");
-    }
+    },
   });
 
   const updateMut = useMutation({
@@ -201,6 +204,9 @@ export function EventSheet({
         link?: string;
         eventDate?: string;
         image?: string | null;
+        //
+        state?: string;
+        published?: Date;
       };
     }) => editEvent(payload),
     onSuccess: async () => {
@@ -212,7 +218,7 @@ export function EventSheet({
     },
     onError: (err: any) => {
       toast.error(err?.response?.data?.message || "Could not update event");
-    }
+    },
   });
 
   const deleteMut = useMutation({
@@ -223,7 +229,7 @@ export function EventSheet({
       qc.invalidateQueries({ queryKey: ["events"] });
       onOpenChange(false);
     },
-    onError: () => toast.error("Could not delete")
+    onError: () => toast.error("Could not delete"),
   });
 
   // Publish mutation
@@ -235,7 +241,7 @@ export function EventSheet({
       qc.invalidateQueries({ queryKey: ["events"] });
       qc.invalidateQueries({ queryKey: ["event"] });
     },
-    onError: () => toast.error("Could not publish event")
+    onError: () => toast.error("Could not publish event"),
   });
 
   // Archive mutation
@@ -247,10 +253,83 @@ export function EventSheet({
       qc.invalidateQueries({ queryKey: ["events"] });
       qc.invalidateQueries({ queryKey: ["event"] });
     },
-    onError: () => toast.error("Could not archive event")
+    onError: () => toast.error("Could not archive event"),
   });
 
-  const submit = async () => {
+  // const submit = async () => {
+  //   if (
+  //     !form.title.trim() ||
+  //     !form.description.trim() ||
+  //     !form.link.trim() ||
+  //     !form.eventDate
+  //   ) {
+  //     toast.error("Please fill all required fields");
+  //     return;
+  //   }
+
+  //   try {
+  //     new URL(form.link);
+  //   } catch {
+  //     toast.error("Please enter a valid URL");
+  //     return;
+  //   }
+
+  //   let imageValue: string | null | undefined = undefined;
+
+  //   if (imageFile) {
+  //     try {
+  //       imageValue = await compressImage(imageFile, 800, 800, 0.7);
+  //     } catch {
+  //       toast.error("Failed to process image");
+  //       return;
+  //     }
+  //   }
+
+  //   if (mode === "create") {
+  //     createMut.mutate({
+  //       title: form.title.trim(),
+  //       description: form.description.trim(),
+  //       link: form.link.trim(),
+  //       eventDate: form.eventDate,
+  //       image: imageValue ?? null,
+  //     });
+  //     return;
+  //   }
+
+  //   if (!eventId) return;
+
+  //   if (isState) {
+  //     updateMut.mutate({
+  //       id: eventId,
+  //       data: {
+  //         title: form.title.trim(),
+  //         description: form.description.trim(),
+  //         link: form.link.trim(),
+  //         eventDate: form.eventDate,
+  //         image: imageValue,
+  //         //
+  //         state: eventsState,
+  //         published: new Date(),
+  //       },
+  //     });
+  //   } else {
+  //     updateMut.mutate({
+  //       id: eventId,
+  //       data: {
+  //         title: form.title.trim(),
+  //         description: form.description.trim(),
+  //         link: form.link.trim(),
+  //         eventDate: form.eventDate,
+  //         image: imageValue,
+  //         //
+  //       },
+  //     });
+  //   }
+
+  //   setIsState(false);
+  // };
+
+  const submit = async (statePayload?: { state: string; published: Date }) => {
     if (
       !form.title.trim() ||
       !form.description.trim() ||
@@ -285,12 +364,13 @@ export function EventSheet({
         description: form.description.trim(),
         link: form.link.trim(),
         eventDate: form.eventDate,
-        image: imageValue ?? null
+        image: imageValue ?? null,
       });
       return;
     }
 
     if (!eventId) return;
+
     updateMut.mutate({
       id: eventId,
       data: {
@@ -298,8 +378,9 @@ export function EventSheet({
         description: form.description.trim(),
         link: form.link.trim(),
         eventDate: form.eventDate,
-        image: imageValue
-      }
+        image: imageValue,
+        ...(statePayload ?? {}),
+      },
     });
   };
 
@@ -371,11 +452,18 @@ export function EventSheet({
                         className="flex-1 sm:flex-none"
                         onClick={() => {
                           if (!eventId) return;
-                          if (currentState === "published") {
-                            archiveMut.mutate(eventId);
-                          } else {
-                            publishMut.mutate(eventId);
-                          }
+                          // if (currentState === "published") {
+                          //   archiveMut.mutate(eventId);
+
+                          // } else {
+                          //   publishMut.mutate(eventId);
+
+                          // }
+                          const newState =
+                            currentState === "published"
+                              ? "archived"
+                              : "published";
+                          submit({ state: newState, published: new Date() });
                         }}
                         disabled={publishMut.isPending || archiveMut.isPending}
                       >
@@ -411,7 +499,7 @@ export function EventSheet({
                                 deleteMut.mutate(eventId);
                               }}
                               className={cn(
-                                "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                "bg-destructive text-destructive-foreground hover:bg-destructive/90",
                               )}
                             >
                               Delete
@@ -436,7 +524,7 @@ export function EventSheet({
                       "w-32 h-32 rounded-lg border-2 border-dashed overflow-hidden transition-colors",
                       editing
                         ? "border-muted-foreground/25 hover:border-muted-foreground/50"
-                        : "border-muted-foreground/25"
+                        : "border-muted-foreground/25",
                     )}
                   >
                     {imagePreview ? (
@@ -567,7 +655,7 @@ export function EventSheet({
               </Button>
               <Button
                 className="bg-pink-600 hover:bg-pink-700"
-                onClick={submit}
+                onClick={() => submit()}
                 disabled={saving}
               >
                 {saving ? (
@@ -595,7 +683,7 @@ export function EventSheet({
               </Button>
               <Button
                 className="bg-pink-600 hover:bg-pink-700"
-                onClick={submit}
+                onClick={() => submit()}
                 disabled={saving}
               >
                 {saving ? (
