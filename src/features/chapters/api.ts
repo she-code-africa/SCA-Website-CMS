@@ -203,9 +203,9 @@ export async function deleteChapterEvent(id: string) {
   return api.delete(`/chapters/event/${id}`);
 }
 
-/* ============================
+/* 
   CHAPTER LEADS
-============================ */
+ */
 
 export async function getChapterLeads(
   chapterId: string,
