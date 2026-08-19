@@ -452,18 +452,18 @@ export function EventSheet({
                         className="flex-1 sm:flex-none"
                         onClick={() => {
                           if (!eventId) return;
-                          // if (currentState === "published") {
-                          //   archiveMut.mutate(eventId);
+                          if (currentState === "published") {
+                            archiveMut.mutate(eventId);
 
-                          // } else {
-                          //   publishMut.mutate(eventId);
+                          } else {
+                            publishMut.mutate(eventId);
 
-                          // }
-                          const newState =
-                            currentState === "published"
-                              ? "archived"
-                              : "published";
-                          submit({ state: newState, published: new Date() });
+                          }
+                          // const newState =
+                          //   currentState === "published"
+                          //     ? "archived"
+                          //     : "published";
+                          // submit({ state: newState, published: new Date() });
                         }}
                         disabled={publishMut.isPending || archiveMut.isPending}
                       >

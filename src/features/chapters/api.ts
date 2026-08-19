@@ -101,14 +101,14 @@ export async function deleteChapterCategory(id: string) {
 export async function getChapters(
   page: number = 1,
   limit: number = 10,
-  filters?: { state?: string } 
+  filters?: { state?: string },
 ): Promise<ChapterPagedResponse> {
   const params = new URLSearchParams();
   params.set("page", String(page));
   params.set("limit", String(limit));
 
   if (filters?.state) {
-    params.set("state", filters.state); 
+    params.set("state", filters.state);
   }
 
   const res = await api.get(`/chapters/member-chapters?${params.toString()}`);
@@ -191,11 +191,11 @@ export async function editChapterEvent(payload: {
 }
 
 export async function publishChapterEvent(id: string) {
-  return api.patch(`/chapters/event/${id}/publish`);
+  return api.put(`/chapters/event/${id}/publish`);
 }
 
 export async function archiveChapterEvent(id: string) {
-  return api.patch(`/chapters/event/${id}/archive`);
+  return api.put(`/chapters/event/${id}/archive`);
 }
 
 export async function deleteChapterEvent(id: string) {
