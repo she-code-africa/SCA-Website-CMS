@@ -111,7 +111,7 @@ export function GoogleAnalyticsCard() {
     // auto-fetch on mount if token exists
     const stored = getStoredGAToken();
     if (stored) fetchViews(stored);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [fetchViews]);
 
   const onDisconnect = () => {

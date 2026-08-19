@@ -1,9 +1,17 @@
-//src/next.config.ts
+// //src/next.config.ts
 
 import type { NextConfig } from "next";
 
+// const nextConfig: NextConfig = {
+//   reactCompiler: false,
+// };
+
+// export default nextConfig;
+
 const nextConfig: NextConfig = {
-  reactCompiler: false,
+  experimental: {
+    reactCompiler: false,
+  },
 };
 
 export default nextConfig;
