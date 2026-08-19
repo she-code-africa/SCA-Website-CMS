@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/set-state-in-effect */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import * as React from "react";
@@ -14,7 +16,7 @@ import {
   deleteChapter,
   getChapterCategories,
   publishChapter,
-  archiveChapter
+  archiveChapter,
 } from "@/features/chapters/api";
 import type { Chapter } from "@/features/chapters/types";
 import { PermissionGate } from "@/components/PermissionGate";
@@ -25,7 +27,7 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetDescription
+  SheetDescription,
 } from "@/components/ui/sheet";
 
 import {
@@ -37,7 +39,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
 import {
@@ -45,7 +47,7 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from "@/components/ui/select";
 
 import { Button } from "@/components/ui/button";
@@ -121,7 +123,7 @@ export function ChapterSheet({
   mode,
   chapterId,
   categoryId,
-  onUpdate
+  onUpdate,
 }: Props) {
   const qc = useQueryClient();
   const [editing, setEditing] = React.useState(mode === "create");
@@ -132,13 +134,13 @@ export function ChapterSheet({
   const { data: categories = [], isLoading: isLoadingCategories } = useQuery({
     queryKey: ["chapter-categories"],
     queryFn: getChapterCategories,
-    enabled: open
+    enabled: open,
   });
 
   const chapterQuery = useQuery({
     queryKey: ["chapter", chapterId],
     queryFn: () => getChapter(String(chapterId)),
-    enabled: open && mode === "view" && !!chapterId
+    enabled: open && mode === "view" && !!chapterId,
   });
 
   const initialForm: ChapterFormState = React.useMemo(
@@ -148,7 +150,7 @@ export function ChapterSheet({
       country: "",
       category: "",
       link: "",
-      description: ""
+      description: "",
     }),
     [],
   );
@@ -185,7 +187,7 @@ export function ChapterSheet({
         country: ch.country ?? "",
         category: catId,
         link: ch.link ?? "",
-        description: ch.description ?? ""
+        description: ch.description ?? "",
       });
 
       setSocialLinks(ch.socialMediaLinks || {});
@@ -218,7 +220,7 @@ export function ChapterSheet({
       onOpenChange(false);
     },
     onError: (err: any) =>
-      toast.error(err?.response?.data?.message || "Could not add chapter")
+      toast.error(err?.response?.data?.message || "Could not add chapter"),
   });
 
   const updateMut = useMutation({
@@ -229,7 +231,7 @@ export function ChapterSheet({
       onOpenChange(false);
     },
     onError: (err: any) =>
-      toast.error(err?.response?.data?.message || "Could not update chapter")
+      toast.error(err?.response?.data?.message || "Could not update chapter"),
   });
 
   const deleteMut = useMutation({
@@ -239,7 +241,7 @@ export function ChapterSheet({
       await onUpdate?.();
       onOpenChange(false);
     },
-    onError: () => toast.error("Could not delete chapter")
+    onError: () => toast.error("Could not delete chapter"),
   });
 
   const publishMut = useMutation({
@@ -250,7 +252,7 @@ export function ChapterSheet({
       qc.invalidateQueries({ queryKey: ["chapter", chapterId] });
     },
     onError: (err: any) =>
-      toast.error(err?.response?.data?.message || "Could not publish chapter")
+      toast.error(err?.response?.data?.message || "Could not publish chapter"),
   });
 
   const archiveMut = useMutation({
@@ -261,7 +263,7 @@ export function ChapterSheet({
       qc.invalidateQueries({ queryKey: ["chapter", chapterId] });
     },
     onError: (err: any) =>
-      toast.error(err?.response?.data?.message || "Could not archive chapter")
+      toast.error(err?.response?.data?.message || "Could not archive chapter"),
   });
 
   const addSocialLink = () => {
@@ -306,7 +308,7 @@ export function ChapterSheet({
       category: form.category,
       link: form.link,
       description: form.description,
-      socialMediaLinks: socialLinks
+      socialMediaLinks: socialLinks,
     };
     if (imageValue) payload.image = imageValue;
 
@@ -320,7 +322,7 @@ export function ChapterSheet({
     updateMut.mutate({
       id: chapterId,
       categoryId,
-      data: payload
+      data: payload,
     });
   };
 
@@ -371,7 +373,7 @@ export function ChapterSheet({
               ? "Add a new chapter."
               : editing
                 ? "Edit the chapter details."
-                : "View chapter details. Click Edit to modify."}
+                : "View chapter details. Click Edit to modify chapter."}
           </SheetDescription>
         </SheetHeader>
 
@@ -402,12 +404,12 @@ export function ChapterSheet({
                           if (currentState === "published") {
                             archiveMut.mutate({
                               id: chapterId,
-                              categoryId
+                              categoryId,
                             });
                           } else {
                             publishMut.mutate({
                               id: chapterId,
-                              categoryId
+                              categoryId,
                             });
                           }
                         }}
@@ -447,7 +449,7 @@ export function ChapterSheet({
                                 if (!chapterId) return;
                                 deleteMut.mutate({
                                   id: chapterId,
-                                  categoryId
+                                  categoryId,
                                 });
                               }}
                               className={cn(

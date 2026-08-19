@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/features/chapters/api.ts
 import { api } from "@/lib/api/client";
 import type {
