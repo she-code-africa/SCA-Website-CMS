@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/features/chapters/api.ts
 import { api } from "@/lib/api/client";
 import type {
@@ -202,9 +203,9 @@ export async function deleteChapterEvent(id: string) {
   return api.delete(`/chapters/event/${id}`);
 }
 
-/* ============================
+/* 
   CHAPTER LEADS
-============================ */
+ */
 
 export async function getChapterLeads(
   chapterId: string,
