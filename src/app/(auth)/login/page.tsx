@@ -263,6 +263,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
+import { decodeJwt } from "@/lib/auth/jwt";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -300,10 +301,18 @@ export default function LoginPage() {
       const values = form.getValues();
       const expires = values.rememberMe ? 30 : 7;
 
+      // Cookies.set("isLoggedIn", "true", {
+      //   expires,
+      //   sameSite: "lax",
+      //   secure: process.env.NODE_ENV === "production",
+      // });
+
+      const decoded = decodeJwt<{ exp: number }>(token);
       Cookies.set("isLoggedIn", "true", {
-        expires,
+        expires: decoded ? new Date(decoded.exp * 1000) : 7,
         sameSite: "lax",
         secure: process.env.NODE_ENV === "production",
+        path: "/",
       });
 
       localStorage.setItem("token", token);

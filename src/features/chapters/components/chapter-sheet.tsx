@@ -1,4 +1,5 @@
-// src/features/chapters/components/chapter-sheet.tsx
+/* eslint-disable react-hooks/set-state-in-effect */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import * as React from "react";
@@ -14,8 +15,8 @@ import {
   getChapter,
   deleteChapter,
   getChapterCategories,
-  publishChapter,    // new
-  archiveChapter,    // new
+  publishChapter,
+  archiveChapter,
 } from "@/features/chapters/api";
 import type { Chapter } from "@/features/chapters/types";
 import { PermissionGate } from "@/components/PermissionGate";
@@ -73,12 +74,12 @@ type ChapterFormState = {
   description: string;
 };
 
-// Image compression helper (unchanged)
+// Image compression helper
 const compressImage = (
   file: File,
   maxWidth = 800,
   maxHeight = 800,
-  quality = 0.7
+  quality = 0.7,
 ): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -151,12 +152,12 @@ export function ChapterSheet({
       link: "",
       description: "",
     }),
-    []
+    [],
   );
 
   const [form, setForm] = React.useState<ChapterFormState>(initialForm);
   const [socialLinks, setSocialLinks] = React.useState<Record<string, string>>(
-    {}
+    {},
   );
   const [newLinkKey, setNewLinkKey] = React.useState("");
   const [newLinkUrl, setNewLinkUrl] = React.useState("");
@@ -311,7 +312,9 @@ export function ChapterSheet({
     };
     if (imageValue) payload.image = imageValue;
 
+    // ✅ NEW: When creating a chapter, set state to "published" by default
     if (mode === "create") {
+      payload.state = "published";
       createMut.mutate(payload);
       return;
     }
@@ -370,7 +373,7 @@ export function ChapterSheet({
               ? "Add a new chapter."
               : editing
                 ? "Edit the chapter details."
-                : "View chapter details. Click Edit to modify."}
+                : "View chapter details. Click Edit to modify chapter."}
           </SheetDescription>
         </SheetHeader>
 
@@ -450,7 +453,7 @@ export function ChapterSheet({
                                 });
                               }}
                               className={cn(
-                                "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                "bg-destructive text-destructive-foreground hover:bg-destructive/90",
                               )}
                             >
                               {deleteMut.isPending ? "Deleting…" : "Delete"}
@@ -464,7 +467,6 @@ export function ChapterSheet({
               </div>
             )}
 
-            {/* Rest of the form is exactly the same as before */}
             {/* Image Upload Section */}
             <div className="grid gap-3">
               <label className="text-sm font-medium">Chapter Image</label>
@@ -475,7 +477,7 @@ export function ChapterSheet({
                       "w-32 h-32 rounded-lg border-2 border-dashed overflow-hidden transition-colors",
                       canEdit
                         ? "border-muted-foreground/25 hover:border-muted-foreground/50"
-                        : "border-muted-foreground/25"
+                        : "border-muted-foreground/25",
                     )}
                   >
                     {imagePreview ? (
@@ -661,7 +663,7 @@ export function ChapterSheet({
           </div>
         </ScrollArea>
 
-        {/* Bottom action bar */}
+        {/* Bottom action barrr */}
         {(mode === "create" || (mode === "view" && editing)) && (
           <PermissionGate
             permission={
@@ -682,7 +684,11 @@ export function ChapterSheet({
                 Cancel
               </Button>
               <Button variant="default" onClick={submit} disabled={saving}>
-                {saving ? "Saving…" : mode === "create" ? "Add Chapter" : "Save Changes"}
+                {saving
+                  ? "Saving…"
+                  : mode === "create"
+                    ? "Add Chapter"
+                    : "Save Changes"}
               </Button>
             </div>
           </PermissionGate>

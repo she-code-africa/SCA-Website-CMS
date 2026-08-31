@@ -26,7 +26,7 @@ export default function RolesPage() {
 
   const [filters, setFilters] = React.useState<RolesFilters>({
     search: "",
-    type: ""
+    type: "",
   });
 
   const [page, setPage] = React.useState(1);
@@ -43,11 +43,11 @@ export default function RolesPage() {
   const rolesQuery = useQuery({
     queryKey: ["roles", filters],
     queryFn: () => getRoles(filters),
-    staleTime: 30_000
+    staleTime: 30_000,
   });
 
   const deleteMut = useMutation({
-    mutationFn: (r: RoleDetail) => deleteRole(r.id)
+    mutationFn: (r: RoleDetail) => deleteRole(r.id),
     // onSuccess/onError moved to manual handler to control isUpdating
   });
 
@@ -69,22 +69,22 @@ export default function RolesPage() {
   };
 
   // Wrap sheet updates (create/edit)
-const handleSheetUpdate = async (updatedRoleId?: string) => {
-  setIsUpdating(true);
-  try {
-    const result = await rolesQuery.refetch();
-    if (updatedRoleId && result.data) {
-      const freshRole = (result.data as RoleDetail[]).find(
-        (r) => r._id === updatedRoleId || r.id === updatedRoleId
-      );
-      if (freshRole) {
-        setSelected(freshRole);
+  const handleSheetUpdate = async (updatedRoleId?: string) => {
+    setIsUpdating(true);
+    try {
+      const result = await rolesQuery.refetch();
+      if (updatedRoleId && result.data) {
+        const freshRole = (result.data as RoleDetail[]).find(
+          (r) => r._id === updatedRoleId || r.id === updatedRoleId,
+        );
+        if (freshRole) {
+          setSelected(freshRole);
+        }
       }
+    } finally {
+      setIsUpdating(false);
     }
-  } finally {
-    setIsUpdating(false);
-  }
-};
+  };
 
   // Delete handler with skeleton feedback
   const handleDelete = async (r: RoleDetail) => {
@@ -162,10 +162,10 @@ const handleSheetUpdate = async (updatedRoleId?: string) => {
               <RolesTable
                 rows={paged}
                 isLoading={rolesQuery.isLoading}
-                isUpdating={isUpdating} 
+                isUpdating={isUpdating}
                 isError={rolesQuery.isError}
                 onRowClick={openView}
-                onDelete={handleDelete} 
+                onDelete={handleDelete}
               />
             </TableFrame>
           </div>
@@ -176,7 +176,7 @@ const handleSheetUpdate = async (updatedRoleId?: string) => {
           onOpenChange={setSheetOpen}
           mode={sheetMode}
           role={selected}
-          onUpdate={handleSheetUpdate} 
+          onUpdate={handleSheetUpdate}
         />
       </TableShell>
     </PermissionGate>

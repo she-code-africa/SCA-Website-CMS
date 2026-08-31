@@ -77,6 +77,7 @@ type Props = {
   onRoleUpdate?: (userId: string, newRoleId: string) => Promise<void>;
   onToggleStatus?: (user: AdminUser) => Promise<void> | void;
   onDelete?: (user: AdminUser) => Promise<void> | void;
+  onDeleteExpiredInvite?: (user: AdminUser) => Promise<void> | void;
   onUpdateUser?: (updatedUser: AdminUser) => void;
 };
 
@@ -91,12 +92,14 @@ export function UserSheet({
   onRoleUpdate,
   onToggleStatus,
   onDelete,
+  onDeleteExpiredInvite,
   onUpdateUser
 }: Props) {
   // Local UI state
   const [editing, setEditing] = React.useState(false);
   const [showConfirm, setShowConfirm] = React.useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
+  const [showExpiredDeleteConfirm, setShowExpiredDeleteConfirm] = React.useState(false);
   const [inviteEmail, setInviteEmail] = React.useState("");
   const [inviteRoleId, setInviteRoleId] = React.useState("");
   const [emailError, setEmailError] = React.useState("");
@@ -105,27 +108,46 @@ export function UserSheet({
   const [statusToggling, setStatusToggling] = React.useState(false);
   const [deleting, setDeleting] = React.useState(false);
 
+  const [isExpired, setIsExpired] = React.useState(false);
+  const isPending = user?.status === "pending";
+
+  React.useEffect(() => {
+    queueMicrotask(() => {
+      if (!isPending || !user?.expiresAt) {
+        setIsExpired(false);
+        return;
+      }
+      setIsExpired(Date.now() > new Date(user.expiresAt).getTime());
+    });
+  }, [user, isPending]);
+
   // Reset state when sheet opens/closes
   React.useEffect(() => {
     if (!open) {
-      setInviteEmail("");
-      setInviteRoleId("");
-      setEmailError("");
-      setEditing(false);
-      setShowConfirm(false);
-      setShowDeleteConfirm(false);
-      setLocalSaving(false);
-      setStatusToggling(false);
-      setDeleting(false);
+      queueMicrotask(() => {
+        setInviteEmail("");
+        setInviteRoleId("");
+        setEmailError("");
+        setEditing(false);
+        setShowConfirm(false);
+        setShowDeleteConfirm(false);
+        setShowExpiredDeleteConfirm(false); 
+        setLocalSaving(false);
+        setStatusToggling(false);
+        setDeleting(false);
+      });
       return;
     }
-    if (mode === "invite") {
-      setEditing(true);
-    }
-    if (mode === "view" && user) {
-      setEditing(false);
-      setEditRoleId(getRoleId(user));
-    }
+
+    queueMicrotask(() => {
+      if (mode === "invite") {
+        setEditing(true);
+      }
+      if (mode === "view" && user) {
+        setEditing(false);
+        setEditRoleId(getRoleId(user));
+      }
+    });
   }, [open, mode, user]);
 
   const fullName =
@@ -211,6 +233,18 @@ export function UserSheet({
     } finally {
       setDeleting(false);
       setShowDeleteConfirm(false);
+    }
+  };
+
+  const handleDeleteExpiredInviteConfirm = async () => {
+    if (!user || !onDeleteExpiredInvite) return;
+    setDeleting(true);
+    try {
+      await onDeleteExpiredInvite(user);
+      onOpenChange(false);
+    } finally {
+      setDeleting(false);
+      setShowExpiredDeleteConfirm(false);
     }
   };
 
@@ -311,10 +345,6 @@ export function UserSheet({
                   <Separator />
 
                   <div className="grid grid-cols-2 gap-4 text-sm">
-                    {/* <div className="space-y-0.5">
-                      <p className="text-muted-foreground">Last login</p>
-                      <p className="font-medium">{fmtDate(user.lastLogin)}</p>
-                    </div> */}
                     <div className="space-y-0.5">
                       <p className="text-muted-foreground">Joined</p>
                       <p className="font-medium">{fmtDate(user.createdAt)}</p>
@@ -325,7 +355,7 @@ export function UserSheet({
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <p className="text-sm font-medium">Role & Access</p>
-                      {!editing && (
+                      {!editing && !isPending && (
                         <PermissionGate permission={PERMISSIONS.UPDATE_USER}>
                           <Button
                             variant="outline"
@@ -372,44 +402,75 @@ export function UserSheet({
                     )}
                   </div>
 
-                  {/* Action Buttons for Status and Delete */}
                   <div className="flex flex-wrap gap-2 pt-2">
-                    {user.status !== "pending" && (
-                      <PermissionGate permission={PERMISSIONS.UPDATE_USER}>
-                        <Button
-                          variant="outline"
-                          onClick={handleToggleStatus}
-                          disabled={saving}
-                          className={
-                            user.isActive
-                              ? "text-amber-500"
-                              : "text-emerald-500"
-                          }
-                        >
-                          {statusToggling ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              {user.isActive
-                                ? "Deactivating..."
-                                : "Activating..."}
-                            </>
-                          ) : user.isActive ? (
-                            "Deactivate"
-                          ) : (
-                            "Activate"
-                          )}
-                        </Button>
-                      </PermissionGate>
+                    {isPending ? (
+                      // ── PENDING INVITE UI ──
+                      <div className="flex flex-col gap-2 w-full">
+                        <div className="flex items-center gap-2">
+                          <Badge
+                            variant={isExpired ? "destructive" : "outline"}
+                          >
+                            {isExpired ? "Expired" : "Pending"}
+                          </Badge>
+                          <span className="text-xs text-muted-foreground">
+                            {isExpired
+                              ? "Invite has expired. Please delete it."
+                              : "User has not accepted the invite yet."}
+                          </span>
+                        </div>
+
+                        {/* Show "Delete Expired Invite" button ONLY if expired */}
+                        {isExpired && (
+                          <PermissionGate permission={PERMISSIONS.DELETE_USER}>
+                            <Button
+                              variant="destructive"
+                              onClick={() => setShowExpiredDeleteConfirm(true)}
+                              disabled={saving}
+                            >
+                              Delete Expired Invite
+                            </Button>
+                          </PermissionGate>
+                        )}
+                      </div>
+                    ) : (
+                      // ── ACTIVE / DEACTIVATED USER UI ──
+                      <>
+                        <PermissionGate permission={PERMISSIONS.UPDATE_USER}>
+                          <Button
+                            variant="outline"
+                            onClick={handleToggleStatus}
+                            disabled={saving}
+                            className={
+                              user.isActive
+                                ? "text-amber-500"
+                                : "text-emerald-500"
+                            }
+                          >
+                            {statusToggling ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                {user.isActive
+                                  ? "Deactivating..."
+                                  : "Activating..."}
+                              </>
+                            ) : user.isActive ? (
+                              "Deactivate"
+                            ) : (
+                              "Activate"
+                            )}
+                          </Button>
+                        </PermissionGate>
+                        <PermissionGate permission={PERMISSIONS.DELETE_USER}>
+                          <Button
+                            variant="destructive"
+                            onClick={() => setShowDeleteConfirm(true)}
+                            disabled={saving}
+                          >
+                            Delete User
+                          </Button>
+                        </PermissionGate>
+                      </>
                     )}
-                    <PermissionGate permission={PERMISSIONS.DELETE_USER}>
-                      <Button
-                        variant="destructive"
-                        onClick={() => setShowDeleteConfirm(true)}
-                        disabled={saving}
-                      >
-                        Delete
-                      </Button>
-                    </PermissionGate>
                   </div>
                 </div>
               )}
@@ -475,7 +536,7 @@ export function UserSheet({
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Delete Confirmation */}
+      {/* Delete User Confirmation */}
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -494,6 +555,34 @@ export function UserSheet({
             >
               {deleting ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                "Delete"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* AlertDialog for Expired Invite Confirmation */}
+      <AlertDialog open={showExpiredDeleteConfirm} onOpenChange={setShowExpiredDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Expired Invitation?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action will permanently delete the expired invitation for <strong>{user?.email}</strong>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteExpiredInviteConfirm}
+              disabled={deleting}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              {deleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Deleting...
+                </>
               ) : (
                 "Delete"
               )}

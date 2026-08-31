@@ -102,3 +102,7 @@ export async function deactivateUser(userId: string): Promise<void> {
 export async function deleteUser(userId: string): Promise<void> {
   await api.delete(`/users/${userId}`);
 }
+
+export async function deleteExpiredInvite(email: string): Promise<void> {
+  await api.delete(`/users/invitation/del?email=${encodeURIComponent(email)}`);
+}
