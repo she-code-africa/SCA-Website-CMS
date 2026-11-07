@@ -6,7 +6,7 @@ import { RoutePermissionGuard } from "@/components/providers/route-permission-gu
 import { SessionValidator } from "@/components/providers/SessionValidator";
 
 export default function AdminLayout({
-  children
+  children,
 }: {
   children: React.ReactNode;
 }) {

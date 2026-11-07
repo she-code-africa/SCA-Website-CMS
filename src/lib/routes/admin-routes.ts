@@ -17,6 +17,7 @@ import {
   UsersRound,
   Sparkles,
   Settings,
+  Image,
 } from "lucide-react";
 import { PERMISSIONS } from "@/lib/rbac/permissions";
 
@@ -47,6 +48,12 @@ export const adminRoutes: NavItem[] = [
     label: "Team",
     icon: Users,
     path: "/admin/team",
+  },
+  {
+    name: "media",
+    label: "Media",
+    icon: Image,
+    path: "/admin/media",
     permission: PERMISSIONS.VIEW_TEAM,
   },
   {
