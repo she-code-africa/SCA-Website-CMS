@@ -1,4 +1,4 @@
-  // src/lib/rbac/permissions.ts
+// src/lib/rbac/permissions.ts
 // ─────────────────────────────────────────────────────────────────────────────
 // Single source of truth for permission keys and group categorizations.
 // Used by:
@@ -184,7 +184,7 @@ export const PERMISSIONS = {
   VIEW_JOBTYPE: "VIEW_JOBTYPE",
   CREATE_JOBTYPE: "CREATE_JOBTYPE",
   UPDATE_JOBTYPE: "UPDATE_JOBTYPE",
-  DELETE_JOBTYPE: "DELETE_JOBTYPE"
+  DELETE_JOBTYPE: "DELETE_JOBTYPE",
 } as const;
 
 export type PermissionKey = keyof typeof PERMISSIONS;

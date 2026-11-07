@@ -16,7 +16,7 @@ import { TableFrame } from "@/components/templates/table-frame";
 export default function MediaPage() {
   const [filters, setFilters] = React.useState<MediaFiltersType>({
     search: "",
-    type: ""
+    type: "",
   });
 
   const [page, setPage] = React.useState(1);
@@ -44,7 +44,7 @@ export default function MediaPage() {
   const query = useQuery({
     queryKey: ["media", filters],
     queryFn: () => getAllMedia(filters),
-    staleTime: 30_000
+    staleTime: 30_000,
   });
 
   const rows = React.useMemo(() => query.data ?? [], [query.data]);
