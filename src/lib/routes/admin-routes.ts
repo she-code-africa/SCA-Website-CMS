@@ -172,6 +172,19 @@ export const adminRoutes: NavItem[] = [
         path: "/admin/stem-a-girl/enquiries",
         // permission: PERMISSIONS.VIEW_IMPACT_STORIES
       },
+      {
+        name: "participant",
+        label: "Participant",
+        path: "/admin/stem-a-girl/participant",
+        // permission: PERMISSIONS.VIEW_IMPACT_STORIES
+      },
+
+      {
+        name: "consent",
+        label: "Consent",
+        path: "/admin/stem-a-girl/consent",
+        // permission: PERMISSIONS.VIEW_IMPACT_STORIES
+      },
     ],
   },
   {
