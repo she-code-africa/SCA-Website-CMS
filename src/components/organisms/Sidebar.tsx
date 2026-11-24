@@ -18,7 +18,7 @@ import {
   Accordion,
   AccordionContent,
   AccordionItem,
-  AccordionToggle
+  AccordionToggle,
 } from "@/components/ui/accordion";
 import {
   AlertDialog,
@@ -28,7 +28,7 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { LogOut, AlertTriangle } from "lucide-react";
@@ -78,8 +78,8 @@ export function Sidebar({ variant = "desktop" }: SidebarProps) {
   React.useEffect(() => {
     const currentGroup = adminRoutes.find((route) =>
       route.items?.some(
-        (sub) => pathname === sub.path || pathname.startsWith(sub.path + "/")
-      )
+        (sub) => pathname === sub.path || pathname.startsWith(sub.path + "/"),
+      ),
     );
 
     if (currentGroup) {
@@ -97,7 +97,7 @@ export function Sidebar({ variant = "desktop" }: SidebarProps) {
     return adminRoutes
       .map((item) => {
         const visibleSubItems = item.items?.filter(
-          (sub) => !sub.permission || can(sub.permission)
+          (sub) => !sub.permission || can(sub.permission),
         );
 
         const hasParentAccess = !item.permission || can(item.permission);
@@ -118,7 +118,6 @@ export function Sidebar({ variant = "desktop" }: SidebarProps) {
       ? "hidden md:flex h-screen w-64 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground"
       : "flex h-full w-full flex-col bg-sidebar text-sidebar-foreground";
 
-
   // console.log("--- SIDEBAR DEBUG ---");
   // console.log("Current Role from Global Store:", currentRole);
   // console.log("Filtered Route Count:", filteredRoutes.length);
@@ -127,7 +126,6 @@ export function Sidebar({ variant = "desktop" }: SidebarProps) {
   //   "Has VIEW_TESTIMONIALS:",
   //   user?.permissionSet.has(PERMISSIONS.VIEW_TESTIMONIALS)
   // );
-
 
   return (
     <aside className={wrapperClass}>
@@ -142,7 +140,7 @@ export function Sidebar({ variant = "desktop" }: SidebarProps) {
             if (item.items?.length) {
               const anyChildActive = item.items.some(
                 (sub: RouteItem) =>
-                  pathname === sub.path || pathname.startsWith(sub.path + "/")
+                  pathname === sub.path || pathname.startsWith(sub.path + "/"),
               );
 
               const parentActive =
@@ -162,7 +160,7 @@ export function Sidebar({ variant = "desktop" }: SidebarProps) {
                         "relative flex items-center justify-between rounded-md px-3 py-2 text-sm transition-colors",
                         parentActive || anyChildActive
                           ? navItemActive
-                          : navItemInactive
+                          : navItemInactive,
                       )}
                     >
                       {(parentActive || anyChildActive) && (
@@ -195,7 +193,7 @@ export function Sidebar({ variant = "desktop" }: SidebarProps) {
                                 "group flex items-center rounded-md px-3 py-1.5 text-sm transition-colors",
                                 subActive
                                   ? "bg-sidebar-accent text-sidebar-foreground ring-1 ring-sidebar-ring/15"
-                                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground",
                               )}
                             >
                               <span
@@ -203,7 +201,7 @@ export function Sidebar({ variant = "desktop" }: SidebarProps) {
                                   "mr-2 inline-block h-1.5 w-1.5 rounded-full transition-colors",
                                   subActive
                                     ? "bg-sidebar-primary"
-                                    : "bg-sidebar-foreground/30 group-hover:bg-sidebar-primary/70"
+                                    : "bg-sidebar-foreground/30 group-hover:bg-sidebar-primary/70",
                                 )}
                               />
                               <span className="truncate">{sub.label}</span>
@@ -226,7 +224,7 @@ export function Sidebar({ variant = "desktop" }: SidebarProps) {
                 href={item.path}
                 className={cn(
                   navItemBase,
-                  isActive ? navItemActive : navItemInactive
+                  isActive ? navItemActive : navItemInactive,
                 )}
               >
                 {isActive && <span className={navDot} aria-hidden />}
